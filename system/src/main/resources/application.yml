@@ -4,7 +4,7 @@ server:
     context-path: /api
 spring:
   application:
-    name: prodigal-picture
+    name: prodigal-system
   profiles:
     # 环境配置
     active: dev

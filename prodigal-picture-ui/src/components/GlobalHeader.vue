@@ -15,10 +15,23 @@
       <a-col flex="100px">
         <div class="login-status">
           <div v-if="loginUserStore.loginUser.id">
-            {{loginUserStore.loginUser.userName ?? "无名"}}
+            <a-dropdown>
+              <a-space>
+                <a-avatar :src="loginUserStore.loginUser.userAvatar"/>
+                {{ loginUserStore.loginUser.userName ?? "无名" }}
+              </a-space>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item @click=doLogout>
+                    <LoginOutlined/>
+                    退出
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </div>
           <div v-else>
-            <a-button type="primary" herf="/login">登录</a-button>
+            <a-button type="primary" href="/login">登录</a-button>
           </div>
         </div>
       </a-col>
@@ -26,57 +39,93 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { h, ref } from 'vue';
-import {HomeOutlined, MailOutlined, AppstoreOutlined, SettingOutlined } from '@ant-design/icons-vue';
-import { MenuProps } from 'ant-design-vue';
+import {computed, h, ref} from 'vue';
+import {HomeOutlined, GithubOutlined, LoginOutlined} from '@ant-design/icons-vue';
+import {MenuProps, message} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
+import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
+import checkAccess from "@/access/checkAccess";
 
 const loginUserStore = useLoginUserStore();
 
-const items = ref<MenuProps['items']>([
+const originItems = [
   {
-    key:"/",
+    key: "/",
     icon: h(HomeOutlined),
-    label: h('a', { href: '/' }, '首页'),
+    label: h('a', {href: '/'}, '首页'),
     title: '首页',
-  },{
-    key: '/about',
-    label: '关于',
-    title: '关于',
   }, {
-    key: '/admin',
-    label: h('a', { href: 'https://gitee.com/StarsTeas/ruoyi-cloud' }, 'ruoyi-cloud'),
-    title: 'ruoyi-clou',
-  },{
-    key: '/login',
-    label: h('a', { href: '/login' }, '登录'),
-    title: '登录',
+    key: '/admin/userManager',
+    label: '用户管理',
+    title: '用户管理',
+  }, {
+    key: '/gitHub',
+    icon: h(GithubOutlined),
+    label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
   }
-]);
+];
+
+//菜单过滤
+const filterMenu = (menus = [] as MenuProps[`items`]) => {
+  return menus?.filter(menu => {
+    if (menu.key.startsWith('/admin')) {
+      let loginUser = loginUserStore.loginUser;
+      if (!loginUser || loginUser.userRole !== "admin") {
+        return false;
+      }
+    }
+    return true;
+  })
+}
+const items = computed<MenuProps['items']>(() => filterMenu(originItems));
+// 过滤菜单项
+// const items = menus.filter((menu) => {
+//   // todo 需要自己实现 menu 到路由 item 的转化
+//   const item = menuToRouteItem(menu);
+//   if (item.meta?.hideInMenu) {
+//     return false;
+//   }
+//   // 根据权限过滤菜单，有权限则返回 true，则保留该菜单
+//   return checkAccess(loginUserStore.loginUser, item.meta?.access as string);
+// });
 
 const router = useRouter();
 //刷新页面时，菜单高亮
 const current = ref<string[]>([]);
-router.afterEach((to, from, next)=>{
-  current.value=[to.path];
+router.afterEach((to, from, next) => {
+  current.value = [to.path];
 })
 //路由跳转事件
-const doMenuClick=({key})=>{
-  router.push({path:key})
+const doMenuClick = ({key}) => {
+  router.push({path: key})
 }
 
+const doLogout = async () => {
+  const res = await logoutUsingPost()
+  if (res.data.code === 0) {
+    loginUserStore.setLoginUser({
+      userName: "未登录"
+    })
+    message.success('退出成功')
+    await router.push('/login')
+  } else {
+    message.error('退出失败，' + res.data.message)
+  }
+}
 </script>
 
 <style scoped>
-#globalHeader .title-bar{
+#globalHeader .title-bar {
   display: flex;
   align-items: center;
 }
-#globalHeader .logo{
+
+#globalHeader .logo {
   height: 48px;
 }
-#globalHeader .title{
+
+#globalHeader .title {
   color: black;
   font-size: 18px;
   font-weight: bold;

@@ -17,14 +17,14 @@
         <spring-boot.version>2.7.6</spring-boot.version>
         <mysql.version>8.2.0</mysql.version>
         <mybatis-plus.version>3.5.9</mybatis-plus.version>
-        <knife4j-openapi3.version>4.4.0</knife4j-openapi3.version>
+        <knife4j-openapi2.version>4.4.0</knife4j-openapi2.version>
+        <lombok.version>1.18.32</lombok.version>
     </properties>
 
     <modules>
         <module>system</module>
     </modules>
     <packaging>pom</packaging>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -44,10 +44,25 @@
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
+            <!-- MyBatis Plus 分页插件 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-bom</artifactId>
+                <version>${mybatis-plus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!--https://doc.xiaominfo.com/docs/quick-start#spring-boot-2-->
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>
-                <artifactId>knife4j-openapi3-spring-boot-starter</artifactId>
-                <version>${knife4j-openapi3.version}</version>
+                <artifactId>knife4j-openapi2-spring-boot-starter</artifactId>
+                <version>${knife4j-openapi2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

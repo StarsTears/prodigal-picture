@@ -1,2 +1,0 @@
-# prodigal-picture
-prodigal-picture

@@ -1,9 +1,7 @@
-<script setup lang="ts">
-import TheWelcome from '../components/TheWelcome.vue'
-</script>
-
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+ <div>
+   开始学习前端：vue3+ant design
+ </div>
 </template>
+<script setup lang="ts">
+</script>
