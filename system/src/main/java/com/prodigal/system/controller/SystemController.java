@@ -1,5 +1,6 @@
 package com.prodigal.system.controller;
 
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
@@ -77,6 +78,8 @@ public class SystemController {
         final String DEFAULT_PASSWORD = "123456";
         String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
         user.setUserPassword(encryptPassword);
+        //设置默认角色
+        user.setUserRole(StringUtils.isEmpty(userAddDto.getUserRole()) ? UserConstant.DEFAULT_ROLE : userAddDto.getUserRole());
         boolean save = userService.save(user);
         ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(user.getId());
