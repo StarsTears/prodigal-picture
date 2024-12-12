@@ -13,15 +13,15 @@ public interface UserConstant {
     /**
      * 超级管理员角色
      */
-    String ADMINISTRATOR_ROLE = "administrator";
+     String SUPER_ADMIN_ROLE = "administrator";
     /**
      * 管理员角色
      */
-    String ADMIN_ROLE = "admin";
+     String ADMIN_ROLE = "admin";
     /**
      * 默认角色
      */
-    String DEFAULT_ROLE = "user";
+     String DEFAULT_ROLE = "user";
 
 
 }

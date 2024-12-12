@@ -13,6 +13,7 @@ import java.io.Serializable;
  **/
 @Data
 public class UserAddDto implements Serializable {
+    private static final long serialVersionUID = -3336756005686628893L;
     /**
      * 账号
      */

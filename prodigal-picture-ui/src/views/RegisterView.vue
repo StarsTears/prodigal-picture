@@ -71,7 +71,7 @@ const handleSubmit = async (values: any) => {
       replace: true,
     })
   } else {
-    message.error('注册失败，' + res.data.message)
+    message.error('注册失败，' + res.data.msg)
   }
 }
 </script>

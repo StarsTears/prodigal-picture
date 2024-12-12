@@ -11,5 +11,5 @@ public @interface PermissionCheck {
     /**
      * 必须有角色
      */
-    String mustRole() default "";
+    String[] mustRole() default {};
 }

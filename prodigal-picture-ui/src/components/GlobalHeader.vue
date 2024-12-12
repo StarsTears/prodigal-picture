@@ -22,8 +22,16 @@
               </a-space>
               <template #overlay>
                 <a-menu>
+                  <a-menu-item @click="">
+                    <UserOutlined />
+                    个人中心
+                  </a-menu-item>
+                  <a-menu-item >
+                    <EditOutlined />
+                    编辑
+                  </a-menu-item>
                   <a-menu-item @click=doLogout>
-                    <LoginOutlined/>
+                    <LogoutOutlined />
                     退出
                   </a-menu-item>
                 </a-menu>
@@ -40,12 +48,13 @@
 </template>
 <script lang="ts" setup>
 import {computed, h, ref} from 'vue';
-import {HomeOutlined, GithubOutlined, LoginOutlined} from '@ant-design/icons-vue';
+import {HomeOutlined, GithubOutlined, LoginOutlined,LogoutOutlined,UserOutlined,EditOutlined} from '@ant-design/icons-vue';
 import {MenuProps, message} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
 import checkAccess from "@/access/checkAccess";
+import ACCESS_ENUM from "@/access/accessEnum";
 
 const loginUserStore = useLoginUserStore();
 
@@ -53,7 +62,7 @@ const originItems = [
   {
     key: "/",
     icon: h(HomeOutlined),
-    label: h('a', {href: '/'}, '首页'),
+    label: '首页',
     title: '首页',
   }, {
     key: '/admin/userManager',
@@ -71,7 +80,7 @@ const filterMenu = (menus = [] as MenuProps[`items`]) => {
   return menus?.filter(menu => {
     if (menu.key.startsWith('/admin')) {
       let loginUser = loginUserStore.loginUser;
-      if (!loginUser || loginUser.userRole !== "admin") {
+      if (!loginUser || !loginUser.userRole?.includes(ACCESS_ENUM.ADMIN||ACCESS_ENUM.SUPER_ADMIN)) {
         return false;
       }
     }
@@ -110,7 +119,7 @@ const doLogout = async () => {
     message.success('退出成功')
     await router.push('/login')
   } else {
-    message.error('退出失败，' + res.data.message)
+    message.error('退出失败，' + res.data.msg)
   }
 }
 </script>

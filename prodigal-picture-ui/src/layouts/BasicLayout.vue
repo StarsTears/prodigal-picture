@@ -11,7 +11,7 @@
           <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
             <GithubOutlined/>
           </a>
-          Prodigal Picture © 20001-2024 prodigal All Rights Reserved.
+          Prodigal Picture | Copyright © 20001-2024 prodigal All Rights Reserved.
       </a-layout-footer>
     </a-layout>
   </div>
@@ -23,7 +23,7 @@ import {GithubOutlined} from '@ant-design/icons-vue';
 
 export default {
   name: "BasicLayout",
-  components: {GlobalHeader}
+  components: {GlobalHeader,GithubOutlined}
 }
 
 

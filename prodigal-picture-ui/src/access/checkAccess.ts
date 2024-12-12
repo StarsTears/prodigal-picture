@@ -20,9 +20,9 @@ const checkAccess = (loginUser: any, needAccess = ACCESS_ENUM.USER_NOT_LOGIN) =>
     }
   }
   // 如果需要管理员权限
-  if (needAccess === ACCESS_ENUM.ADMIN) {
+  if (needAccess.includes(ACCESS_ENUM.ADMIN||ACCESS_ENUM.SUPER_ADMIN)) {
     // 如果不为管理员，表示无权限
-    if (loginUserAccess !== ACCESS_ENUM.ADMIN) {
+    if (!loginUserAccess.includes( ACCESS_ENUM.ADMIN||ACCESS_ENUM.SUPER_ADMIN)) {
       return false;
     }
   }

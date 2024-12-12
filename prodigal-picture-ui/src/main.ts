@@ -7,6 +7,7 @@ import 'ant-design-vue/dist/reset.css';
 import App from './App.vue'
 import router from './router'
 import '@/access.ts'
+import '@/access'
 const app = createApp(App)
 
 app.use(createPinia())

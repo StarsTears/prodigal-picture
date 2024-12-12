@@ -68,7 +68,7 @@ public class SystemController {
     }
 
     @PostMapping("/addUser")
-    @PermissionCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Long> addUser(@RequestBody UserAddDto userAddDto) {
         ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAM_ERROR);
         User user = new User();
@@ -88,6 +88,7 @@ public class SystemController {
      * @return 用户信息（脱敏）
      */
     @GetMapping("/get")
+    @PermissionCheck(mustRole ={UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<User> getUserByID(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAM_ERROR);
         User user = userService.getById(id);
@@ -96,6 +97,7 @@ public class SystemController {
     }
 
     @GetMapping("/get/vo")
+    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE,UserConstant.ADMIN_ROLE})
     public BaseResult<UserVO> getUserVOByID(long id) {
         BaseResult<User> res = getUserByID(id);
         User user = res.getData();
@@ -106,7 +108,7 @@ public class SystemController {
      * 删除用户
      */
     @DeleteMapping("/delete")
-    @PermissionCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PermissionCheck(mustRole = UserConstant.SUPER_ADMIN_ROLE)
     public BaseResult<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
         ThrowUtils.throwIf(deleteRequest == null || deleteRequest.getId() <= 0, ErrorCode.PARAM_ERROR);
         boolean removeById = userService.removeById(deleteRequest.getId());
@@ -117,7 +119,7 @@ public class SystemController {
      * 更新用户信息
      */
     @PostMapping("/update")
-    @PermissionCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto){
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAM_ERROR);
         User user = new User();
@@ -128,7 +130,7 @@ public class SystemController {
     }
 
     @PostMapping("/list/page/vo")
-    @PermissionCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDto userQueryDto) {
         ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAM_ERROR);
         long current = userQueryDto.getCurrent();

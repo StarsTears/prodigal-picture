@@ -1,6 +1,7 @@
 package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.dto.user.LoginDto;
 import com.prodigal.system.model.dto.user.RegisterDto;

@@ -33,7 +33,7 @@ public enum UserRoleEnum {
             return null;
         }
         for (UserRoleEnum userRoleEnum : UserRoleEnum.values()){
-            if (Objects.equals(userRoleEnum.value, value)){
+            if (Objects.equals(userRoleEnum.role, value)){
                 return userRoleEnum;
             }
         }

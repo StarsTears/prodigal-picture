@@ -10,14 +10,21 @@
       <a-button type="primary" html-type="submit">搜索</a-button>
     </a-form-item>
   </a-form>
-<div style="margin-bottom: 16px"/>
-  <a-table :columns="columns" :data-source="dataList" :pagination="pagination" @change="doTableChange">
+  <div style="margin-bottom: 16px"/>
+  <a-table
+    :columns="columns"
+    :data-source="dataList"
+    :pagination="pagination"
+    @change="doTableChange">
     <template #bodyCell="{ column, record }">
       <template v-if="column.dataIndex === 'userAvatar'">
-        <a-image :src="record.userAvatar" :width="50" />
+        <a-image :src="record.userAvatar" :width="50"/>
       </template>
       <template v-else-if="column.dataIndex === 'userRole'">
-        <div v-if="record.userRole === 'admin'">
+        <div v-if="record.userRole === 'administrator'">
+          <a-tag color="purple">超级管理员</a-tag>
+        </div>
+        <div v-else-if="record.userRole === 'admin'">
           <a-tag color="green">管理员</a-tag>
         </div>
         <div v-else>
@@ -25,23 +32,39 @@
         </div>
       </template>
       <template v-else-if="column.dataIndex === 'createTime'">
-        {{dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+        {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template v-else-if="column.dataIndex === 'updateTime'">
-        {{dayjs(record.updateTime).format('YYYY-MM-DD HH:mm:ss') }}
+        {{ dayjs(record.updateTime).format('YYYY-MM-DD HH:mm:ss') }}
       </template>
       <template v-else-if="column.key === 'action'">
-        <a-button danger @click="doDelete(record.id)">删除</a-button>
+        <a-space wrap>
+          <a-button primary @click="doEdit(record.id)">
+            编辑
+            <template #icon>
+              <EditOutlined/>
+            </template>
+          </a-button>
+          <a-button danger @click="doConfirm(record.id)">提示</a-button>
+          <a-popconfirm okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete(record.id)">
+            <a-button danger>
+              删除
+              <template #icon>
+                <DeleteOutlined/>
+              </template>
+            </a-button>
+          </a-popconfirm>
+        </a-space>
       </template>
     </template>
-
   </a-table>
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref} from "vue";
-import {SmileOutlined, DownOutlined} from '@ant-design/icons-vue';
+import {computed, onMounted, reactive, ref, UnwrapRef} from "vue";
+import {SmileOutlined, DownOutlined,DeleteOutlined,EditOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
+import {cloneDeep} from 'lodash-es';
 import {deleteUserUsingDelete, listUserVoByPageUsingPost} from "@/api/systemController";
 
 const columns = [
@@ -89,7 +112,7 @@ const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.UserQueryDto>({
   current: 1,
-  pageSize: 10,
+  pageSize: 1,
   sortField: 'createTime',
   sortOrder: 'ascend'
 })
@@ -102,17 +125,21 @@ const fetchData = async () => {
 
   if (res.data.data) {
     dataList.value = res.data.data.records ?? []
-    console.log("用户信息："+JSON.stringify(dataList.value))
     total.value = res.data.data.total ?? 0
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取数据失败，' + res.data.msg)
   }
 }
 // 页面加载时请求一次
 onMounted(() => {
   fetchData()
 })
-
+// 设置分页的中文语言包
+const locale = {
+  items_per_page: '/页',
+  jump_to: '跳至',
+  page: '页',
+};
 // 分页参数
 const pagination = computed(() => {
   return {
@@ -120,7 +147,9 @@ const pagination = computed(() => {
     pageSize: searchParams.pageSize ?? 10,
     total: total.value,
     showSizeChanger: true,
-    showTotal: (total) => `共 ${total} 条`,
+    loading: "loading",
+    locale: locale,
+    showTotal: (total) => `共 ${total} 条`
   }
 })
 
@@ -137,12 +166,19 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
+
+//编辑数据
+// const dataSource = ref(dataList);
+// const editableData: UnwrapRef<Record<string, dataList>> = reactive({});
+// const doEdit = (key: string) => {
+//   editableData[key] = cloneDeep(dataSource.value.filter(item => key === item.key)[0]);
+// };
 // 删除数据
 const doDelete = async (id: string) => {
   if (!id) {
     return
   }
-  const res = await deleteUserUsingDelete({ id })
+  const res = await deleteUserUsingDelete({id})
   if (res.data.code === 0) {
     message.success('删除成功')
     // 刷新数据
@@ -151,6 +187,14 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
+
+const doConfirm = async (id: string) => {
+  if (!id) {
+    return
+  }
+  message.warning('点击成功!')
+}
+
 </script>
 
 <style scoped>

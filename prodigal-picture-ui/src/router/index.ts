@@ -26,7 +26,7 @@ const router = createRouter({
       name:'userManager',
       component:()=>import('../views/admin/UserManagerView.vue'),
       meta:{
-        access:ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
       }
     }
   ],
