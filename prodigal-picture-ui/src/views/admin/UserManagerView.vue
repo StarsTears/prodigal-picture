@@ -15,8 +15,13 @@
     :columns="columns"
     :data-source="dataList"
     :pagination="pagination"
+    :loading="loading"
     @change="doTableChange">
-    <template #bodyCell="{ column, record }">
+
+    <template #bodyCell="{ column, record,index }">
+      <template v-if="column.title === '序号'">
+        {{ (pagination.current-1) * pagination.pageSize + parseInt(index)+1}}
+      </template>
       <template v-if="column.dataIndex === 'userAvatar'">
         <a-image :src="record.userAvatar" :width="50"/>
       </template>
@@ -45,7 +50,6 @@
               <EditOutlined/>
             </template>
           </a-button>
-          <a-button danger @click="doConfirm(record.id)">提示</a-button>
           <a-popconfirm okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete(record.id)">
             <a-button danger>
               删除
@@ -61,13 +65,16 @@
 </template>
 <script lang="ts" setup>
 import {computed, onMounted, reactive, ref, UnwrapRef} from "vue";
-import {SmileOutlined, DownOutlined,DeleteOutlined,EditOutlined} from '@ant-design/icons-vue';
+import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
 import {deleteUserUsingDelete, listUserVoByPageUsingPost} from "@/api/systemController";
 
 const columns = [
+  {
+    title: '序号',
+  },
   {
     title: 'id',
     dataIndex: 'id',
@@ -108,24 +115,25 @@ const columns = [
 // 数据
 const dataList = ref<API.UserVO>([])
 const total = ref(0)
-
+const loading = ref<boolean>(false)
 // 搜索条件
 const searchParams = reactive<API.UserQueryDto>({
   current: 1,
-  pageSize: 1,
+  pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'ascend'
 })
 
 // 获取数据
 const fetchData = async () => {
+  loading.value = true
   const res = await listUserVoByPageUsingPost({
     ...searchParams
   })
-
   if (res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
+    loading.value = false
   } else {
     message.error('获取数据失败，' + res.data.msg)
   }
@@ -147,9 +155,9 @@ const pagination = computed(() => {
     pageSize: searchParams.pageSize ?? 10,
     total: total.value,
     showSizeChanger: true,
-    loading: "loading",
     locale: locale,
-    showTotal: (total) => `共 ${total} 条`
+    showTotal: (total) => `共 ${total} 条`,
+    pageSizeOptions: ['5', '10', '20', '30'],//可选的页面显示条数
   }
 })
 
@@ -187,14 +195,6 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
-
-const doConfirm = async (id: string) => {
-  if (!id) {
-    return
-  }
-  message.warning('点击成功!')
-}
-
 </script>
 
 <style scoped>
