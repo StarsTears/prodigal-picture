@@ -20,7 +20,7 @@
         <a-select v-model:value="pictureForm.tags" mode="tags" placeholder="输入标签" :options="tagOptions"/>
       </a-form-item>
       <a-form-item>
-        <a-button type="primary" html-type="submit">创建</a-button>
+        <a-button type="primary" html-type="submit">  {{ route.query?.id ? "修改" : "创建" }}</a-button>
       </a-form-item>
     </a-form>
   </div>
@@ -57,12 +57,12 @@ const handleSubmit = async (values: any) => {
     id: pictureID,
     ...values
   })
-  if (res.data.code === 0 && res.data.data) {
+  if (res.code === 0 && res.data) {
     message.success('创建成功')
     //跳转到图片详情页
     router.push({path:`/picture/${pictureID}`})
   } else {
-    message.error('创建失败，' + res.data.msg)
+    message.error('创建失败，' + res.msg)
   }
 }
 /**
@@ -72,21 +72,21 @@ const categoryOptions = ref<string[]>([])
 const tagOptions = ref<string[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
-  if (res.data.code === 0 && res.data.data) {
-    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
+  if (res.code === 0 && res.data) {
+    categoryOptions.value = (res.data.categoryList ?? []).map((data: string) => {
       return {
         value: data,
         label: data
       }
     })
-    tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
+    tagOptions.value = (res.data.tagList ?? []).map((data: string) => {
       return {
         value: data,
         label: data
       }
     })
   }else{
-    message.error('获取标签分类列表失败'+res.data.msg)
+    message.error('获取标签分类列表失败'+res.msg)
   }
 }
 
@@ -101,8 +101,8 @@ const getOldPicture = async () => {
   let id = route.query?.id;
   if (id) {
     const res = await getPictureVoUsingGet({id})
-    if (res.data.code === 0 && res.data.data) {
-      const data = res.data.data
+    if (res.code === 0 && res.data) {
+      const data = res.data
       picture.value = data
       pictureForm.name = data.name
       pictureForm.category = data.category

@@ -120,7 +120,7 @@ const doMenuClick = ({key}) => {
 
 const doLogout = async () => {
   const res = await logoutUsingPost()
-  if (res.data.code === 0) {
+  if (res.code === 0) {
     loginUserStore.setLoginUser({
       userName: "未登录"
     })

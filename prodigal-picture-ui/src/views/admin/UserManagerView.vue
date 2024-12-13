@@ -130,11 +130,11 @@ const fetchData = async () => {
   const res = await listUserVoByPageUsingPost({
     ...searchParams
   })
-  if (res.data.data) {
-    dataList.value = res.data.data.records ?? []
-    total.value = res.data.data.total ?? 0
+  if (res.data) {
+    dataList.value = res.data.records ?? []
+    total.value = res.data.total ?? 0
   } else {
-    message.error('获取数据失败，' + res.data.msg)
+    message.error('获取数据失败，' + res.msg)
   }
   loading.value = false
 }
@@ -187,7 +187,7 @@ const doDelete = async (id: string) => {
     return
   }
   const res = await deleteUserUsingDelete({id})
-  if (res.data.code === 0) {
+  if (res.code === 0) {
     message.success('删除成功')
     // 刷新数据
     fetchData()

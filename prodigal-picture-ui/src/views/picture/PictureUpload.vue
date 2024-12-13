@@ -38,12 +38,12 @@ const handleUpload=async ({file}:any)=>{
   try {
     const params = props.picture ? {id:props.picture.id} : {}
     const res = await uploadPictureUsingPost(params,{}, file);
-    if (res.data.code === 0 && res.data.data) {
+    if (res.code === 0 && res.data) {
       message.success("图片上传成功");
       //将上传成功的图片信息返回给父组件 addPicture
-      props.onSuccess?.(res.data.data)
+      props.onSuccess?.(res.data)
     }else{
-      message.error("图片上传失败，" + res.data.msg);
+      message.error("图片上传失败，" + res.msg);
     }
   }catch (error){
     console.error('图片上传失败',error)

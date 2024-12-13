@@ -100,10 +100,10 @@ const fetchData = async () => {
     }
   })
   const res = await listPictureVoByPageUsingPost( params)
-  if (res.data.data) {
-    dataList.value = res.data.data.records ?? []
+  if (res.data) {
+    dataList.value = res.data.records ?? []
   } else {
-    message.error('获取数据失败，' + res.data.msg)
+    message.error('获取数据失败，' + res.msg)
   }
   loading.value = false
 }
@@ -151,11 +151,11 @@ const tagList = ref<string[]>([])
 const selectTagList = ref<boolean[]>([])
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
-  if (res.data.code === 0 && res.data.data) {
-    categoryList.value = res.data.data.categoryList ?? []
-    tagList.value = res.data.data.tagList ?? []
+  if (res.code === 0 && res.data) {
+    categoryList.value = res.data.categoryList ?? []
+    tagList.value = res.data.tagList ?? []
   } else {
-    message.error('获取标签分类列表失败' + res.data.msg)
+    message.error('获取标签分类列表失败' + res.msg)
   }
 }
 

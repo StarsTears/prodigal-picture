@@ -5,13 +5,12 @@ import {message} from "ant-design-vue";
 const instance = axios.create({
   baseURL: 'http://localhost:9999/',
   timeout: 60000,
-  headers: {'X-Custom-Header': 'foobar'},
+  // headers: {'X-Custom-Header': 'foobar'},
   withCredentials: true,
 });
 
 // 添加请求拦截器
-axios.interceptors.request.use(function (config) {
-  console.log(config.path)
+instance.interceptors.request.use(function (config) {
   // 在发送请求之前做些什么
   return config;
 }, function (error) {
@@ -20,9 +19,8 @@ axios.interceptors.request.use(function (config) {
 });
 
 // 添加响应拦截器
-axios.interceptors.response.use(function (response) {
+instance.interceptors.response.use(function (response) {
   const { data } = response
-  console.log("响应拦截器："+JSON.stringify(response))
   //未登录
   if (data.code === 40100){
     if (!response.request.responseURL.includes('/sys/getLoginUser')&&!window.location.pathname.includes('/sys/login')){

@@ -29,11 +29,11 @@
 </template>
 
 <script setup lang="ts">
-import {reactive} from 'vue';
+import {reactive,onMounted} from 'vue';
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {message} from "ant-design-vue";
 import {getLoginUserUsingGet, loginUsingPost} from "@/api/systemController";
-import {useRouter} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 
 const formState = reactive<API.LoginDto>({
   userAccount: '',
@@ -46,19 +46,23 @@ const loginUserStore = useLoginUserStore()
  * 提交表单
  * @param values
  */
+// const route = useRoute();
 const handleSubmit = async (values: any) => {
   const res = await loginUsingPost(values)
   // 登录成功，把登录态保存到全局状态中
-  if (res.data.code === 0 && res.data.data) {
+  if (res.code === 0 && res.data) {
     await loginUserStore.fetchLoginUser()
-    loginUserStore.setLoginUser(res.data.data)
+    loginUserStore.setLoginUser(res.data)
     message.success('登录成功')
+    // const redirectPath = route.query.redirect || '/'; // 如果没有传递 redirect，则跳转首页
+    // console.log("LoginView-redirectPath", route.query.redirect)
+    // router.push(redirectPath as string);
     router.push({
       path: '/',
       replace: true,
     })
   } else {
-    message.error('登录失败，' + res.data.msg)
+    message.error('登录失败，' + res.msg)
   }
 }
 </script>

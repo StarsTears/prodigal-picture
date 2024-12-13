@@ -92,10 +92,10 @@ const picture = ref<API.PictureVO>({})
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoUsingGet({id: props.id})
-    if (res.data.data) {
-      picture.value = res.data.data
+    if (res.data) {
+      picture.value = res.data
     } else {
-      message.error('获取图片详情数据失败，' + res.data.msg)
+      message.error('获取图片详情数据失败，' + res.msg)
     }
   } catch (error) {
     message.error('获取图片详情数据失败，' + error.msg)
@@ -138,7 +138,7 @@ const doDelete = async () => {
     return
   }
   const res = await deletePictureUsingPost({id:id})
-  if (res.data.code === 0) {
+  if (res.code === 0) {
     message.success('删除成功')
     //跳转到图片列表页
     router.push('/')

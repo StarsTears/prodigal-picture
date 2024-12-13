@@ -64,14 +64,14 @@ const handleSubmit = async (values: any) => {
   }
   const res = await registerUsingPost(values)
   // 注册成功，跳转至登录页
-  if (res.data.code === 0 && res.data.data) {
+  if (res.code === 0 && res.data) {
     message.success('注册成功')
     router.push({
       path: '/login',
       replace: true,
     })
   } else {
-    message.error('注册失败，' + res.data.msg)
+    message.error('注册失败，' + res.msg)
   }
 }
 </script>
