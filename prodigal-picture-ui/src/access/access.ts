@@ -14,7 +14,12 @@ router.beforeEach(async (to, from, next) => {
     loginUser = loginUserStore.loginUser;
     isFirstLogin = false;
   }
-
+  // // 如果之前没登陆过，自动登录
+  // if (!loginUser || !loginUser.userRole) {
+  //   // 加 await 是为了等用户登录成功之后，再执行后续的代码
+  //   await loginUserStore.fetchLoginUser();
+  //   loginUser = loginUserStore.loginUser;
+  // }
   const toUrl = to.fullPath;
   if (toUrl.startsWith("/admin")){
     if (!loginUser || !loginUser.userRole?.includes(ACCESS_ENUM.ADMIN||ACCESS_ENUM.SUPER_ADMIN)){
