@@ -1,8 +1,8 @@
 package com.prodigal.system.service.impl;
 
+import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
@@ -41,16 +41,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public long register(RegisterDto registerDto) {
         //参数校验
         if (registerDto == null) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if (registerDto.getUserAccount().length() < 4) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "账户长度过短!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度过短!");
         }
         if (registerDto.getUserPassword().length() < 6 || registerDto.getCheckPassword().length() < 6) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "密码长度过短!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短!");
         }
         if (!registerDto.getUserPassword().equals(registerDto.getCheckPassword())) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "两次密码不一致!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次密码不一致!");
         }
         //查询账户是否重复
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
@@ -84,13 +84,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public UserVO login(LoginDto loginDto, HttpServletRequest request) {
         //参数校验
         if (loginDto == null) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         if (loginDto.getUserAccount().length() < 4) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "账户错误!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户错误!");
         }
         if (loginDto.getUserPassword().length() < 6) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "密码错误!");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误!");
         }
         //密码加密
         String encryptPassword = getEncryptPassword(loginDto.getUserPassword());
@@ -151,34 +151,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LambdaQueryWrapper<User> getQueryWrapper(UserQueryDto userQueryDto) {
-            if (userQueryDto == null) {
-                throw new BusinessException(ErrorCode.PARAM_ERROR, "请求参数为空!");
-            }
-            String sortOrder = userQueryDto.getSortOrder();
-            String sortField = userQueryDto.getSortField()==null?"":userQueryDto.getSortField().trim();
+        if (userQueryDto == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空!");
+        }
+        String sortOrder = userQueryDto.getSortOrder();
+        String sortField = userQueryDto.getSortField() == null ? "" : userQueryDto.getSortField().trim();
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                    .eq(userQueryDto.getId() != null, User::getId, userQueryDto.getId())
-                    .eq(StringUtils.isNotBlank(userQueryDto.getUserRole()), User::getUserRole, userQueryDto.getUserRole())
-                    .like(StringUtils.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
-                    .like(StringUtils.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())
-                    .like(StringUtils.isNotBlank(userQueryDto.getUserProfile()), User::getUserProfile, userQueryDto.getUserProfile());
-            switch (sortField){
-                case "userAccount":
-                    wrapper.orderBy(StringUtils.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getCreateTime);
-                    break;
-                case "userName":
-                    wrapper.orderBy(StringUtils.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserName);
-                    break;
-                case "userProfile":
-                    wrapper.orderBy(StringUtils.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserProfile);
-                    break;
-                case "userRole":
-                    wrapper.orderBy(StringUtils.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserRole);
-                    break;
-                default:
-                    break;
-            }
-            return wrapper;
+                .eq(ObjUtil.isNotEmpty(userQueryDto.getId()), User::getId, userQueryDto.getId())
+                .eq(StrUtil.isNotBlank(userQueryDto.getUserRole()), User::getUserRole, userQueryDto.getUserRole())
+                .like(StrUtil.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
+                .like(StrUtil.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())
+                .like(StrUtil.isNotBlank(userQueryDto.getUserProfile()), User::getUserProfile, userQueryDto.getUserProfile());
+        switch (sortField) {
+            case "userAccount":
+                wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getCreateTime);
+                break;
+            case "userName":
+                wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserName);
+                break;
+            case "userProfile":
+                wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserProfile);
+                break;
+            case "userRole":
+                wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserRole);
+                break;
+            default:
+                break;
+        }
+        return wrapper;
     }
 
     /**
@@ -210,6 +210,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
+
+    /**
+     * 判断用户是否为管理员
+     *
+     * @param user 用户
+     */
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && (user.getUserRole().contains(UserConstant.ADMIN_ROLE) || user.getUserRole().contains(UserConstant.SUPER_ADMIN_ROLE));
+    }
+
 }
 
 

@@ -44,21 +44,21 @@ public class SystemController {
      */
     @PostMapping("/register")
     public BaseResult<String> register(@RequestBody RegisterDto registerDto) {
-        ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAMS_ERROR);
         long register = userService.register(registerDto);
         return ResultUtils.success(String.valueOf(register));
     }
 
     @PostMapping("/login")
     public BaseResult<UserVO> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);
         UserVO userVO = userService.login(loginDto, request);
         return ResultUtils.success(userVO);
     }
 
     @PostMapping("/logout")
     public BaseResult<Boolean> logout(HttpServletRequest request) {
-        ThrowUtils.throwIf(request == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
         return ResultUtils.success(userService.logout(request));
     }
 
@@ -71,7 +71,7 @@ public class SystemController {
     @PostMapping("/addUser")
     @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Long> addUser(@RequestBody UserAddDto userAddDto) {
-        ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
         //初始密码 123456
@@ -93,7 +93,7 @@ public class SystemController {
     @GetMapping("/get")
     @PermissionCheck(mustRole ={UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<User> getUserByID(long id) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND);
         return ResultUtils.success(user);
@@ -113,7 +113,7 @@ public class SystemController {
     @DeleteMapping("/delete")
     @PermissionCheck(mustRole = UserConstant.SUPER_ADMIN_ROLE)
     public BaseResult<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
-        ThrowUtils.throwIf(deleteRequest == null || deleteRequest.getId() <= 0, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(deleteRequest == null || deleteRequest.getId() <= 0, ErrorCode.PARAMS_ERROR);
         boolean removeById = userService.removeById(deleteRequest.getId());
         return ResultUtils.success(removeById);
     }
@@ -124,7 +124,7 @@ public class SystemController {
     @PostMapping("/update")
     @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto){
-        ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userUpdateDto, user);
         boolean update = userService.updateById(user);
@@ -135,7 +135,7 @@ public class SystemController {
     @PostMapping("/list/page/vo")
     @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDto userQueryDto) {
-        ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAM_ERROR);
+        ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR);
         long current = userQueryDto.getCurrent();
         long pageSize = userQueryDto.getPageSize();
         Page<User> page = userService.page(new Page<>(current, pageSize),

@@ -2,6 +2,7 @@ package com.prodigal.system.model.dto.user;
 
 import com.prodigal.system.common.PageRequest;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
@@ -11,6 +12,7 @@ import java.io.Serializable;
  * @description: 用户查询请求参数
  **/
 @Data
+@EqualsAndHashCode(callSuper = true)
 public class UserQueryDto extends PageRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
