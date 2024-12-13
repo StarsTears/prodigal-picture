@@ -173,7 +173,7 @@ public class PictureController {
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
 
-        return ResultUtils.success(PictureVO.objToVO(picture));
+        return ResultUtils.success(pictureService.getPictureVO(picture,request));
     }
 
     /**

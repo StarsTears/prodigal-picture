@@ -162,7 +162,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 break;
             case "createTime":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()),sortOrder.equals("ascend"),Picture::getCreateTime);
-            case "endTime":
+            case "editTime":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()),sortOrder.equals("ascend"),Picture::getEditTime);
                 break;
             default:
@@ -198,7 +198,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     public Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request){
         List<Picture> pictureList = picturePage.getRecords();
         Page<PictureVO> pictureVOPage = new Page<>(picturePage.getCurrent(), picturePage.getSize(), picturePage.getTotal());
-        if (CollUtil.isNotEmpty(pictureList)){
+        if (CollUtil.isEmpty(pictureList)){
             return pictureVOPage;
         }
         //转换VO

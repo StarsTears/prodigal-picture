@@ -48,7 +48,7 @@ knife4j:
     concat: Lang
     group:
       default:
-        group-name: "dev"
+        group-name: "uat"
         api-rule: package
         api-rule-resources:
           - com.prodigal.system.controller
