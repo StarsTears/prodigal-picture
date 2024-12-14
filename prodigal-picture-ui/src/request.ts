@@ -28,9 +28,6 @@ instance.interceptors.response.use(function (response) {
       window.location.href = `/login?redicect=${window.location.href}`
     }
   }
-  if (data.code === 50000){
-    message.error(data.msg)
-  }
   // 2xx 范围内的状态码都会触发该函数。
   // 对响应数据做点什么
   return response.data;

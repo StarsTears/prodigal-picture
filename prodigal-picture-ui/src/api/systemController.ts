@@ -29,6 +29,18 @@ export async function deleteUserUsingDelete(
   })
 }
 
+/** editUser POST /api/sys/edit */
+export async function editUserUsingPost(body: API.UserUpdateDto, options?: { [key: string]: any }) {
+  return request<API.BaseResultBoolean_>('/api/sys/edit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** getUserByID GET /api/sys/get */
 export async function getUserByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

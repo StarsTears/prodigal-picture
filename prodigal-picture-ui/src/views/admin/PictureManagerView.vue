@@ -55,7 +55,7 @@
       </template>
       <template v-if="column.key === 'action'">
         <a-space wrap>
-          <a-button type="link" :href="`/picture/add_picture?id=$(record.id)`" target="_blank">
+          <a-button type="link" :href="`/picture/add_picture?id=${record.id}`" target="_blank">
             编辑
             <template #icon>
               <EditOutlined/>

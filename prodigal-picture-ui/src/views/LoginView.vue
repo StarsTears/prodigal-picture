@@ -52,7 +52,7 @@ const handleSubmit = async (values: any) => {
   // 登录成功，把登录态保存到全局状态中
   if (res.code === 0 && res.data) {
     await loginUserStore.fetchLoginUser()
-    loginUserStore.setLoginUser(res.data)
+    // loginUserStore.setLoginUser(res.data)
     message.success('登录成功')
     // const redirectPath = route.query.redirect || '/'; // 如果没有传递 redirect，则跳转首页
     // console.log("LoginView-redirectPath", route.query.redirect)

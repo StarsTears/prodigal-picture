@@ -7,7 +7,7 @@ create table if not exists user
     userName     varchar(256)                           null comment '用户昵称',
     userAvatar   varchar(1024)                          null comment '用户头像',
     userProfile  varchar(512)                           null comment '用户简介',
-    userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin',
+    userRole     varchar(256) default 'user'            not null comment '用户角色：user/admin/administrator',
     editTime     datetime     default CURRENT_TIMESTAMP not null comment '编辑时间',
     createTime   datetime     default CURRENT_TIMESTAMP not null comment '创建时间',
     updateTime   datetime     default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',

@@ -1,6 +1,6 @@
 <template>
   <div class="homeView">
-    开始学习前端：vue3+ant design
+    开始学习前端：vue3+ ant design vue
     <!--搜索框-->
     <div class="search-bar">
       <a-input-search
@@ -31,7 +31,7 @@
     </div>
 
     <!--图片列表-->
-    <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 5, xl: 5, xxl: 6 }"
+    <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
             :data-source="dataList"
             :pagination="pagination"
             :loading="loading"
