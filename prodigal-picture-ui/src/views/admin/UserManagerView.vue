@@ -16,15 +16,28 @@
     :data-source="dataList"
     :pagination="pagination"
     :loading="loading"
+    :scroll="{ x: 1500, y: 1000 }"
     @change="doTableChange">
 
-    <template #bodyCell="{ column, record,index }">
+    <template #bodyCell="{ column, record,index,text }">
       <template v-if="column.title === '序号'">
-        {{ (pagination.current-1) * pagination.pageSize + parseInt(index)+1}}
+        {{ (pagination.current - 1) * pagination.pageSize + parseInt(index) + 1 }}
       </template>
       <template v-if="column.dataIndex === 'userAvatar'">
         <a-image :src="record.userAvatar" :width="50"/>
       </template>
+      <teleplate v-if="['userProfile', 'userAccount', 'userName'].includes(column.dataIndex)">
+        <div>
+          <a-input
+            v-if="editableData[record.id]"
+            v-model:value="editableData[record.id][column.dataIndex]"
+            style="margin: -5px 0"
+          />
+          <template v-else>
+            {{ text }}
+          </template>
+        </div>
+      </teleplate>
       <template v-if="column.dataIndex === 'userRole'">
         <div v-if="record.userRole === 'administrator'">
           <a-tag color="purple">超级管理员</a-tag>
@@ -36,52 +49,64 @@
           <a-tag color="blue">普通用户</a-tag>
         </div>
       </template>
-      <template v-if="column.dataIndex === 'createTime'">
+      <template v-else-if="column.dataIndex === 'createTime'">
         {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
       </template>
-      <template v-if="column.dataIndex === 'updateTime'">
+      <template v-else-if="column.dataIndex === 'updateTime'">
         {{ dayjs(record.updateTime).format('YYYY-MM-DD HH:mm:ss') }}
       </template>
-      <template v-if="column.key === 'action'">
+      <template v-else-if="column.key === 'action'">
         <a-space wrap>
-          <a-button primary @click="doEdit(record.id)">
-            编辑
+          <span v-if="editableData[record.id]">
+          <a-button default :icon="h(SaveOutlined)" @click="doSave(record.id)">
+            保存
+          </a-button>
+            <a-button type="dashed" @click="doCancel(record.id)">
+            取消
             <template #icon>
-              <EditOutlined/>
+              <UndoOutlined />
             </template>
           </a-button>
+          </span>
+          <span v-else>
+          <a-button type="primary" :icon="h(EditOutlined)" @click="doEdit(record.id)">
+            编辑
+          </a-button>
           <a-popconfirm okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete(record.id)">
-            <a-button danger>
+            <a-button danger :icon="h(DeleteOutlined)">
               删除
-              <template #icon>
-                <DeleteOutlined/>
-              </template>
             </a-button>
           </a-popconfirm>
+          </span>
         </a-space>
       </template>
     </template>
   </a-table>
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref, UnwrapRef} from "vue";
-import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
+import {h , computed, onMounted, reactive, ref, UnwrapRef} from "vue";
+import {UndoOutlined, DownOutlined, DeleteOutlined, EditOutlined,SaveOutlined} from '@ant-design/icons-vue';
+import type {TableColumnsType} from 'ant-design-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
-import {deleteUserUsingDelete, listUserVoByPageUsingPost} from "@/api/systemController";
+import {deleteUserUsingDelete, listUserVoByPageUsingPost, updateUserUsingPost} from "@/api/systemController";
 
-const columns = [
+const columns: TableColumnsType = [
   {
     title: '序号',
+    width: 100,
+    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
+    fixed: 'left'
   },
   {
     title: '账号',
     dataIndex: 'userAccount',
+    fixed: 'left'
   },
   {
     title: '用户名',
@@ -113,7 +138,7 @@ const columns = [
   },
 ]
 // 数据
-const dataList = ref<API.UserVO>([])
+const dataList = ref<API.UserVO[]>([])
 const total = ref(0)
 const loading = ref<boolean>(true)
 // 搜索条件
@@ -176,11 +201,29 @@ const doSearch = () => {
 }
 
 //编辑数据
+
 // const dataSource = ref(dataList);
-// const editableData: UnwrapRef<Record<string, dataList>> = reactive({});
-// const doEdit = (key: string) => {
-//   editableData[key] = cloneDeep(dataSource.value.filter(item => key === item.key)[0]);
-// };
+const editableData: UnwrapRef<Record<string, dataList.value>> = reactive({});
+const doEdit = (key: string) => {
+  editableData[key] = cloneDeep(dataList.value.filter(item => key === item.id)[0]);
+  console.log("用户管理-编辑：", editableData[key])
+};
+
+const doSave = async (key: string) => {
+  console.log("用户管理-保存：", editableData[key])
+  Object.assign(dataList.value.filter(item => key === item.id)[0], editableData[key]);
+ const res = await updateUserUsingPost(editableData[key])
+  if (res.code === 0 && res.data){
+    message.success('用户修改成功')
+  }else{
+    message.error('用户修改失败,'+res.msg)
+  }
+  delete editableData[key];
+};
+const doCancel = (key: string) => {
+  delete editableData[key];
+};
+
 // 删除数据
 const doDelete = async (id: string) => {
   if (!id) {
