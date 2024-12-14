@@ -36,6 +36,7 @@
       <template v-if="column.dataIndex === 'userAvatar'">
         <a-image :src="record.userAvatar" :width="50"/>
       </template>
+      <!--可编辑字段-->
       <teleplate v-if="['userProfile', 'userAccount', 'userName'].includes(column.dataIndex)">
         <div>
           <a-input
@@ -71,7 +72,7 @@
           <a-button default :icon="h(SaveOutlined)" @click="doSave(record.id)">
             保存
           </a-button>
-            <a-button type="dashed" @click="doCancel(record.id)">
+          <a-button type="dashed" @click="doCancel(record.id)">
             取消
             <template #icon>
               <UndoOutlined />

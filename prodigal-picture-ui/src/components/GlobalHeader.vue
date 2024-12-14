@@ -59,7 +59,18 @@
             style="max-width: 600px"
     >
       <a-form-item name="userProfile" label="头像">
-        <a-avatar :size="50" :src="userDetail?.userAvatar"/>
+        <a-image :src="userDetail?.userAvatar" :width="50"/>
+        <a-upload v-if="!componentDisabled"
+          name="file"
+          list-type="picture"
+          :custom-request="doUpload"
+          :before-upload="beforeUpload"
+        >
+          <a-button>
+            <upload-outlined/>
+            Click to Upload
+          </a-button>
+        </a-upload>
       </a-form-item>
       <a-form-item
         name="userAccount"
@@ -87,18 +98,27 @@
         <a-button v-if="componentDisabled" :icon="h(EditOutlined)" type="default" @click="doEdit">
           修改
         </a-button>
-        <a-button v-if="!componentDisabled" :icon="h(SaveOutlined)" type="default" @click="doSave">
-          保存
-        </a-button>
+        <a-space wrap v-if="!componentDisabled">
+          <a-button  :icon="h(SaveOutlined)" type="default" @click="doSave">
+            保存
+          </a-button>
+          <a-button type="dashed" @click="doCancel">
+            取消
+            <template #icon>
+              <UndoOutlined />
+            </template>
+          </a-button>
+        </a-space>
+
       </a-space>
   </a-modal>
 </template>
 <script lang="ts" setup>
 import {computed, h, reactive, ref} from 'vue';
 import {
-  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, EditOutlined, GlobalOutlined, SaveOutlined
+  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
 } from '@ant-design/icons-vue';
-import {MenuProps, message} from 'ant-design-vue';
+import {MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {editUserUsingPost, helloUsingGet, logoutUsingPost, updateUserUsingPost} from "@/api/systemController";
@@ -214,6 +234,7 @@ const doEdit = () => {
   componentDisabled.value = false
   showRole.value = true
 }
+
 const doSave = async () => {
   const res = await editUserUsingPost(userDetail)
   if (res.code === 0 && res.data){
@@ -230,6 +251,28 @@ const doSave = async () => {
   }
   showRole.value = false
 };
+const doCancel = ()=>{
+  componentDisabled.value = true
+}
+
+/**
+ * 上传前的校验
+ * @param file
+ */
+const beforeUpload = (file: UploadProps['fileList'][number]) => {
+  //校验图片格式
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  if (!isJpgOrPng) {
+    message.error('You can only upload JPG/PNG file!');
+  }
+  //校验图片大小
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    message.error('Image must smaller than 2MB!');
+  }
+  return isJpgOrPng && isLt2M;
+};
+
 
 const visible = ref(false);
 

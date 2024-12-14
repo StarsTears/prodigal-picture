@@ -143,7 +143,7 @@ const loading = ref<boolean>(true)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryDto>({
   current: 1,
-  pageSize: 2,
+  pageSize: 5,
   sortField: 'createTime',
   sortOrder: 'descend'
 })

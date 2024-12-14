@@ -19,7 +19,7 @@
       <a-form-item label="标签" name="tags">
         <a-select v-model:value="pictureForm.tags" mode="tags" placeholder="输入标签" :options="tagOptions"/>
       </a-form-item>
-      <a-form-item>
+      <a-form-item class="action-bar">
         <a-button type="primary" html-type="submit">  {{ route.query?.id ? "修改" : "创建" }}</a-button>
       </a-form-item>
     </a-form>
@@ -121,5 +121,8 @@ onMounted(() => {
   max-width: 720px;
   margin: 0 auto;
 }
-
+.addPicture .action-bar{
+  display: flex;
+  justify-content: flex-end;/* 将内容推到右侧 */
+}
 </style>

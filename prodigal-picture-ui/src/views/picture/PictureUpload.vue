@@ -5,6 +5,7 @@
       :show-upload-list="false"
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
+      :progress="progress"
     >
       <img v-if="picture?.url" :src="picture?.url" alt="avatar"/>
       <div v-else>
@@ -22,6 +23,17 @@ import {PlusOutlined, LoadingOutlined} from '@ant-design/icons-vue';
 import {message} from 'ant-design-vue';
 import type {UploadChangeParam, UploadProps} from 'ant-design-vue';
 import {updatePictureUsingPost, uploadPictureUsingPost} from "@/api/pictureController";
+
+//图片上传进度条
+const progress: UploadProps['progress'] = {
+  strokeColor: {
+    '0%': '#108ee9',
+    '100%': '#87d068',
+  },
+  strokeWidth: 3,
+  format: percent => `${parseFloat(percent.toFixed(2))}%`,
+  class: 'test',
+};
 
 interface Props {
   picture?: API.PictureVO
