@@ -11,6 +11,7 @@ import com.prodigal.system.mapper.UserMapper;
 import com.prodigal.system.model.dto.user.LoginDto;
 import com.prodigal.system.model.dto.user.RegisterDto;
 import com.prodigal.system.model.dto.user.UserQueryDto;
+import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.UserVO;
@@ -22,6 +23,7 @@ import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -158,10 +160,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String sortField = userQueryDto.getSortField() == null ? "" : userQueryDto.getSortField().trim();
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
                 .eq(ObjUtil.isNotEmpty(userQueryDto.getId()), User::getId, userQueryDto.getId())
-                .eq(StrUtil.isNotBlank(userQueryDto.getUserRole()), User::getUserRole, userQueryDto.getUserRole())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserProfile()), User::getUserProfile, userQueryDto.getUserProfile());
+        //查询角色
+        String userRoleStr = StrUtil.isNotBlank(userQueryDto.getUserRole()) && userQueryDto.getUserRole().startsWith(",") ?
+                                userQueryDto.getUserRole().substring(1) :
+                                userQueryDto.getUserRole();
+        if (StrUtil.isNotBlank(userRoleStr)) {
+            if (userRoleStr.contains(",")) {
+                List<String> userRoles = Arrays.stream(userRoleStr.split(",")).collect(Collectors.toList());
+                wrapper.and(e -> {
+                    for (String userRole : userRoles) {
+                        e.eq(User::getUserRole, userRole).or();
+                    }
+                });
+            }else{
+                wrapper.eq(User::getUserRole, userRoleStr);
+            }
+        }
         switch (sortField) {
             case "userAccount":
                 wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getCreateTime);

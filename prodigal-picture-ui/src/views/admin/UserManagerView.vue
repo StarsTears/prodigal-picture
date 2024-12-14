@@ -6,6 +6,16 @@
     <a-form-item label="用户名">
       <a-input v-model:value="searchParams.userName" placeholder="输入用户名"/>
     </a-form-item>
+    <a-form-item label="用户名">
+        <a-checkable-tag
+          v-for="(role, index) in roleList"
+          :key="role"
+          v-model:checked="selectRoleList[index]"
+        >
+<!--          @change="doSearch"-->
+          {{ role === 'administrator' ? '超级管理员' : role === 'admin' ? '管理员' : '普通用户' }}
+        </a-checkable-tag>
+    </a-form-item>
     <a-form-item>
       <a-button type="primary" html-type="submit">搜索</a-button>
     </a-form-item>
@@ -95,13 +105,14 @@ import {deleteUserUsingDelete, listUserVoByPageUsingPost, updateUserUsingPost} f
 const columns: TableColumnsType = [
   {
     title: '序号',
-    width: 100,
+    width: 50,
     fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
-    fixed: 'left'
+    fixed: 'left',
+    // ellipsis: true, //这个会把过长的内容使用三个点替代，但是鼠标放上去不会显示
   },
   {
     title: '账号',
@@ -119,10 +130,24 @@ const columns: TableColumnsType = [
   {
     title: '简介',
     dataIndex: 'userProfile',
+    ellipsis: true,
   },
   {
     title: '用户角色',
     dataIndex: 'userRole',
+  },
+  {
+    title: '会员编码',
+    dataIndex: 'vipNumber',
+  },
+  {
+    title: '邀请用户ID',
+    dataIndex: 'inviteUser',
+    ellipsis: true,
+  },
+  {
+    title: '分享码',
+    dataIndex: 'shareCode',
   },
   {
     title: '创建时间',
@@ -135,6 +160,7 @@ const columns: TableColumnsType = [
   {
     title: '操作',
     key: 'action',
+    width: 260,
   },
 ]
 // 数据
@@ -142,6 +168,8 @@ const dataList = ref<API.UserVO[]>([])
 const total = ref(0)
 const loading = ref<boolean>(true)
 // 搜索条件
+const roleList = ref<string[]>(["administrator","admin","user"])
+const selectRoleList = ref<boolean[]>([])
 const searchParams = reactive<API.UserQueryDto>({
   current: 1,
   pageSize: 10,
@@ -152,9 +180,18 @@ const searchParams = reactive<API.UserQueryDto>({
 // 获取数据
 const fetchData = async () => {
   loading.value = true
-  const res = await listUserVoByPageUsingPost({
-    ...searchParams
+  //转换搜索参数
+  const params = {
+    ...searchParams,
+    userRole: ''
+  }
+  selectRoleList.value.forEach((userRole,index)=>{
+    if (userRole){
+      params.userRole = params.userRole+","+roleList.value[index]
+    }
   })
+  console.log("搜索用户：", params)
+  const res = await listUserVoByPageUsingPost(params)
   if (res.data) {
     dataList.value = res.data.records ?? []
     total.value = res.data.total ?? 0

@@ -48,7 +48,20 @@ public class User implements Serializable {
      * 用户角色：user/admin
      */
     private String userRole;
+    /**
+     * 会员编码
+     */
+    private Long vipNumber;
 
+    /**
+     * 邀请用户ID
+     */
+    private Long inviteUser;
+
+    /**
+     * 分享码
+     */
+    private String shareCode;
     /**
      * 编辑时间
      */
