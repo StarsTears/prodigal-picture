@@ -35,7 +35,7 @@ export default {
   background: white;
   color: unset;
   margin-bottom: 16px;
-  z-index: 1000; /* 确保footer在最上层 */
+  /*z-index: 1000; !* 确保footer在最上层 *!*/
 }
 
 #basicLayout .content {

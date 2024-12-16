@@ -17,6 +17,9 @@
 
     <!-- 图片展示组件 -->
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
+      <a-form-item label="图片名称" name="userId">
+        <a-input v-model:value="pictureForm.userId" placeholder="图片id" allow-clear/>
+      </a-form-item>
       <a-form-item label="图片名称" name="name">
         <a-input v-model:value="pictureForm.name" placeholder="输入图片名称" allow-clear/>
       </a-form-item>
@@ -121,6 +124,7 @@ const getOldPicture = async () => {
       pictureForm.category = data.category
       pictureForm.introduction = data.introduction
       pictureForm.tags = data.tags
+      pictureForm.userId = data.userId
     }
   }
 }

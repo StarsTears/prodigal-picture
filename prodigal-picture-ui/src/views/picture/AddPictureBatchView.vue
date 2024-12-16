@@ -28,10 +28,10 @@
           <a-input v-model:value="formData.namePrefix" placeholder="请输入名称前缀，会自动补充序号" />
         </a-form-item>
         <a-form-item label="分类" name="category">
-          <a-input v-model:value="formData.category" placeholder="请输入分类" />
+          <a-auto-complete v-model:value="formData.category" placeholder="输入分类" :options="categoryOptions"/>
         </a-form-item>
         <a-form-item label="标签" name="tags">
-          <a-input v-model:value="formData.tags" placeholder="请输入标签" />
+          <a-select v-model:value="formData.tags" mode="tags" placeholder="输入标签" :options="tagOptions"/>
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%" :loading="loading">
@@ -43,9 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import {reactive, ref} from "vue";
+import {onMounted, reactive, ref} from "vue";
 import {message} from "ant-design-vue";
-import {uploadPictureByBatchUsingPost} from "@/api/pictureController";
+import {listPictureTagCategoryUsingGet, uploadPictureByBatchUsingPost} from "@/api/pictureController";
 import {useRouter} from "vue-router";
 const formData = reactive<API.PictureUploadByBatchDto>({
   count: 5,
@@ -71,6 +71,34 @@ const handleSubmit = async (values: any) => {
   loading.value = false
 }
 
+/**
+ * 获取分类、标签
+ */
+const categoryOptions = ref<string[]>([])
+const tagOptions = ref<string[]>([])
+const getTagCategoryOptions = async () => {
+  const res = await listPictureTagCategoryUsingGet()
+  if (res.code === 0 && res.data) {
+    categoryOptions.value = (res.data.categoryList ?? []).map((data: string) => {
+      return {
+        value: data,
+        label: data
+      }
+    })
+    tagOptions.value = (res.data.tagList ?? []).map((data: string) => {
+      return {
+        value: data,
+        label: data
+      }
+    })
+  }else{
+    message.error('获取标签分类列表失败'+res.msg)
+  }
+}
+
+onMounted(() => {
+  getTagCategoryOptions()
+})
 </script>
 
 <style scoped>

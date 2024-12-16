@@ -17,6 +17,10 @@ public class PictureEditDto implements Serializable {
      * id
      */
     private Long id;
+    /**
+     * userid
+     */
+    private Long userId;
 
     /**
      * 图片名称

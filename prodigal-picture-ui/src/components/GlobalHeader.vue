@@ -115,7 +115,8 @@
 <script lang="ts" setup>
 import {computed, h, reactive, ref} from 'vue';
 import {
-  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
+  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined,
+  UploadOutlined,EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
 } from '@ant-design/icons-vue';
 import {MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
@@ -131,28 +132,32 @@ const originItems = [
     icon: h(HomeOutlined),
     label: '首页',
     title: '首页',
+  },  {
+    key: '/picture/add_picture',
+    icon: h(UploadOutlined),
+    label: '创建图片',
+    title: '创建图片',
+  }, {
+    key: '/admin/pictureManager',
+    icon: h(PictureOutlined),
+    label: '图片管理',
+    title: '图片管理',
+  }, {
+    key: '/admin/userManager',
+    icon: h(UserOutlined),
+    label: '用户管理',
+    title: '用户管理',
   }, {
     key: "/about",
     icon: h(GlobalOutlined),
     label: '关于',
     title: '关于',
-  }, {
-    key: '/picture/add_picture',
-    label: '创建图片',
-    title: '创建图片',
-  }, {
-    key: '/admin/pictureManager',
-    label: '图片管理',
-    title: '图片管理',
-  }, {
-    key: '/admin/userManager',
-    label: '用户管理',
-    title: '用户管理',
-  }, {
-    key: '/gitHub',
-    icon: h(GithubOutlined),
-    label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
-  }
+  },
+  // {
+  //   key: '/gitHub',
+  //   icon: h(GithubOutlined),
+  //   label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
+  // }
 ];
 
 /**
@@ -295,6 +300,10 @@ const visible = ref(false);
 </script>
 
 <style scoped>
+#globalHeader{
+  /*position: fixed;*/
+  /*z-index: 1; !* 确保footer在最上层 *!*/
+}
 #globalHeader .title-bar {
   display: flex;
   align-items: center;

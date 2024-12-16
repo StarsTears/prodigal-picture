@@ -59,13 +59,13 @@
                       @click="doEdit">
               编辑
             </a-button>
-            <a-button v-if="canEdit"
+            <a-button v-if="isAdmin"
                       :icon="h(CheckOutlined)"
                       type="primary"
                       @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
               审核
             </a-button>
-            <a-button v-if="canEdit"
+            <a-button v-if="isAdmin"
                       :icon="h(SmileOutlined)"
                       type="default"
                       @confirm="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
@@ -135,6 +135,11 @@ const doDownload = () => {
  * 判断当前用户是否具有编辑与删除权限
  */
 const loginUserStore = useLoginUserStore()
+const isAdmin = computed(() => {
+  let loginUser = loginUserStore.loginUser;
+  return !loginUser && loginUser.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)
+})
+
 const canEdit = computed(() => {
   let loginUser = loginUserStore.loginUser;
   //未登录不可编辑

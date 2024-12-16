@@ -69,7 +69,7 @@ public class PictureController {
      * @param request 浏览器请求
      */
     @PostMapping("/upload/batch")
-    @PermissionCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchDto pictureUploadByBatchDto, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureUploadByBatchDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
@@ -155,7 +155,6 @@ public class PictureController {
      * @param request        浏览器请求
      */
     @PostMapping("/edit")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Boolean> editPicture(@RequestBody PictureEditDto pictureEditDto, HttpServletRequest request) {
         if (pictureEditDto == null || pictureEditDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
