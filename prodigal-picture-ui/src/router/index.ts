@@ -53,7 +53,8 @@ const router = createRouter({
       path:'/picture/add_picture',
       name:'创建图片',
       component:()=>import('../views/picture/AddPictureView.vue')
-    },{
+    },
+    {
       path:'/picture/:id',
       name:'图片详情页',
       component: PictureDetailView,

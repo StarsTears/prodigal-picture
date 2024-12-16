@@ -10,12 +10,10 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.model.dto.picture.PictureEditDto;
-import com.prodigal.system.model.dto.picture.PictureQueryDto;
-import com.prodigal.system.model.dto.picture.PictureUpdateDto;
-import com.prodigal.system.model.dto.picture.PictureUploadDto;
+import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
+import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import com.prodigal.system.model.vo.PictureTagCategory;
 import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.service.PictureService;
@@ -51,10 +49,17 @@ public class PictureController {
      * @param request          浏览器请求
      */
     @PostMapping("/upload")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+//    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
     public BaseResult<PictureVO> uploadPicture(@RequestPart MultipartFile multipartFile, PictureUploadDto pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadDto, loginUser);
+        return ResultUtils.success(pictureVO);
+    }
+    @PostMapping("/upload/url")
+    public BaseResult<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadDto pictureUploadDto, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        String fileUrl = pictureUploadDto.getFileUrl();
+        PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadDto, loginUser);
         return ResultUtils.success(pictureVO);
     }
 
@@ -66,7 +71,7 @@ public class PictureController {
      */
     @PostMapping("/delete")
     public BaseResult<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        if (deleteRequest == null || deleteRequest.getId() <= 0){
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //图片应只能管理员/本人删除
@@ -85,14 +90,30 @@ public class PictureController {
     }
 
     /**
-     * 更新图片(管理员)
-     * @param pictureUpdateDto 接收图片更新请求参数
+     * 图片审核（管理员）
+     * @param pictureReviewDto 接收图片审核请求参数
      * @param request 浏览器请求
+     */
+    @PostMapping("/review")
+    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    public BaseResult<Boolean> doPictureReview(@RequestBody PictureReviewDto pictureReviewDto, HttpServletRequest request) {
+        //1、参数校验
+        ThrowUtils.throwIf(pictureReviewDto == null || pictureReviewDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        pictureService.doPictureReview(pictureReviewDto, loginUser);
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 更新图片(管理员)
+     *
+     * @param pictureUpdateDto 接收图片更新请求参数
+     * @param request          浏览器请求
      */
     @PostMapping("/update")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Boolean> updatePicture(@RequestBody PictureUpdateDto pictureUpdateDto, HttpServletRequest request) {
-        if (pictureUpdateDto == null || pictureUpdateDto.getId() <= 0){
+        if (pictureUpdateDto == null || pictureUpdateDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Picture picture = new Picture();
@@ -104,6 +125,9 @@ public class PictureController {
         Long id = pictureUpdateDto.getId();
         Picture oldPicture = pictureService.getById(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        //补充审核参数
+        User loginUser = userService.getLoginUser(request);
+        pictureService.fillReviewParams(picture, loginUser);
 
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -112,13 +136,14 @@ public class PictureController {
 
     /**
      * 图片编辑（用户使用）
+     *
      * @param pictureEditDto 接收图片编辑请求参数
-     * @param request 浏览器请求
+     * @param request        浏览器请求
      */
     @PostMapping("/edit")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Boolean> editPicture(@RequestBody PictureEditDto pictureEditDto, HttpServletRequest request) {
-        if (pictureEditDto == null || pictureEditDto.getId() <= 0){
+        if (pictureEditDto == null || pictureEditDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         Picture picture = new Picture();
@@ -138,11 +163,13 @@ public class PictureController {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
         }
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-
+        //补充审核参数
+        pictureService.fillReviewParams(picture, loginUser);
         boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
+
     /**
      * 图片查询(管理员)
      *
@@ -173,7 +200,7 @@ public class PictureController {
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
 
-        return ResultUtils.success(pictureService.getPictureVO(picture,request));
+        return ResultUtils.success(pictureService.getPictureVO(picture, request));
     }
 
     /**
@@ -202,6 +229,7 @@ public class PictureController {
     public BaseResult<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
+        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));

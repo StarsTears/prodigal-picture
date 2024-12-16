@@ -77,6 +77,21 @@ public class PictureQueryDto extends PageRequest implements Serializable {
      * 用户 id
      */
     private Long userId;
+
+    /**
+     * 审核状态
+     */
+    private Integer reviewStatus;
+
+    /**
+     * 审核信息
+     */
+    private String reviewMessage;
+
+    /**
+     * 审核人 id
+     */
+    private Long reviewerId;
 }
 
 

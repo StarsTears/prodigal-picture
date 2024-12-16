@@ -6,16 +6,23 @@
     <a-form-item label="用户名">
       <a-input v-model:value="searchParams.userName" placeholder="输入用户名"/>
     </a-form-item>
-    <a-form-item label="用户名">
-        <a-checkable-tag
-          v-for="(role, index) in roleList"
-          :key="role"
-          v-model:checked="selectRoleList[index]"
-        >
-<!--          @change="doSearch"-->
-          {{ role === 'administrator' ? '超级管理员' : role === 'admin' ? '管理员' : '普通用户' }}
-        </a-checkable-tag>
+    <a-form-item label="用户角色">
+      <a-select v-model:value="searchParams.userRole"
+                :options="USER_ROLE_OPTIONS"
+                placeholder="输入审核状态"
+                style="min-width: 180px"
+                allow-clear/>
     </a-form-item>
+
+<!--    <a-form-item label="用户角色">-->
+<!--        <a-checkable-tag-->
+<!--          v-for="(role, index) in roleList"-->
+<!--          :key="role"-->
+<!--          v-model:checked="selectRoleList[index]"-->
+<!--        >-->
+<!--          {{ role === 'administrator' ? '超级管理员' : role === 'admin' ? '管理员' : '普通用户' }}-->
+<!--        </a-checkable-tag>-->
+<!--    </a-form-item>-->
     <a-form-item>
       <a-button type="primary" html-type="submit">搜索</a-button>
     </a-form-item>
@@ -51,13 +58,13 @@
       </teleplate>
       <template v-if="column.dataIndex === 'userRole'">
         <div v-if="record.userRole === 'administrator'">
-          <a-tag color="purple">超级管理员</a-tag>
+          <a-tag color="purple">{{ USER_ROLE_MAP[record.userRole] }}</a-tag>
         </div>
         <div v-else-if="record.userRole === 'admin'">
-          <a-tag color="green">管理员</a-tag>
+          <a-tag color="green">{{ USER_ROLE_MAP[record.userRole] }}</a-tag>
         </div>
         <div v-else>
-          <a-tag color="blue">普通用户</a-tag>
+          <a-tag color="blue">{{ USER_ROLE_MAP[record.userRole] }}</a-tag>
         </div>
       </template>
       <template v-else-if="column.dataIndex === 'createTime'">
@@ -68,27 +75,34 @@
       </template>
       <template v-else-if="column.key === 'action'">
         <a-space wrap>
-          <span v-if="editableData[record.id]">
-          <a-button default :icon="h(SaveOutlined)" @click="doSave(record.id)">
+          <a-button v-if="editableData[record.id]"
+                    default
+                    :icon="h(SaveOutlined)"
+                    @click="doSave(record.id)">
             保存
           </a-button>
-          <a-button type="dashed" @click="doCancel(record.id)">
+          <a-button v-if="editableData[record.id]"
+                    type="dashed"
+                    @click="doCancel(record.id)">
             取消
             <template #icon>
               <UndoOutlined />
             </template>
           </a-button>
-          </span>
-          <span v-else>
-          <a-button type="primary" :icon="h(EditOutlined)" @click="doEdit(record.id)">
+          <a-button v-if="!editableData[record.id]"
+                    type="primary"
+                    :icon="h(EditOutlined)"
+                    @click="doEdit(record.id)">
             编辑
           </a-button>
-          <a-popconfirm okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete(record.id)">
+          <a-popconfirm v-if="!editableData[record.id]"
+                        okText="确定" cancelText="取消"
+                        title="Sure to Confirm?"
+                        @confirm="doDelete(record.id)">
             <a-button danger :icon="h(DeleteOutlined)">
               删除
             </a-button>
           </a-popconfirm>
-          </span>
         </a-space>
       </template>
     </template>
@@ -101,6 +115,7 @@ import type {TableColumnsType} from 'ant-design-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
+import {USER_ROLE_OPTIONS,USER_ROLE_MAP} from '@/constants/user'
 import {deleteUserUsingDelete, listUserVoByPageUsingPost, updateUserUsingPost} from "@/api/systemController";
 
 const columns: TableColumnsType = [
@@ -113,7 +128,7 @@ const columns: TableColumnsType = [
     title: 'id',
     dataIndex: 'id',
     fixed: 'left',
-    // ellipsis: true, //这个会把过长的内容使用三个点替代，但是鼠标放上去不会显示
+    // ellipsis: true, // 宽度不够会自动折行，但是鼠标放上去会显示"ellipsis"
   },
   {
     title: '账号',
@@ -153,15 +168,17 @@ const columns: TableColumnsType = [
   {
     title: '创建时间',
     dataIndex: 'createTime',
+    width: 180
   },
   {
     title: '更新时间',
     dataIndex: 'updateTime',
+    width: 180
   },
   {
     title: '操作',
     key: 'action',
-    width: 260,
+    width: 200,
   },
 ]
 // 数据
@@ -182,17 +199,18 @@ const searchParams = reactive<API.UserQueryDto>({
 const fetchData = async () => {
   loading.value = true
   //转换搜索参数
-  const params = {
-    ...searchParams,
-    userRole: ''
-  }
-  selectRoleList.value.forEach((userRole,index)=>{
-    if (userRole){
-      params.userRole = params.userRole+","+roleList.value[index]
-    }
+  // const params = {
+  //   ...searchParams,
+  //   userRole: ''
+  // }
+  // selectRoleList.value.forEach((userRole,index)=>{
+  //   if (userRole){
+  //     params.userRole = params.userRole+","+roleList.value[index]
+  //   }
+  // })
+  const res = await listUserVoByPageUsingPost({
+    ...searchParams
   })
-  console.log("搜索用户：", params)
-  const res = await listUserVoByPageUsingPost(params)
   if (res.data) {
     dataList.value = res.data.records ?? []
     total.value = res.data.total ?? 0

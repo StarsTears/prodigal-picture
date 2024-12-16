@@ -10,6 +10,13 @@
         <a-select v-model:value="searchParams.tags" mode="tags" placeholder="输入标签"
         style="min-width: 180px" allow-clear/>
     </a-form-item>
+    <a-form-item label="审核状态">
+      <a-select v-model:value="searchParams.reviewStatus"
+                :options="PIC_REVIEW_STATUS_OPTIONS"
+                placeholder="输入审核状态"
+                style="min-width: 180px"
+                allow-clear/>
+    </a-form-item>
     <a-form-item>
       <a-button type="primary" html-type="submit">搜索</a-button>
     </a-form-item>
@@ -45,6 +52,12 @@
         <div>宽高比：{{ record.picScale }}</div>
         <div>大小：{{ (record.picSize / 1024).toFixed(2) }}KB</div>
       </template>
+      <!-- 审核信息 -->
+      <template v-if="column.dataIndex === 'reviewMessage'">
+        <div>审核状态：{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus] }}</div>
+        <div>审核信息：{{ record.reviewMessage }}</div>
+        <div>审核人：{{ record.reviewerId }}</div>
+      </template>
 
 
       <template v-if="column.dataIndex === 'createTime'">
@@ -61,7 +74,25 @@
               <EditOutlined/>
             </template>
           </a-button>
-          <a-popconfirm okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete(record.id)">
+          <a-button v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.PASS"
+                    type="link"
+                    :icon="h(CheckOutlined)"
+                    @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS)">
+            通过
+          </a-button>
+          <a-popconfirm v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.REJECT"
+                        okText="确定"
+                        cancelText="取消"
+                        title="Sure to Reject?"
+                        @confirm="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)">
+            <a-button danger :icon="h(SmileOutlined)">
+              拒绝
+            </a-button>
+          </a-popconfirm>
+          <a-popconfirm okText="确定"
+                        cancelText="取消"
+                        title="Sure to delete?"
+                        @confirm="doDelete(record.id)">
             <a-button danger>
               删除
               <template #icon>
@@ -75,13 +106,14 @@
   </a-table>
 </template>
 <script lang="ts" setup>
-import {computed, onMounted, reactive, ref, UnwrapRef} from "vue";
-import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
+import {h,computed, onMounted, reactive, ref, UnwrapRef} from "vue";
+import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined,CheckOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
+import {PIC_REVIEW_STATUS_ENUM,PIC_REVIEW_STATUS_MAP,PIC_REVIEW_STATUS_OPTIONS} from "@/constants/picture";
 import {
-  deletePictureUsingPost,
+  deletePictureUsingPost, doPictureReviewUsingPost,
   listPictureByPageUsingPost,
   listPictureVoByPageUsingPost
 } from "@/api/pictureController";
@@ -120,6 +152,10 @@ const columns = [
     dataIndex: 'picInfo',
   },
   {
+    title: '审核信息',
+    dataIndex: 'reviewMessage',
+  },
+  {
     title: '用户ID',
     dataIndex: 'userId',
   },
@@ -134,6 +170,7 @@ const columns = [
   {
     title: '操作',
     key: 'action',
+    width: 200
   },
 ]
 // 数据
@@ -205,6 +242,27 @@ const doSearch = () => {
 // const doEdit = (key: string) => {
 //   editableData[key] = cloneDeep(dataSource.value.filter(item => key === item.key)[0]);
 // };
+
+//审核图片
+const handleReview = async (record:API.PictureVO, reviewStatus: number)=>{
+  const reviewMessage = prompt("请输入审核信息")
+  const res = await doPictureReviewUsingPost({
+    id: record.id,
+    reviewMessage,
+    reviewStatus
+  })
+  if (res.code === 0){
+    message.success("审核操作成功")
+    // 刷新数据
+    fetchData()
+  }else{
+    message.error("审核操作失败")
+  }
+  console.log("审核图片")
+}
+
+
+
 // 删除数据
 const doDelete = async (id: string) => {
   if (!id) {

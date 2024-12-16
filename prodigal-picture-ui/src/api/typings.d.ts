@@ -142,6 +142,10 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    reviewMessage?: string
+    reviewStatus?: number
+    reviewTime?: string
+    reviewerId?: number
     tags?: string
     updateTime?: string
     url?: string
@@ -168,11 +172,20 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    reviewMessage?: string
+    reviewStatus?: number
+    reviewerId?: number
     searchText?: string
     sortField?: string
     sortOrder?: string
     tags?: string[]
     userId?: number
+  }
+
+  type PictureReviewDto = {
+    id?: number
+    reviewMessage?: string
+    reviewStatus?: number
   }
 
   type PictureTagCategory = {
@@ -186,6 +199,11 @@ declare namespace API {
     introduction?: string
     name?: string
     tags?: string[]
+  }
+
+  type PictureUploadDto = {
+    fileUrl?: string
+    id?: number
   }
 
   type PictureVO = {
@@ -219,6 +237,7 @@ declare namespace API {
   }
 
   type uploadPictureUsingPOSTParams = {
+    fileUrl?: string
     id?: number
   }
 
@@ -226,7 +245,9 @@ declare namespace API {
     createTime?: string
     editTime?: string
     id?: number
+    inviteUser?: number
     isDelete?: number
+    shareCode?: string
     updateTime?: string
     userAccount?: string
     userAvatar?: string
@@ -234,6 +255,7 @@ declare namespace API {
     userPassword?: string
     userProfile?: string
     userRole?: string
+    vipNumber?: number
   }
 
   type UserAddDto = {
@@ -270,11 +292,14 @@ declare namespace API {
     createTime?: string
     editTime?: string
     id?: number
+    inviteUser?: number
+    shareCode?: string
     updateTime?: string
     userAccount?: string
     userAvatar?: string
     userName?: string
     userProfile?: string
     userRole?: string
+    vipNumber?: number
   }
 }

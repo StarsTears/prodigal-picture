@@ -50,14 +50,32 @@
             </a-descriptions-item>
           </a-descriptions>
           <a-space wrap>
-            <a-button v-if="canEdit" :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
+            <a-button  :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
               免费下载
             </a-button>
-            <a-button v-if="canEdit" :icon="h(EditOutlined)" type="default" @click="doEdit">
+            <a-button v-if="canEdit"
+                      :icon="h(EditOutlined)"
+                      type="default"
+                      @click="doEdit">
               编辑
             </a-button>
-
-            <a-popconfirm v-if="canEdit"  :icon="h(DeleteOutlined)" okText="确定" cancelText="取消" title="Sure to Confirm?" @confirm="doDelete">
+            <a-button v-if="canEdit"
+                      :icon="h(CheckOutlined)"
+                      type="primary"
+                      @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
+              审核
+            </a-button>
+            <a-button v-if="canEdit"
+                      :icon="h(SmileOutlined)"
+                      type="default"
+                      @confirm="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
+              拒绝
+            </a-button>
+            <a-popconfirm v-if="canEdit"
+                          :icon="h(DeleteOutlined)"
+                          okText="确定"
+                          cancelText="取消"
+                          title="Sure to delete?" @confirm="doDelete">
               <a-button danger>
                 删除
                 <template #icon>
@@ -74,13 +92,14 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref,h} from "vue";
-import {deletePictureUsingPost, getPictureVoUsingGet} from "@/api/pictureController";
-import {DeleteOutlined, EditOutlined,DownloadOutlined} from '@ant-design/icons-vue';
+import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoUsingGet} from "@/api/pictureController";
+import {DeleteOutlined, EditOutlined,DownloadOutlined,CheckOutlined,SmileOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize} from "@/utils";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import ACCESS_ENUM from "@/access/accessEnum";
 import {useRouter} from "vue-router";
+import {PIC_REVIEW_STATUS_ENUM} from "@/constants/picture";
 
 interface Props {
   id: string | number
@@ -131,6 +150,23 @@ const router = useRouter();
 const doEdit = () => {
   // 跳转编辑页面
   router.push('/picture/add_picture?id=' + picture.value.id)
+}
+//审核图片
+const handleReview = async (reviewStatus: number)=>{
+  const reviewMessage = prompt("请输入审核信息")
+  const res = await doPictureReviewUsingPost({
+    id: picture.value.id,
+    reviewMessage,
+    reviewStatus
+  })
+  if (res.code === 0){
+    message.success("审核操作成功")
+    // 刷新数据
+    fetchData()
+  }else{
+    message.error("审核操作失败")
+  }
+  console.log("审核图片")
 }
 const doDelete = async () => {
   let id = picture.value.id;

@@ -3,6 +3,7 @@ package com.prodigal.system.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.model.dto.picture.PictureQueryDto;
+import com.prodigal.system.model.dto.picture.PictureReviewDto;
 import com.prodigal.system.model.dto.picture.PictureUploadDto;
 import com.prodigal.system.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 */
 public interface PictureService extends IService<Picture> {
 
-    PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadDto pictureUploadDto, User loginUser);
+    PictureVO uploadPicture(Object inputSource, PictureUploadDto pictureUploadDto, User loginUser);
 
     LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto);
 
@@ -28,4 +29,8 @@ public interface PictureService extends IService<Picture> {
     Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
 
     void validPicture(Picture picture);
+
+    void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser);
+
+    void fillReviewParams(Picture picture, User loginUser);
 }

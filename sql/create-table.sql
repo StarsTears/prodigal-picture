@@ -35,6 +35,10 @@ create table if not exists picture
     picHeight    int                                null comment '图片高度',
     picScale     double                             null comment '图片宽高比例',
     picFormat    varchar(32)                        null comment '图片格式',
+    reviewStatus INT DEFAULT 0                      NOT NULL COMMENT '审核状态：0-待审核; 1-通过; 2-拒绝',
+    reviewMessage VARCHAR(512)                      NULL COMMENT '审核信息',
+    reviewerId   BIGINT                             NULL COMMENT '审核人 ID',
+    reviewTime   datetime                           NULL COMMENT '审核时间',
     userId       bigint                             not null comment '创建用户 id',
     createTime   datetime default CURRENT_TIMESTAMP not null comment '创建时间',
     editTime     datetime default CURRENT_TIMESTAMP not null comment '编辑时间',
@@ -44,5 +48,16 @@ create table if not exists picture
     INDEX idx_introduction (introduction), -- 用于模糊搜索图片简介
     INDEX idx_category (category),         -- 提升基于分类的查询性能
     INDEX idx_tags (tags),                 -- 提升基于标签的查询性能
-    INDEX idx_userId (userId)              -- 提升基于用户 ID 的查询性能
+    INDEX idx_userId (userId),              -- 提升基于用户 ID 的查询性能
+    INDEX idx_reviewStatus(reviewStatus)    -- 创建基于 reviewStatus 列的索引
 ) comment '图片' collate = utf8mb4_unicode_ci;
+# 修改表结构[picture]
+# ALTER TABLE picture
+#     -- 添加新列
+#     ADD COLUMN reviewStatus INT DEFAULT 0 NOT NULL COMMENT '审核状态：0-待审核; 1-通过; 2-拒绝',
+#     ADD COLUMN reviewMessage VARCHAR(512) NULL COMMENT '审核信息',
+#     ADD COLUMN reviewerId BIGINT NULL COMMENT '审核人 ID',
+#     ADD COLUMN reviewTime DATETIME NULL COMMENT '审核时间';
+#
+# -- 创建基于 reviewStatus 列的索引
+# CREATE INDEX idx_reviewStatus ON picture (reviewStatus);
