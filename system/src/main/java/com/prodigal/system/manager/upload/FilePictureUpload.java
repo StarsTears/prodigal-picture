@@ -3,6 +3,7 @@ package com.prodigal.system.manager.upload;
 import cn.hutool.core.io.FileUtil;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.model.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +21,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class FilePictureUpload extends PictureUploadTemplate{
+
     @Override
     protected void verifyPicture(Object inputSource) {
         MultipartFile multipartFile = (MultipartFile) inputSource;
@@ -45,5 +47,10 @@ public class FilePictureUpload extends PictureUploadTemplate{
     protected void processFile(Object inputSource, File file) throws IOException {
         MultipartFile multipartFile = (MultipartFile) inputSource;
         multipartFile.transferTo(file);
+    }
+
+    @Override
+    protected void processUploadResult(Object inputSource, UploadPictureResult uploadPictureResult) {
+
     }
 }

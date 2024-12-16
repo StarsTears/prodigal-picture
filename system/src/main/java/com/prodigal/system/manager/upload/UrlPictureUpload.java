@@ -9,6 +9,7 @@ import cn.hutool.http.Method;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.model.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -79,12 +80,18 @@ public class UrlPictureUpload extends PictureUploadTemplate{
     @Override
     protected String getOriginalFilename(Object inputSource) {
         String fileUrl = (String) inputSource;
-        return FileUtil.mainName(fileUrl);
+        return String.format("%s.%s",FileUtil.mainName(fileUrl), FileUtil.getSuffix(fileUrl));
     }
 
     @Override
     protected void processFile(Object inputSource, File file) throws IOException {
         String fileUrl = (String) inputSource;
         HttpUtil.downloadFile(fileUrl, file);
+    }
+
+    @Override
+    protected void processUploadResult(Object inputSource, UploadPictureResult uploadPictureResult) {
+        String fileUrl = (String) inputSource;
+        uploadPictureResult.setSourceUrl(fileUrl);
     }
 }

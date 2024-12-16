@@ -6,6 +6,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultInt_ = {
+    code?: number
+    data?: number
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultLong_ = {
     code?: number
     data?: number
@@ -146,6 +153,7 @@ declare namespace API {
     reviewStatus?: number
     reviewTime?: string
     reviewerId?: number
+    sourceUrl?: string
     tags?: string
     updateTime?: string
     url?: string
@@ -201,9 +209,18 @@ declare namespace API {
     tags?: string[]
   }
 
+  type PictureUploadByBatchDto = {
+    count?: number
+    namePrefix?: string
+    offset?: number
+    searchText?: string
+    url?: string
+  }
+
   type PictureUploadDto = {
     fileUrl?: string
     id?: number
+    picName?: string
   }
 
   type PictureVO = {
@@ -239,6 +256,7 @@ declare namespace API {
   type uploadPictureUsingPOSTParams = {
     fileUrl?: string
     id?: number
+    picName?: string
   }
 
   type User = {

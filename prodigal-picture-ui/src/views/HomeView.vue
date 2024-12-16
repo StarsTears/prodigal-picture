@@ -1,6 +1,5 @@
 <template>
   <div class="homeView">
-    开始学习前端：vue3+ ant design vue
     <!--搜索框-->
     <div class="search-bar">
       <a-input-search

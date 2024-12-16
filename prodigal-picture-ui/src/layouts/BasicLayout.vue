@@ -35,6 +35,7 @@ export default {
   background: white;
   color: unset;
   margin-bottom: 16px;
+  z-index: 1000; /* 确保footer在最上层 */
 }
 
 #basicLayout .content {
@@ -51,5 +52,6 @@ export default {
   right: 0;
   left: 0;
   text-align: center;
+  z-index: 1000; /* 确保footer在最上层 */
 }
 </style>

@@ -67,7 +67,10 @@ public abstract class PictureUploadTemplate {
             PutObjectResult putPictureObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putPictureObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
             //封装返回结果
-            return buildResult( imageInfo, file,originalFilename, uploadPath);
+            UploadPictureResult uploadPictureResult = buildResult(imageInfo, file, originalFilename, uploadPath);
+            //源文件地址
+            this.processUploadResult(inputSource,uploadPictureResult);
+            return uploadPictureResult;
         } catch (IOException e) {
             log.error("file upload COS error", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
@@ -76,6 +79,8 @@ public abstract class PictureUploadTemplate {
             this.deleteTempFile(file);
         }
     }
+
+    protected abstract void processUploadResult(Object inputSource, UploadPictureResult uploadPictureResult);
 
     /**
      * 校验图片
@@ -114,6 +119,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
         uploadPictureResult.setPicSize(FileUtil.size(file));
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
+        uploadPictureResult.setSourceUrl(originalFilename);
         return uploadPictureResult;
     }
 

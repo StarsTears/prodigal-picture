@@ -58,6 +58,6 @@ create table if not exists picture
 #     ADD COLUMN reviewMessage VARCHAR(512) NULL COMMENT '审核信息',
 #     ADD COLUMN reviewerId BIGINT NULL COMMENT '审核人 ID',
 #     ADD COLUMN reviewTime DATETIME NULL COMMENT '审核时间';
-#
+#     ADD COLUMN  sourceUrl   varchar(512)    NULL  comment '源图片url'
 # -- 创建基于 reviewStatus 列的索引
 # CREATE INDEX idx_reviewStatus ON picture (reviewStatus);

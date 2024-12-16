@@ -3,6 +3,7 @@ package com.prodigal.system.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -18,6 +19,7 @@ import com.prodigal.system.manager.upload.UrlPictureUpload;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
 import com.prodigal.system.model.dto.picture.PictureQueryDto;
 import com.prodigal.system.model.dto.picture.PictureReviewDto;
+import com.prodigal.system.model.dto.picture.PictureUploadByBatchDto;
 import com.prodigal.system.model.dto.picture.PictureUploadDto;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
@@ -27,15 +29,19 @@ import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.PictureService;
 import com.prodigal.system.mapper.PictureMapper;
 import com.prodigal.system.service.UserService;
+import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +49,7 @@ import java.util.stream.Collectors;
  * @description 针对表【picture(图片)】的数据库操作Service实现
  * @createDate 2024-12-12 15:47:24
  */
+@Slf4j
 @Service
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> implements PictureService {
     @Resource
@@ -114,7 +121,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //构造需要存储的图片信息
         Picture picture = new Picture();
         picture.setUrl(uploadPictureResult.getUrl());
-        picture.setName(uploadPictureResult.getPicName());
+        picture.setSourceUrl(uploadPictureResult.getSourceUrl());
+        String picName = uploadPictureResult.getPicName();
+        //抓取图片，如果已经写了图片名称，则使用用户填写的图片名称
+        if (pictureUploadDto!=null && StrUtil.isNotBlank(pictureUploadDto.getPicName())){
+            picName = pictureUploadDto.getPicName();
+        }
+        picture.setName(picName);
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicHeight(uploadPictureResult.getPicHeight());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
@@ -134,10 +147,138 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     /**
+     * 从必应网站抓取图片（默认必应）
+     * @param pictureUploadByBatchDto 图片批量上传请求参数
+     * @param loginUser 登录用户
+     */
+    @Override
+    public int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser){
+        String searchText = pictureUploadByBatchDto.getSearchText();
+        //图片名称前缀为空，则使用关键词
+        String namePrefix = pictureUploadByBatchDto.getNamePrefix();
+        if (StrUtil.isBlank(namePrefix)){
+            namePrefix = searchText;
+        }
+        //数量校验-每次最多20条
+        Integer count = pictureUploadByBatchDto.getCount();
+        ThrowUtils.throwIf(count > 20, ErrorCode.PARAMS_ERROR, "每次最多上传20张图片");
+        // 偏移量
+        Integer offset = pictureUploadByBatchDto.getOffset();
+        if (offset == null) {
+            offset = 0; // 默认偏移量为0
+        }
+        //抓取的地址 https://cn.bing.com/images/async?q=%s&mmasync=1
+        String fetchUrl = String.format("https://cn.bing.com/images/async?q=%s&mmasync=1&first=%d", searchText, offset);
+        String url = pictureUploadByBatchDto.getUrl();
+//        if (StrUtil.isNotBlank(url)){
+//            fetchUrl = String.format("");
+//        }
+        Document document ;
+        try{
+            document = Jsoup.connect(fetchUrl).get();
+        }catch (Exception e){
+            log.error("图片批量上传-抓取图片地址失败",e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"图片批量上传-获取页面失败");
+        }
+        Element div = document.getElementsByClass("dgControl").first();
+        if (ObjUtil.isNull(div)){
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"图片批量上传-获取图片元素失败");
+        }
+        //查询一次图片数量，然后去重
+        int uploadCount = 0;
+        Elements detailUrls = div.select("a.iusc");
+        for (Element element : detailUrls) {
+            String href = element.attr("href");
+            // 截取URL参数部分
+            String dUrl = null;
+            try {
+                dUrl = URLDecoder.decode(href, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.error("URL解码报错",e);
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,"URL解码报错哦");
+            }
+            String query = dUrl.substring(dUrl.indexOf('?') + 1);
+
+            // 将URL参数解析为JSON对象
+            Map<String,String> json = new HashMap<>();
+            String[] pairs = query.split("&");
+            for (String pair : pairs) {
+                int idx = pair.indexOf("=");
+                try {
+                    json.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            //处理图片url.防止出现转义错误
+            String fileUrl= json.get("riu");
+            if (StrUtil.isBlank(fileUrl)){
+                fileUrl = json.get("mediaurl");
+            }
+            int questionMarkIndex = fileUrl.indexOf("?");
+            if (questionMarkIndex > -1){
+                fileUrl = fileUrl.substring(0,questionMarkIndex);
+            }
+            //以免数据重复，可以将其查出与数据的源url进行对比
+
+            //上传图片
+            PictureUploadDto pictureUploadDto = new PictureUploadDto();
+            if (StrUtil.isNotBlank(namePrefix)){
+                pictureUploadDto.setPicName(namePrefix + (uploadCount+1));
+            }
+            try {
+                PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUploadDto, loginUser);
+                log.info("图片批量上传-上传成功->id:{}",pictureVO.getId());
+                uploadCount++;
+            }catch (Exception e){
+                log.error("图片批量上传-上传失败",e);
+                continue;
+            }
+            //如果上传数量达到要求，则跳出循环
+            if (uploadCount >= count){
+                break;
+            }
+        }
+
+/**
+        int uploadCount = 0;
+        Elements imgElementList = div.select("img.mimg");
+        for (Element imgElement : imgElementList) {
+            String fileUrl = imgElement.attr("src");
+            if (StrUtil.isBlank(fileUrl)){
+                log.info("图片批量上传-获取图片地址为空,已跳过:{}",fileUrl);
+                continue;
+            }
+            //处理图片url.防止出现转义错误
+            int questionMarkIndex = fileUrl.indexOf("?");
+            if (questionMarkIndex > -1){
+                fileUrl = fileUrl.substring(0,questionMarkIndex);
+            }
+            //上传图片
+            PictureUploadDto pictureUploadDto = new PictureUploadDto();
+            if (StrUtil.isNotBlank(namePrefix)){
+                pictureUploadDto.setPicName(namePrefix + (uploadCount+1));
+            }
+            try {
+//                PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUploadDto, loginUser);
+//                log.info("图片批量上传-上传成功->id:{}",pictureVO.getId());
+                uploadCount++;
+            }catch (Exception e){
+                log.error("图片批量上传-上传失败",e);
+                continue;
+            }
+            //如果上传数量达到要求，则跳出循环
+            if (uploadCount >= count){
+                break;
+            }
+        }
+ */
+        return uploadCount;
+    }
+    /**
      * 分页查询参数封装
      *
-     * @param pictureQueryDto
-     * @return
+     * @param pictureQueryDto 图片查询参数
      */
     @Override
     public LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto) {
