@@ -44,8 +44,6 @@ public class PictureController {
 
     @Resource
     private CacheManager cacheManager;
-//    @Resource
-//    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 图片上传
@@ -106,6 +104,7 @@ public class PictureController {
         }
         boolean result = pictureService.removeById(deleteRequest.getId());
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        pictureService.clearPictureFile(picture);
         return ResultUtils.success(true);
     }
 
@@ -267,7 +266,7 @@ public class PictureController {
         long size = pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
 
         Page<PictureVO> pictureVOPageCache = pictureService.getPictureVOPageCache(pictureQueryDto, request);
 

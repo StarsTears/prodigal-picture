@@ -49,7 +49,7 @@ public abstract class PictureUploadTemplate {
         String originalFilename = this.getOriginalFilename(inputSource);
         //拼接上传路径，避免文件名重复;增加安全性
         String uploadFileName = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, FileUtil.getSuffix(originalFilename));
-        String uploadPath = String.format("/%s/%S", uploadFilePrefix, uploadFileName);
+        String uploadPath = String.format("%s/%S", uploadFilePrefix, uploadFileName);
         File file = null;
 
         try {

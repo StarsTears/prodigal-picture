@@ -2,6 +2,9 @@ server:
   port: 9999
   servlet:
     context-path: /api
+  #session 配置
+  session:
+    timeout: 2592000 #30天过期
 spring:
   application:
     name: prodigal-system

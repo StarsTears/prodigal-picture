@@ -159,6 +159,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String sortOrder = userQueryDto.getSortOrder();
         String sortField = userQueryDto.getSortField() == null ? "" : userQueryDto.getSortField().trim();
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
+                .eq(true, User::getIsDelete, 0)
                 .eq(ObjUtil.isNotEmpty(userQueryDto.getId()), User::getId, userQueryDto.getId())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())

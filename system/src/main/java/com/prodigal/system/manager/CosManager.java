@@ -2,23 +2,29 @@ package com.prodigal.system.manager;
 
 import cn.hutool.core.io.FileUtil;
 import com.prodigal.system.config.CosClientConfig;
+import com.prodigal.system.exception.BusinessException;
+import com.prodigal.system.exception.ErrorCode;
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.model.COSObject;
-import com.qcloud.cos.model.GetObjectRequest;
-import com.qcloud.cos.model.PutObjectRequest;
-import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.exception.CosClientException;
+import com.qcloud.cos.exception.CosServiceException;
+import com.qcloud.cos.exception.MultiObjectDeleteException;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.model.ciModel.persistence.PicOperations;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @program: prodigal-picture
  * @author: Lang
  * @description: Cos 管理
  **/
+@Slf4j
 @Component
 public class CosManager {
     @Resource
@@ -83,12 +89,29 @@ public class CosManager {
     }
 
     /**
-     * 删除对象
+     * 删除对象-批量删除
      *
-     * @param key  唯一键
+     * @param keys  唯一键
      */
-    public void deleteObject(String key) {
-        cosClient.deleteObject(cosClientConfig.getBucket(),key);
+    public void deleteObjects(List<String> keys) {
+        DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(cosClientConfig.getBucket());
+        String prefix = cosClientConfig.getHost() + "/";
+        List<DeleteObjectsRequest.KeyVersion> keyList = new ArrayList<>();
+         keys.stream().forEach(key -> keyList.add(new DeleteObjectsRequest.KeyVersion(key.substring(prefix.length()))));
+        deleteObjectsRequest.setKeys(keyList);
+        try {
+            DeleteObjectsResult deleteObjectsResult = cosClient.deleteObjects(deleteObjectsRequest);
+        }catch (MultiObjectDeleteException mde) {
+            // 如果部分删除成功部分失败, 返回 MultiObjectDeleteException
+            List<DeleteObjectsResult.DeletedObject> deleteObjects = mde.getDeletedObjects();
+            List<MultiObjectDeleteException.DeleteError> deleteErrors = mde.getErrors();
+            log.info("删除失败的图片:{}", deleteErrors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()));
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除失败");
+        } catch (CosServiceException e) {
+            e.printStackTrace();
+        } catch (CosClientException e) {
+            e.printStackTrace();
+        }
     }
 
 }

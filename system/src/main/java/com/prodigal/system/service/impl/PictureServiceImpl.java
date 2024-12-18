@@ -16,8 +16,8 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.manager.FileManager;
-import com.prodigal.system.manager.strategy.CacheContext;
 import com.prodigal.system.manager.CacheManager;
 import com.prodigal.system.manager.upload.FilePictureUpload;
 import com.prodigal.system.manager.upload.PictureUploadTemplate;
@@ -44,6 +44,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -80,7 +81,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                                                                 .expireAfterWrite(5L, TimeUnit.MINUTES)
                                                                 .build();
     @Resource
+    private CosManager cosManager;
+
+    @Resource
     private CacheManager cacheManager;
+
 
     /**
      * 图片校验(更新与修改)
@@ -122,6 +127,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
              //验权
             boolean isCan = picture.getUserId().equals(loginUser.getId());
             ThrowUtils.throwIf(!isCan && !userService.isAdmin(loginUser), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限修改该图片");
+            //更新、删除COS的文件
+            this.clearPictureFile(picture);
         }
         /*
             上传图片-根据用户id来划分目录
@@ -316,7 +323,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             wrapper.and(e -> e.like(Picture::getName, pictureQueryDto.getSearchText())
                     .or().like(Picture::getIntroduction, pictureQueryDto.getSearchText()));
         }
-        wrapper.eq(ObjUtil.isNotEmpty(pictureQueryDto.getId()), Picture::getId, pictureQueryDto.getId())
+        wrapper.eq(true, Picture::getIsDelete, 0).
+                eq(ObjUtil.isNotEmpty(pictureQueryDto.getId()), Picture::getId, pictureQueryDto.getId())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getUserId()), Picture::getUserId, pictureQueryDto.getUserId())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getName()), Picture::getName, pictureQueryDto.getName())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getIntroduction()), Picture::getIntroduction, pictureQueryDto.getIntroduction())
@@ -496,6 +504,29 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }else{
             picture.setReviewStatus(PictureReviewStatusEnum.REVIEWING.getValue());
         }
+    }
+    @Async //异步执行
+    @Override
+    public void clearPictureFile(Picture oldPicture){
+        String pictureUrl = oldPicture.getUrl();
+        Long count = this.lambdaQuery().eq(Picture::getUrl, pictureUrl).count();
+        //如果该图片被其他图片引用，则不删除文件
+        if (count>1){
+            return;
+        }
+        List<String> keys = new ArrayList<>();
+        keys.add(pictureUrl);
+        //原图
+        String originUrl = oldPicture.getOriginUrl();
+        if (StrUtil.isNotBlank(originUrl)){
+            keys.add(originUrl);
+        }
+        //缩略图
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)){
+            keys.add(thumbnailUrl);
+        }
+        cosManager.deleteObjects(keys);
     }
 }
 
