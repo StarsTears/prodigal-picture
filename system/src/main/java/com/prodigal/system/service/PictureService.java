@@ -33,6 +33,8 @@ public interface PictureService extends IService<Picture> {
 
     void validPicture(Picture picture);
 
+    Page<PictureVO> getPictureVOPageCache(PictureQueryDto pictureQueryDto, HttpServletRequest request);
+
     void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser);
 
     void fillReviewParams(Picture picture, User loginUser);

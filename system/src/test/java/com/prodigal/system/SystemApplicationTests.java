@@ -63,6 +63,7 @@ class SystemApplicationTests {
         // 将URL参数解析为JSON对象
         Map<String,String> json = new HashMap<>();
         String[] pairs = query.split("&");
+        Arrays.stream(pairs);
         for (String pair : pairs) {
             int idx = pair.indexOf("=");
             try {
@@ -75,6 +76,11 @@ class SystemApplicationTests {
     @Test
    void testFileUtil(){
        String url =  "http://pic.qianye88.com/4kdongman358a5af0-87a6-351f-9a04-16107055ab3b.jpg";
-        System.out.println(String.format("%s.%s",FileUtil.mainName(url), FileUtil.getSuffix(url)));;
+       String sourceUrl =  "https://files.codelife.cc/wallhaven/full/vg/wallhaven-vgjp2l.png?x-oss-process=image/resize,limit_0,m_fill,w_1920,h_1080/quality,Q_95/format,webp";
+        int questionMarkIndex =sourceUrl.indexOf("?");
+        if (questionMarkIndex > -1){
+            sourceUrl = sourceUrl.substring(0,questionMarkIndex);
+        }
+        System.out.println(String.format("%s.%s",FileUtil.mainName(sourceUrl), FileUtil.getSuffix(sourceUrl)));
     }
 }

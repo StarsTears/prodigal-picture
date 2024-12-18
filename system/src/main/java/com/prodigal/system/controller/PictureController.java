@@ -10,6 +10,7 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.manager.CacheManager;
 import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
@@ -40,6 +41,11 @@ public class PictureController {
     private PictureService pictureService;
     @Resource
     private UserService userService;
+
+    @Resource
+    private CacheManager cacheManager;
+//    @Resource
+//    private StringRedisTemplate stringRedisTemplate;
 
     /**
      * 图片上传
@@ -248,6 +254,26 @@ public class PictureController {
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
         return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
     }
+
+    /**
+     * 图片分页查询(VO)
+     *
+     * @param pictureQueryDto 接收图片查询请求参数
+     * @param request         浏览器请求
+     */
+    @PostMapping("/list/page/vo/cache")
+    public BaseResult<Page<PictureVO>> listPictureVOByPageCache(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
+        long current = pictureQueryDto.getCurrent();
+        long size = pictureQueryDto.getPageSize();
+        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        // 限制爬虫
+        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+
+        Page<PictureVO> pictureVOPageCache = pictureService.getPictureVOPageCache(pictureQueryDto, request);
+
+        return ResultUtils.success(pictureVOPageCache);
+    }
+
 
     /**
      * TODO:数据量不大，可以暂时预设 [后面数据量大了，再改为从注册中心获取]

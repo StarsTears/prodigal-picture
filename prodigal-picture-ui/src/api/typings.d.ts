@@ -144,6 +144,7 @@ declare namespace API {
     introduction?: string
     isDelete?: number
     name?: string
+    originUrl?: string
     picFormat?: string
     picHeight?: number
     picScale?: number
@@ -155,6 +156,7 @@ declare namespace API {
     reviewerId?: number
     sourceUrl?: string
     tags?: string
+    thumbnailUrl?: string
     updateTime?: string
     url?: string
     userId?: number
@@ -166,6 +168,7 @@ declare namespace API {
     introduction?: string
     name?: string
     tags?: string[]
+    userId?: number
   }
 
   type PictureQueryDto = {
@@ -210,10 +213,12 @@ declare namespace API {
   }
 
   type PictureUploadByBatchDto = {
+    category?: string
     count?: number
     namePrefix?: string
     offset?: number
     searchText?: string
+    tags?: string
     url?: string
   }
 
@@ -236,6 +241,7 @@ declare namespace API {
     picSize?: number
     picWidth?: number
     tags?: string[]
+    thumbnailUrl?: string
     updateTime?: string
     url?: string
     user?: UserVO

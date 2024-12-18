@@ -12,11 +12,18 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+  #数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/prodigal-picture
     username: root
     password: root
+  #redis 配置
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    timeout: 5000
 # mybatis plus
 mybatis-plus:
   configuration:

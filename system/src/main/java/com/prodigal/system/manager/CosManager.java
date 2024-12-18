@@ -1,5 +1,6 @@
 package com.prodigal.system.manager;
 
+import cn.hutool.core.io.FileUtil;
 import com.prodigal.system.config.CosClientConfig;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.COSObject;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * @program: prodigal-picture
@@ -56,8 +58,37 @@ public class CosManager {
         PicOperations picOperations = new PicOperations();
         // 1 表示返回原图信息
         picOperations.setIsPicInfo(1);
+        //指定处理的图片操作规则
+        ArrayList<PicOperations.Rule> rules = new ArrayList<>();
+        //对原图进行格式转换 webp
+        PicOperations.Rule formatRule = new PicOperations.Rule();
+        String webpKey = FileUtil.mainName(key) + ".webp";
+        formatRule.setFileId(webpKey);
+        formatRule.setBucket(cosClientConfig.getBucket());
+        formatRule.setRule("imageMogr2/format/webp");
+        rules.add(formatRule);
+        //对原图进行压缩-缩略 仅对图片大于 20KB 的进行缩略
+        if (file.length() > 20L * 1024) {
+            PicOperations.Rule thumbnailRule = new PicOperations.Rule();
+            String thumbnailKey = FileUtil.mainName(key) + "_thumbnail." + FileUtil.getSuffix(key);
+            thumbnailRule.setFileId(thumbnailKey);
+            thumbnailRule.setBucket(cosClientConfig.getBucket());
+            thumbnailRule.setRule(String.format("imageMogr2/thumbnail/%sx%s>", 256, 256));
+            rules.add(thumbnailRule);
+        }
         // 构造处理参数
+        picOperations.setRules(rules);
         putObjectRequest.setPicOperations(picOperations);
         return cosClient.putObject(putObjectRequest);
     }
+
+    /**
+     * 删除对象
+     *
+     * @param key  唯一键
+     */
+    public void deleteObject(String key) {
+        cosClient.deleteObject(cosClientConfig.getBucket(),key);
+    }
+
 }

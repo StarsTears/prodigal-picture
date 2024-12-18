@@ -17,8 +17,8 @@
 
     <!-- 图片展示组件 -->
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
-      <a-form-item label="图片名称" name="userId">
-        <a-input v-model:value="pictureForm.userId" placeholder="图片id" allow-clear/>
+      <a-form-item label="图片所属用户Id" name="userId" v-if="false">
+        <a-input v-model:value="pictureForm.userId" placeholder="图片所属用户I" allow-clear/>
       </a-form-item>
       <a-form-item label="图片名称" name="name">
         <a-input v-model:value="pictureForm.name" placeholder="输入图片名称" allow-clear/>
@@ -58,6 +58,7 @@ const onSuccess = (newPicture: API.PictureVO) => {
   pictureForm.category = newPicture.category
   pictureForm.introduction = newPicture.introduction
   pictureForm.tags = newPicture.tags
+  pictureForm.userId = newPicture.userId
 }
 
 /**

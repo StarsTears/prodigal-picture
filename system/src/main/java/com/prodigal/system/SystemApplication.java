@@ -2,8 +2,11 @@ package com.prodigal.system;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
 
 @SpringBootApplication
+//@ComponentScan({"com.prodigal", "com.prodigal.system.manager.strategy"})
 public class SystemApplication {
     public static void main(String[] args) {
         SpringApplication.run(SystemApplication.class, args);

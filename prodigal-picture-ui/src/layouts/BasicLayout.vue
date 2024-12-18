@@ -4,14 +4,19 @@
       <a-layout-header class="header">
         <GlobalHeader/>
       </a-layout-header>
-      <a-layout-content class="content">
-        <RouterView/>
-      </a-layout-content>
+      <!--  水印    -->
+<!--      <a-watermark content="Prodigal Picture">-->
+<!--        <div style="height: 500px"/>-->
+<!--      </a-watermark>-->
+        <a-layout-content class="content">
+          <RouterView/>
+        </a-layout-content>
+
       <a-layout-footer class="footer">
-          <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
-            <GithubOutlined/>
-          </a>
-          Prodigal Picture | Copyright © 20001-2024 prodigal All Rights Reserved.
+        <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
+          <GithubOutlined/>
+        </a>
+        Prodigal Picture | Copyright © 20001-2024 prodigal All Rights Reserved.
       </a-layout-footer>
     </a-layout>
   </div>
@@ -23,7 +28,7 @@ import {GithubOutlined} from '@ant-design/icons-vue';
 
 export default {
   name: "BasicLayout",
-  components: {GlobalHeader,GithubOutlined}
+  components: {GlobalHeader, GithubOutlined}
 }
 
 

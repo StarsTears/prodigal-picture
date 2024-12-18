@@ -2,17 +2,23 @@ package com.prodigal.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.FilePathConstant;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.FileManager;
+import com.prodigal.system.manager.strategy.CacheContext;
+import com.prodigal.system.manager.CacheManager;
 import com.prodigal.system.manager.upload.FilePictureUpload;
 import com.prodigal.system.manager.upload.PictureUploadTemplate;
 import com.prodigal.system.manager.upload.UrlPictureUpload;
@@ -30,11 +36,14 @@ import com.prodigal.system.service.PictureService;
 import com.prodigal.system.mapper.PictureMapper;
 import com.prodigal.system.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -42,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -60,6 +70,17 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     private FilePictureUpload filePictureUpload;
     @Resource
     private UrlPictureUpload urlPictureUpload;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    private final Cache<String, String> LOCAL_CACHE = Caffeine.newBuilder()
+                                                                .initialCapacity(1024)
+                                                                .maximumSize(10000L)
+                                                                // 缓存 5 分钟移除
+                                                                .expireAfterWrite(5L, TimeUnit.MINUTES)
+                                                                .build();
+    @Resource
+    private CacheManager cacheManager;
 
     /**
      * 图片校验(更新与修改)
@@ -120,7 +141,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         UploadPictureResult uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource,uploadPrefix);
         //构造需要存储的图片信息
         Picture picture = new Picture();
+        picture.setOriginUrl(uploadPictureResult.getOriginUrl());
         picture.setUrl(uploadPictureResult.getUrl());
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
         picture.setSourceUrl(uploadPictureResult.getSourceUrl());
         String picName = uploadPictureResult.getPicName();
         //抓取图片，如果已经写了图片名称，则使用用户填写的图片名称
@@ -392,6 +415,46 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         return pictureVOPage;
     }
 
+    /**
+     * 使用本地缓存+redis缓存 实现查询优化
+     * @param pictureQueryDto
+     * @param request
+     * @return
+     */
+    @Override
+    public Page<PictureVO> getPictureVOPageCache(PictureQueryDto pictureQueryDto, HttpServletRequest request) {
+        long current = pictureQueryDto.getCurrent();
+        long size = pictureQueryDto.getPageSize();
+        //先去查询缓存，未命中再去查询数据库
+        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+
+        String queryCondition = JSONUtil.toJsonStr(pictureQueryDto);
+        String hashKey = DigestUtils.md5Hex(queryCondition);
+        String caffeineKey = String.format("%s%s", CacheConstant.PICTURE_PAGE_CAFFEINE_CACHE_KEY, hashKey);
+        String cachedValue = LOCAL_CACHE.getIfPresent(caffeineKey);
+        if (cachedValue!=null){
+            //命中本地缓存，返回结果
+            Page<PictureVO> page = JSONUtil.toBean(cachedValue, Page.class);
+            return page;
+        }
+
+        String redisKey = String.format("%s%s", CacheConstant.PICTURE_PAGE_REDIS_CACHE_KEY, hashKey);
+        cachedValue = opsForValue.get(redisKey);
+        if (cachedValue!=null){
+            Page<PictureVO> page = JSONUtil.toBean(cachedValue, Page.class);
+            LOCAL_CACHE.put(caffeineKey, cachedValue);
+            return page;
+        }
+        //操作数据库
+        Page<Picture> picturePage = this.page(new Page<>(current, size), this.getQueryWrapper(pictureQueryDto));
+        Page<PictureVO> pictureVOPage = this.getPictureVOPage(picturePage, request);
+        //将数据存到缓存 5~10分钟 随机过期，防止雪崩
+        String value = JSONUtil.toJsonStr(pictureVOPage);
+        int expireTime = 300 + RandomUtil.randomInt(0, 300);
+        opsForValue.set(redisKey, value,expireTime, TimeUnit.SECONDS);
+        LOCAL_CACHE.put(caffeineKey, value);
+        return pictureVOPage;
+    }
     @Override
     public void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser) {
         //1、校验数据能否审核

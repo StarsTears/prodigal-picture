@@ -1,31 +1,24 @@
 package com.prodigal.system.manager.upload;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.http.HttpStatus;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.http.Method;
 import com.prodigal.system.config.CosClientConfig;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
-import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.ciModel.persistence.CIObject;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
+import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -66,6 +59,20 @@ public abstract class PictureUploadTemplate {
             //上传图片 后 获得图片信息对象
             PutObjectResult putPictureObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putPictureObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
+            //图片处理后的返回结果
+            ProcessResults processResults = putPictureObjectResult.getCiUploadResult().getProcessResults();
+            List<CIObject> objectList = processResults.getObjectList();
+            if (CollUtil.isNotEmpty(objectList)){
+                CIObject compressedObject = objectList.get(0);
+                //缩略图默认为压缩图
+                CIObject thumbnailObject = compressedObject;
+                if (objectList.size()>1) {
+                    thumbnailObject = objectList.get(1);
+                }
+                UploadPictureResult uploadPictureResult = buildResult(originalFilename, uploadPath, compressedObject, thumbnailObject);
+                this.processUploadResult(inputSource,uploadPictureResult);
+                return uploadPictureResult;
+            }
             //封装返回结果
             UploadPictureResult uploadPictureResult = buildResult(imageInfo, file, originalFilename, uploadPath);
             //源文件地址
@@ -101,24 +108,56 @@ public abstract class PictureUploadTemplate {
 
     /**
      * 封装返回结果
+     *
+     * @param originalFilename 文件名
+     * @param compressedObject 图片处理返回结果
+     * @param thumbnailObject 图片缩略后的返回结果
+     * @return UploadPictureResult
+     */
+    private UploadPictureResult buildResult(String originalFilename, String uploadPath, CIObject compressedObject, CIObject thumbnailObject) {
+
+        int picWidth = compressedObject.getWidth();
+        int picHeight = compressedObject.getHeight();
+        //宽高比
+        double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
+        //封装返回结果
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        //未压缩的原图地址
+        uploadPictureResult.setOriginUrl(cosClientConfig.getHost() + "/" +uploadPath);
+        //格式转换后的图片地址
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedObject.getKey());
+        //缩略图地址
+        uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailObject.getKey());
+        //通过url 上传的url路径
+        uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
+        uploadPictureResult.setPicHeight(picHeight);
+        uploadPictureResult.setPicWidth(picWidth);
+        uploadPictureResult.setPicScale(picScale);
+        uploadPictureResult.setPicFormat(compressedObject.getFormat());
+        uploadPictureResult.setPicSize(compressedObject.getSize().longValue());
+        return uploadPictureResult;
+    }
+    /**
+     * 封装返回结果
      * @param imageInfo 图片信息对象
      * @param file  文件
      * @param originalFilename  文件名
      * @param uploadPath  上传地址
      */
     private UploadPictureResult buildResult(ImageInfo imageInfo, File file,String originalFilename, String uploadPath) {
-        UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = imageInfo.getWidth();
         int picHeight = imageInfo.getHeight();
         //宽高比
         double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
+        //封装返回结果
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
         uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicWidth(picWidth);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(imageInfo.getFormat());
         uploadPictureResult.setPicSize(FileUtil.size(file));
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
         uploadPictureResult.setSourceUrl(originalFilename);
         return uploadPictureResult;
     }

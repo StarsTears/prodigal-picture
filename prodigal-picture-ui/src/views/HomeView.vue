@@ -40,7 +40,7 @@
           <!-- 单张图片-->
           <a-card hoverable @click="doClickPicture(picture)">
             <template #cover>
-              <img :alt="picture.name" :src="picture.url"
+              <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
                    style="height: 180px;object-fit: cover"/>
             </template>
             <a-card-meta :title="picture.name">
@@ -65,7 +65,7 @@
 import {computed, onMounted, reactive, ref} from 'vue'
 import {
   listPictureByPageUsingPost,
-  listPictureTagCategoryUsingGet,
+  listPictureTagCategoryUsingGet, listPictureVoByPageCacheUsingPost,
   listPictureVoByPageUsingPost
 } from "@/api/pictureController";
 import {message} from "ant-design-vue";
@@ -74,10 +74,11 @@ import {useRouter} from "vue-router";
 // 数据
 const dataList = ref<API.Picture[]>([])
 const loading = ref<boolean>(true)
+const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryDto>({
   current: 1,
-  pageSize: 12,
+  pageSize: 20,
   sortField: 'createTime',
   sortOrder: 'descend'
 })
@@ -98,7 +99,7 @@ const fetchData = async () => {
       params.tags.push(tagList.value[index])
     }
   })
-  const res = await listPictureVoByPageUsingPost( params)
+  const res = await listPictureVoByPageCacheUsingPost( params)
   if (res.data) {
     dataList.value = res.data.records ?? []
   } else {
@@ -121,9 +122,9 @@ const pagination = computed(() => {
   return {
     current: searchParams.current ?? 1,
     pageSize: searchParams.pageSize ?? 10,
-    showSizeChanger: true,
+    // showSizeChanger: true,
     locale: locale,
-    pageSizeOptions: ['5', '10', '20', '30'],//可选的页面显示条数
+    total: total.value,
     onChange: (page: number, pageSize: number) => {
       searchParams.current = page
       searchParams.pageSize = pageSize

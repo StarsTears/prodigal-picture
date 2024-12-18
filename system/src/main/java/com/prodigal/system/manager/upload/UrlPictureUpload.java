@@ -80,7 +80,13 @@ public class UrlPictureUpload extends PictureUploadTemplate{
     @Override
     protected String getOriginalFilename(Object inputSource) {
         String fileUrl = (String) inputSource;
-        return String.format("%s.%s",FileUtil.mainName(fileUrl), FileUtil.getSuffix(fileUrl));
+        //https://files.codelife.cc/wallhaven/full/vg/wallhaven-vgjp2l.png?x-oss-process=image/resize,limit_0,m_fill,w_1920,h_1080/quality,Q_95/format,webp
+        int questionMarkIndex =fileUrl.indexOf("?");
+        if (questionMarkIndex > -1){
+            fileUrl = fileUrl.substring(0,questionMarkIndex);
+        }
+        String suffix = StrUtil.isNotBlank(FileUtil.getSuffix(fileUrl)) ? FileUtil.getSuffix(fileUrl) : "jpeg";
+        return String.format("%s.%s",FileUtil.mainName(fileUrl), suffix);
     }
 
     @Override
