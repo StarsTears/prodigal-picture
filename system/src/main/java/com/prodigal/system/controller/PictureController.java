@@ -13,11 +13,13 @@ import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CacheManager;
 import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
+import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import com.prodigal.system.model.vo.PictureTagCategory;
 import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.service.PictureService;
+import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -41,9 +43,8 @@ public class PictureController {
     private PictureService pictureService;
     @Resource
     private UserService userService;
-
     @Resource
-    private CacheManager cacheManager;
+    private SpaceService spaceService;
 
     /**
      * 图片上传
@@ -92,19 +93,8 @@ public class PictureController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        //图片应只能管理员/本人删除
         User loginUser = userService.getLoginUser(request);
-        Long id = deleteRequest.getId();
-        //查询该图片是否存在
-        Picture picture = pictureService.getById(id);
-        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
-        //验证权限
-        if (!loginUser.getId().equals(picture.getUserId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
-        }
-        boolean result = pictureService.removeById(deleteRequest.getId());
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        pictureService.clearPictureFile(picture);
+        pictureService.deletePicture(deleteRequest.getId(), loginUser);
         return ResultUtils.success(true);
     }
 
@@ -164,27 +154,9 @@ public class PictureController {
         if (pictureEditDto == null || pictureEditDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Picture picture = new Picture();
-        BeanUtils.copyProperties(pictureEditDto, picture);
-        picture.setTags(JSONUtil.toJsonStr(pictureEditDto.getTags()));
-        //设置编辑时间
-        picture.setEditTime(new Date());
-        //数据校验
-        pictureService.validPicture(picture);
-        //判断图片是否存在
-        Long id = pictureEditDto.getId();
-        Picture oldPicture = pictureService.getById(id);
-        //验证权限
-        //图片应只能管理员/本人删除
         User loginUser = userService.getLoginUser(request);
-        if (!loginUser.getId().equals(picture.getUserId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
-        }
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        //补充审核参数
-        pictureService.fillReviewParams(picture, loginUser);
-        boolean result = pictureService.updateById(picture);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        pictureService.editPicture(pictureEditDto, loginUser);
+
         return ResultUtils.success(true);
     }
 
@@ -201,7 +173,12 @@ public class PictureController {
 
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
-
+        //空间权限校验
+        Long spaceId = picture.getSpaceId();
+        if (spaceId != null){
+            User loginUser = userService.getLoginUser(request);
+            pictureService.checkPicturePermission(loginUser, picture);
+        }
         return ResultUtils.success(picture);
     }
 
@@ -217,7 +194,11 @@ public class PictureController {
 
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
-
+        Long spaceId = picture.getSpaceId();
+        if (spaceId!=null){
+            User loginUser = userService.getLoginUser(request);
+            pictureService.checkPicturePermission(loginUser, picture);
+        }
         return ResultUtils.success(pictureService.getPictureVO(picture, request));
     }
 
@@ -232,7 +213,6 @@ public class PictureController {
     public BaseResult<Page<Picture>> listPictureByPage(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
-        // 限制爬虫
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
         return ResultUtils.success(picturePage);
     }
@@ -249,7 +229,21 @@ public class PictureController {
         long size = pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
+        //空间权限校验
+        Long spaceId = pictureQueryDto.getSpaceId();
+        if (spaceId == null) {
+            //普通用户查看公共图库(已过审)
+            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            pictureQueryDto.setNullSpaceId(true);
+        }else{
+            User loginUser = userService.getLoginUser(request);
+            Space space = spaceService.getById(spaceId);
+            if (space == null){
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"空间不存在");
+            }
+            ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
+        }
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
         return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
     }
@@ -267,7 +261,19 @@ public class PictureController {
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
-
+        Long spaceId = pictureQueryDto.getSpaceId();
+        if (spaceId == null) {
+            //普通用户查看公共图库(已过审)
+            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            pictureQueryDto.setNullSpaceId(true);
+        }else{
+            User loginUser = userService.getLoginUser(request);
+            Space space = spaceService.getById(spaceId);
+            if (space == null){
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"空间不存在");
+            }
+            ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
+        }
         Page<PictureVO> pictureVOPageCache = pictureService.getPictureVOPageCache(pictureQueryDto, request);
 
         return ResultUtils.success(pictureVOPageCache);

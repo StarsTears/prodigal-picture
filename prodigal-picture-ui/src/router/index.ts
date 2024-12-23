@@ -3,6 +3,9 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import UserDetailView from '../views/user/UserDetailView.vue'
 import PictureDetailView from '../views/picture/PictureDetailView.vue'
+import MySpaceView from '../views/space/MySpaceView.vue'
+import AddSpaceView from  '../views/space/AddSpaceView.vue'
+import SpaceDetailView from '../views/space/SpaceDetailView.vue'
 import ACCESS_ENUM from "@/access/accessEnum";
 
 const router = createRouter({
@@ -50,6 +53,14 @@ const router = createRouter({
       }
     },
     {
+      path:'/admin/spaceManager',
+      name:'空间管理',
+      component:()=>import('../views/admin/SpaceManagerView.vue'),
+      meta:{
+        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+      }
+    },
+    {
       path:'/picture/add_picture',
       name:'创建图片',
       component:()=>import('../views/picture/AddPictureView.vue')
@@ -61,8 +72,24 @@ const router = createRouter({
     },
     {
       path:'/picture/:id',
-      name:'图片详情页',
+      name:'图片详情',
       component: PictureDetailView,
+      props: true
+    },
+    {
+      path:'/space/add_space',
+      name:'创建空间',
+      component: AddSpaceView
+    },
+    {
+      path:'/space/my_space',
+      name:'我的空间',
+      component: MySpaceView
+    },
+    {
+      path:'/space/:id',
+      name:'空间详情',
+      component: SpaceDetailView,
       props: true
     },
   ],

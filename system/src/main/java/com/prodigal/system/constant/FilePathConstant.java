@@ -18,4 +18,8 @@ public interface FilePathConstant {
      * 公共目录
      */
     String PICTURE_PUBLIC_PREFIX = "picture/public";
+    /**
+     * 私有目录
+     */
+    String PICTURE_SPACE_PREFIX = "picture/space";
 }

@@ -1,5 +1,5 @@
 <template>
-  <div id="globalHeader">
+  <div id="globalHeader" :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
     <a-row :wrap="false">
       <a-col flex="200px">
         <RouterLink to="/">
@@ -25,6 +25,12 @@
                   <a-menu-item @click="doShow">
                     <UserOutlined/>
                     个人中心
+                  </a-menu-item>
+                  <a-menu-item>
+                    <RouterLink to="/space/my_space">
+                      <EyeOutlined />
+                      我的空间
+                    </RouterLink>
                   </a-menu-item>
                   <a-menu-item @click=doLogout>
                     <LogoutOutlined/>
@@ -115,8 +121,8 @@
 <script lang="ts" setup>
 import {computed, h, reactive, ref} from 'vue';
 import {
-  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined,
-  UploadOutlined,EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
+  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined,FolderOutlined,
+  EyeOutlined,UploadOutlined,EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
 } from '@ant-design/icons-vue';
 import {MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
@@ -142,6 +148,11 @@ const originItems = [
     icon: h(PictureOutlined),
     label: '图片管理',
     title: '图片管理',
+  }, {
+    key: '/admin/spaceManager',
+    icon: h(FolderOutlined),
+    label: '空间管理',
+    title: '空间管理',
   }, {
     key: '/admin/userManager',
     icon: h(UserOutlined),
@@ -295,14 +306,11 @@ const visible = ref(false);
 //       console.log('Validate Failed:', info);
 //     });
 // };
-
-
 </script>
 
 <style scoped>
 #globalHeader{
-  /*position: fixed;*/
-  /*z-index: 1; !* 确保footer在最上层 *!*/
+  background: #ffffff;
 }
 #globalHeader .title-bar {
   display: flex;

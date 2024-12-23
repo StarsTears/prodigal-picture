@@ -1,16 +1,20 @@
 <template>
   <div id="basicLayout">
     <a-layout style="min-height: 100vh">
-      <a-layout-header class="header">
+      <a-layout-header class="header" >
         <GlobalHeader/>
       </a-layout-header>
       <!--  水印    -->
-<!--      <a-watermark content="Prodigal Picture">-->
-<!--        <div style="height: 500px"/>-->
-<!--      </a-watermark>-->
+      <!--      <a-watermark content="Prodigal Picture">-->
+      <!--        <div style="height: 500px"/>-->
+      <!--      </a-watermark>-->
+      <a-layout>
+        <GlobalSider class="sider"/>
         <a-layout-content class="content">
           <RouterView/>
         </a-layout-content>
+      </a-layout>
+
 
       <a-layout-footer class="footer">
         <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
@@ -24,13 +28,13 @@
 
 <script>
 import GlobalHeader from "@/components/GlobalHeader.vue";
+import GlobalSider from "@/components/GlobalSider.vue";
 import {GithubOutlined} from '@ant-design/icons-vue';
 
 export default {
   name: "BasicLayout",
-  components: {GlobalHeader, GithubOutlined}
+  components: {GlobalHeader,GlobalSider, GithubOutlined}
 }
-
 
 </script>
 
@@ -39,12 +43,23 @@ export default {
   padding-inline: 20px;
   background: white;
   color: unset;
-  margin-bottom: 16px;
+  margin-bottom: 1px;
   /*z-index: 1000; !* 确保footer在最上层 *!*/
 }
 
+#basicLayout .sider {
+  background: #ffffff;
+  padding-top: 20px;
+  border-right: 0.5px solid #eee;
+}
+
+#basicLayout :deep(.ant-menu-root){
+  border-bottom: none !important;
+  border-inline-end: none !important;
+}
+
 #basicLayout .content {
-  padding: 20px;
+  padding: 28px;
   background: linear-gradient(to right, #efefef, #ffffff);
   margin-bottom: 30px;
 }

@@ -1,11 +1,12 @@
 package com.prodigal.system.manager;
 
-import com.prodigal.system.manager.strategy.CacheContext;
-import com.prodigal.system.manager.strategy.CacheStrategy;
-import com.prodigal.system.manager.strategy.CaffeineCacheStrategy;
-import com.prodigal.system.manager.strategy.RedisCacheStrategy;
+import com.prodigal.system.constant.CacheConstant;
+import com.prodigal.system.manager.strategy.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @program: prodigal-picture
@@ -14,16 +15,35 @@ import org.springframework.stereotype.Service;
  **/
 @Component
 public class CacheManager {
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Resource
+    private RedisCacheStrategy redisCacheStrategy;
+    @Resource
+    private CaffeineCacheStrategy caffeineCacheStrategy;
     public void putCacheValue(CacheContext cacheContext) {
-
+        String type = cacheContext.getType();
+        CacheStrategy cacheStrategy =redisCacheStrategy;
+        if (CacheConstant.CAFFEINE_TYPE.equals(type)){
+            cacheStrategy = caffeineCacheStrategy;
+        }
+        cacheStrategy.putCacheValue(cacheContext);
     }
 
-    public String getCacheValue(CacheContext cacheContext) {
+    public Object getCacheValue(CacheContext cacheContext) {
         String type = cacheContext.getType();
-        CacheStrategy cacheStrategy = new RedisCacheStrategy();
-        if ("caffeine".equals(type)){
-            cacheStrategy = new CaffeineCacheStrategy();
+        CacheStrategy cacheStrategy = redisCacheStrategy;
+        if (CacheConstant.CAFFEINE_TYPE.equals(type)){
+            cacheStrategy = caffeineCacheStrategy;
         }
         return cacheStrategy.getCacheValue(cacheContext);
+    }
+    public void removeCacheValue(CacheContext cacheContext) {
+        String type = cacheContext.getType();
+        CacheStrategy cacheStrategy = redisCacheStrategy;
+        if (CacheConstant.CAFFEINE_TYPE.equals(type)){
+            cacheStrategy = caffeineCacheStrategy;
+        }
+        cacheStrategy.removeCacheValue(cacheContext);
     }
 }

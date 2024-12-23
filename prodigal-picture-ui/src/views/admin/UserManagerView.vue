@@ -40,6 +40,7 @@
       <template v-if="column.title === '序号'">
         {{ (pagination.current - 1) * pagination.pageSize + parseInt(index) + 1 }}
       </template>
+
       <template v-if="column.dataIndex === 'userAvatar'">
         <a-image :src="record.userAvatar" :width="50"/>
       </template>

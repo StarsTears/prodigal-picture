@@ -1,36 +1,40 @@
 package com.prodigal.system.manager.strategy;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @program: prodigal-picture
  * @author: Lang
- * @description: Redis 缓存
+ * @description: Redis缓存实现类
  **/
+@Primary
 @Service
-public class RedisCacheStrategy implements CacheStrategy{
+public class RedisCacheStrategy implements CacheStrategy {
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisTemplate redisTemplate;
+
     @Override
     public void putCacheValue(CacheContext cacheContext) {
-        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
         String key = cacheContext.getKey();
         String value = cacheContext.getValue();
         int cacheExpireTime = cacheContext.getCacheExpireTime();
         TimeUnit cacheExpireTimeUnit = cacheContext.getCacheExpireTimeUnit();
-        opsForValue.set(key,value,cacheExpireTime,cacheExpireTimeUnit);
+        redisTemplate.opsForValue().set(key, value, cacheExpireTime, cacheExpireTimeUnit);
     }
 
     @Override
-    public String getCacheValue(CacheContext cacheContext) {
-        ValueOperations<String, String> opsForValue = stringRedisTemplate.opsForValue();
+    public Object getCacheValue(CacheContext cacheContext) {
         String key = cacheContext.getKey();
-        return opsForValue.get(key);
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    @Override
+    public void removeCacheValue(CacheContext cacheContext) {
+        redisTemplate.delete(cacheContext.getKey());
     }
 }

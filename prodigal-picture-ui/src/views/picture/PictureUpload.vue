@@ -37,6 +37,7 @@ const progress: UploadProps['progress'] = {
 
 interface Props {
   picture?: API.PictureVO
+  spaceId ?:number
   onSuccess?: (newPicture: API.PictureVO) => void;
 }
 
@@ -48,7 +49,8 @@ const props = defineProps<Props>();
 const handleUpload=async ({file}:any)=>{
   loading.value = true;
   try {
-    const params = props.picture ? {id:props.picture.id} : {}
+    const params:API.PictureUploadDto  = props.picture ? {id:props.picture.id} : {}
+    params.spaceId = props.spaceId;
     const res = await uploadPictureUsingPost(params,{}, file);
     if (res.code === 0 && res.data) {
       message.success("图片上传成功");
@@ -79,7 +81,7 @@ const loading = ref<boolean>(false);
  */
 const beforeUpload = (file: UploadProps['fileList'][number]) => {
   //校验图片格式
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp';
   if (!isJpgOrPng) {
     message.error('You can only upload JPG file!');
   }

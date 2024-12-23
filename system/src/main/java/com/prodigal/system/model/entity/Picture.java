@@ -123,6 +123,10 @@ public class Picture implements Serializable {
      * 审核时间
      */
     private Date reviewTime;
+    /**
+     * 空间ID
+     */
+    private Long spaceId;
 
     /**
      * 是否删除

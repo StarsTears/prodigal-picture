@@ -33,6 +33,9 @@ const handleUpload = async () => {
     if (props.picture) {
       params.id = props.picture.id
     }
+    if (props.spaceId){
+      params.spaceId = props.spaceId;
+    }
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.code === 0 && res.data) {
       message.success('图片上传成功')

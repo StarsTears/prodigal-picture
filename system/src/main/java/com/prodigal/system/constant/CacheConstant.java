@@ -6,6 +6,8 @@ package com.prodigal.system.constant;
  * @description: 缓存key 常量
  **/
 public interface CacheConstant {
+    String CAFFEINE_TYPE = "caffeine";
+    String REDIS_TYPE = "redis";
     /**
      * 项目前缀
      */

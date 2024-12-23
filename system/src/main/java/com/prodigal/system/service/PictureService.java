@@ -2,10 +2,8 @@ package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.prodigal.system.model.dto.picture.PictureQueryDto;
-import com.prodigal.system.model.dto.picture.PictureReviewDto;
-import com.prodigal.system.model.dto.picture.PictureUploadByBatchDto;
-import com.prodigal.system.model.dto.picture.PictureUploadDto;
+import com.prodigal.system.common.DeleteRequest;
+import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.entity.User;
@@ -25,6 +23,8 @@ public interface PictureService extends IService<Picture> {
 
     int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser);
 
+    void editPicture(PictureEditDto pictureEditDto, User loginUser);
+
     LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto);
 
     PictureVO getPictureVO(Picture picture, HttpServletRequest request);
@@ -39,5 +39,9 @@ public interface PictureService extends IService<Picture> {
 
     void fillReviewParams(Picture picture, User loginUser);
 
+    void deletePicture(long pictureId, User loginUser);
+
     void clearPictureFile(Picture oldPicture);
+
+    void checkPicturePermission(User loginUser, Picture picture);
 }

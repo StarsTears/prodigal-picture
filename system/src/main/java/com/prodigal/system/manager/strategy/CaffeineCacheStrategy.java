@@ -2,10 +2,8 @@ package com.prodigal.system.manager.strategy;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -21,18 +19,19 @@ public class CaffeineCacheStrategy implements CacheStrategy{
                                                                     // 缓存 5 分钟移除
                                                                 .expireAfterWrite(5L, TimeUnit.MINUTES)
                                                                 .build();
-
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
     @Override
     public void putCacheValue(CacheContext cacheContext) {
-
+        LOCAL_CACHE.put(cacheContext.getKey(), cacheContext.getValue());
     }
 
     @Override
-    public String getCacheValue(CacheContext cacheContext) {
-        String key = cacheContext.getKey();
-        String cachedValue = stringRedisTemplate.opsForValue().get(key);
-        return null;
+    public Object getCacheValue(CacheContext cacheContext) {
+        return LOCAL_CACHE.getIfPresent(cacheContext.getKey());
     }
+
+    @Override
+    public void removeCacheValue(CacheContext cacheContext) {
+        LOCAL_CACHE.invalidate(cacheContext.getKey());
+    }
+
 }

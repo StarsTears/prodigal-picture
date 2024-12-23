@@ -7,5 +7,6 @@ package com.prodigal.system.manager.strategy;
  **/
 public interface CacheStrategy {
     void putCacheValue(CacheContext cacheContext);
-    String getCacheValue(CacheContext cacheContext);
+    Object getCacheValue(CacheContext cacheContext);
+    void removeCacheValue(CacheContext cacheContext);
 }

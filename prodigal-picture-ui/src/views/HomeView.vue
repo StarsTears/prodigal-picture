@@ -30,46 +30,24 @@
     </div>
 
     <!--图片列表-->
-    <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-            :data-source="dataList"
-            :pagination="pagination"
-            :loading="loading"
-    >
-      <template #renderItem="{ item:picture }">
-        <a-list-item style="padding: 0">
-          <!-- 单张图片-->
-          <a-card hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
-                   style="height: 180px;object-fit: cover"/>
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-              </template>
-            </a-card-meta>
-          </a-card>
-        </a-list-item>
-      </template>
-    </a-list>
+    <PictureList :dataList="dataList" :loading="loading"/>
+    <a-pagination v-model:current="searchParams.current"
+                  v-model:page-size="searchParams.pageSize"
+                  :total="total"
+                  @change="onPageChange"
+                  style="text-align: right"
+    />
   </div>
 </template>
 <script setup lang="ts">
 import {computed, onMounted, reactive, ref} from 'vue'
 import {
-  listPictureByPageUsingPost,
-  listPictureTagCategoryUsingGet, listPictureVoByPageCacheUsingPost,
-  listPictureVoByPageUsingPost
+  listPictureTagCategoryUsingGet,
+  listPictureVoByPageCacheUsingPost,
+  listPictureVoByPageUsingPost,
 } from "@/api/pictureController";
 import {message} from "ant-design-vue";
-import {useRouter} from "vue-router";
+import PictureList from "@/components/PictureList.vue";
 
 // 数据
 const dataList = ref<API.Picture[]>([])
@@ -78,7 +56,7 @@ const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.PictureQueryDto>({
   current: 1,
-  pageSize: 30,
+  pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend'
 })
@@ -89,7 +67,8 @@ const fetchData = async () => {
   //转换搜索参数
   const params = {
     ...searchParams,
-    tags: []
+    tags: [],
+    nullSpaceId: true
   }
   if (selectCategory.value !== 'all') {
     params.category = selectCategory.value
@@ -99,9 +78,11 @@ const fetchData = async () => {
       params.tags.push(tagList.value[index])
     }
   })
-  const res = await listPictureVoByPageCacheUsingPost( params)
+  // const res = await listPictureVoByPageCacheUsingPost( params)
+  const res = await listPictureVoByPageUsingPost( params)
   if (res.data) {
     dataList.value = res.data.records ?? []
+    total.value = res.data.total
   } else {
     message.error('获取数据失败，' + res.msg)
   }
@@ -118,21 +99,11 @@ const locale = {
   page: '页',
 };
 // 分页参数
-const pagination = computed(() => {
-  return {
-    current: searchParams.current ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    // showSizeChanger: true,
-    locale: locale,
-    total: total.value,
-    onChange: (page: number, pageSize: number) => {
+const onPageChange = (page: number, pageSize: number) => {
       searchParams.current = page
       searchParams.pageSize = pageSize
       fetchData()
-    }
-  }
-})
-
+}
 
 // 获取数据
 const doSearch = () => {
@@ -140,7 +111,6 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
-
 
 /**
  * 获取分类、标签
@@ -162,10 +132,6 @@ const getTagCategoryOptions = async () => {
 onMounted(() => {
   getTagCategoryOptions()
 })
-
-
-const router = useRouter()
-const doClickPicture=(picture)=> {router.push(`/picture/${picture.id}/`)}
 </script>
 <style scoped>
 .homeView {

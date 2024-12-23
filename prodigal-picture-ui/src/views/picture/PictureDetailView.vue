@@ -25,6 +25,9 @@
             <a-descriptions-item label="简介">
               {{ picture.introduction ?? '-' }}
             </a-descriptions-item>
+            <a-descriptions-item v-if="picture.spaceId" label="所属空间">
+              {{ picture.spaceId }}
+            </a-descriptions-item>
             <a-descriptions-item label="分类">
               {{ picture.category ?? '默认' }}
             </a-descriptions-item>
