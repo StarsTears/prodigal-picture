@@ -37,6 +37,10 @@ public class UploadPictureResult implements Serializable {
      * 图片名称
      */
     private String picName;
+    /**
+     * 图片名称
+     */
+    private String picColor;
 
     /**
      * 文件体积

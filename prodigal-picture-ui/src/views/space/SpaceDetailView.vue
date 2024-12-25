@@ -21,6 +21,9 @@
       </a-tooltip>
     </a-space>
   </a-flex>
+  <!-- 搜索表单 -->
+  <PictureSearchForm :onSearch="onSearch"/>
+  <div style="margin-bottom: 16px"/>
   <!-- 图片列表 -->
   <PictureList :dataList="dataList" :loading="loading" showOp :onReload = "fetchData"/>
   <a-pagination
@@ -39,11 +42,12 @@
 <script setup lang="ts">
 import {onMounted, reactive, ref} from "vue";
 import {DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
-import {listPictureVoByPageCacheUsingPost} from "@/api/pictureController";
+import {listPictureVoByPageCacheUsingPost, listPictureVoByPageUsingPost} from "@/api/pictureController";
 import {getSpaceVoByIdUsingGet} from "@/api/spaceController";
 import {message} from "ant-design-vue";
 import {formatSize} from '@/utils/index'
 import PictureList from "@/components/PictureList.vue";
+import PictureSearchForm from "@/components/PictureSearchForm.vue";
 import UploadPictureModelView from "@/components/UploadPictureModelView.vue";
 
 interface Props {
@@ -75,26 +79,33 @@ const dataList = ref<API.Picture[]>([])
 const loading = ref<boolean>(true)
 const total = ref(0)
 // 搜索条件
-const searchParams = reactive<API.PictureQueryDto>({
+const searchParams = ref<API.PictureQueryDto>({
   current: 1,
   pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend'
 })
-
+const onSearch = (newSearchParams: API.PictureQueryDto) => {
+  searchParams.value = {
+          ...searchParams.value,
+          ...newSearchParams,
+          current:1
+  }
+  fetchData()
+}
 // 获取数据
 const fetchData = async () => {
   loading.value = true
   //转换搜索参数
   const params = {
-    ...searchParams,
+    ...searchParams.value,
     spaceId: props.id
   }
-
-  const res = await listPictureVoByPageCacheUsingPost( params)
+  console.log("获取图片分页："+JSON.stringify(params.value))
+  const res = await listPictureVoByPageUsingPost(params)
   if (res.data) {
     dataList.value = res.data.records ?? []
-    total.value = res.data.total
+    total.value = res.data.total??0
   } else {
     message.error('获取数据失败，' + res.msg)
   }
@@ -111,16 +122,9 @@ const locale = {
   page: '页',
 };
 // 分页参数
-const onPageChange = (page: number, pageSize: number) => {
-  searchParams.current = page
-  searchParams.pageSize = pageSize
-  fetchData()
-}
-
-// 获取数据
-const doSearch = () => {
-  // 重置页码
-  searchParams.current = 1
+const onPageChange = (page, pageSize) => {
+  searchParams.value.current = page
+  searchParams.value.pageSize = pageSize
   fetchData()
 }
 

@@ -12,8 +12,8 @@
       <a-form-item label="关键词">
         <a-input v-model:value="searchParams.searchText" placeholder="输入关键词(名称、简介)" allow-clear/>
       </a-form-item>
-      <a-form-item label="类型">
-        <a-input v-model:value="searchParams.category" placeholder="输入类型" allow-clear/>
+      <a-form-item label="分类">
+        <a-input v-model:value="searchParams.category" placeholder="输入分类" allow-clear/>
       </a-form-item>
       <a-form-item label="标签">
         <a-select v-model:value="searchParams.tags" mode="tags" placeholder="输入标签"
@@ -25,6 +25,10 @@
                   placeholder="输入审核状态"
                   style="min-width: 180px"
                   allow-clear/>
+      </a-form-item>
+      <!-- 按颜色搜索 -->
+      <a-form-item label="颜色" name="picColor">
+        <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
       </a-form-item>
       <a-form-item>
         <a-button type="primary" html-type="submit">搜索</a-button>
@@ -241,6 +245,9 @@ const doTableChange = (page: any) => {
 }
 
 // 获取数据
+const onColorChange=(color:string)=>{
+  searchParams.picColor = color
+}
 const doSearch = () => {
   // 重置页码
   searchParams.current = 1

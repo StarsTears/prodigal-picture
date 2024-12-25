@@ -122,6 +122,21 @@ export async function doPictureReviewUsingPost(
   })
 }
 
+/** searchImageByBaidu POST /api/picture/search/picture */
+export async function searchImageByBaiduUsingPost(
+  body: API.ImageSearchDto,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultListImageSearchResult_>('/api/picture/search/picture', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** listPictureTagCategory GET /api/picture/tag_category */
 export async function listPictureTagCategoryUsingGet(options?: { [key: string]: any }) {
   return request<API.BaseResultPictureTagCategory_>('/api/picture/tag_category', {

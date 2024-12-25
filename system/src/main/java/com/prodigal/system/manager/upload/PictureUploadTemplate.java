@@ -69,7 +69,7 @@ public abstract class PictureUploadTemplate {
                 if (objectList.size()>1) {
                     thumbnailObject = objectList.get(1);
                 }
-                UploadPictureResult uploadPictureResult = buildResult(originalFilename, uploadPath, compressedObject, thumbnailObject);
+                UploadPictureResult uploadPictureResult = buildResult(originalFilename, uploadPath, compressedObject, thumbnailObject,imageInfo);
                 this.processUploadResult(inputSource,uploadPictureResult);
                 return uploadPictureResult;
             }
@@ -114,7 +114,7 @@ public abstract class PictureUploadTemplate {
      * @param thumbnailObject 图片缩略后的返回结果
      * @return UploadPictureResult
      */
-    private UploadPictureResult buildResult(String originalFilename, String uploadPath, CIObject compressedObject, CIObject thumbnailObject) {
+    private UploadPictureResult buildResult(String originalFilename, String uploadPath, CIObject compressedObject, CIObject thumbnailObject,ImageInfo imageInfo) {
 
         int picWidth = compressedObject.getWidth();
         int picHeight = compressedObject.getHeight();
@@ -135,6 +135,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicFormat(compressedObject.getFormat());
         uploadPictureResult.setPicSize(compressedObject.getSize().longValue());
+        uploadPictureResult.setPicColor(imageInfo.getAve());//颜色的格式为 16 进制
         return uploadPictureResult;
     }
     /**

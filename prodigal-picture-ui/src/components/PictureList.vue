@@ -26,35 +26,35 @@
               </template>
             </a-card-meta>
             <template v-if="showOp" #actions>
-              <a-space @click="e => doEdit(picture, e)">
-                <edit-outlined />
-                编辑
-              </a-space>
-              <a-space @click="e => doDelete(picture, e)">
-                <delete-outlined />
-                删除
-              </a-space>
+              <search-outlined @click="(e) => doSearch(picture, e)"/>
+              <share-alt-outlined @click="(e) => doShare(picture, e)"/>
+              <edit-outlined @click="(e) => doEdit(picture, e)"/>
+              <delete-outlined @click="(e) => doDelete(picture, e)"/>
             </template>
           </a-card>
         </a-list-item>
       </template>
     </a-list>
+    <ShareModal ref="shareModalRef" :link="shareLink"/>
   </div>
+
 </template>
 
 <script setup lang="ts">
 import {useRouter} from "vue-router";
 import {ref} from "vue";
-import {DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
+import {DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined} from '@ant-design/icons-vue';
 import {deletePictureUsingPost} from "@/api/pictureController";
 import {message} from "ant-design-vue";
+import ShareModal from "@/components/ShareModal.vue";
 
-interface Props{
-  dataList ?: API.PictureVO[]
-  loading ?: boolean
+interface Props {
+  dataList?: API.PictureVO[]
+  loading?: boolean
   showOp?: boolean
-  onReload ?: () => void
+  onReload?: () => void
 }
+
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: () => false,
@@ -65,9 +65,31 @@ const props = withDefaults(defineProps<Props>(), {
 const total = ref(0)
 
 
-
 const router = useRouter()
-const doClickPicture=(picture)=> {router.push(`/picture/${picture.id}/`)}
+const doClickPicture = (picture) => {
+  router.push(`/picture/${picture.id}/`)
+}
+
+//搜索
+const doSearch = (picture, e) => {
+  //阻止事件传播
+  e.stopPropagation()
+  window.open(`/picture/search_picture?pictureId=${picture.id}`)
+}
+
+// 分享弹窗引用
+const shareModalRef = ref(false)
+// 分享链接
+const shareLink = ref<string>()
+
+// 分享
+const doShare = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
+}
 
 // 编辑
 const doEdit = (picture, e) => {
@@ -89,7 +111,7 @@ const doDelete = async (picture, e) => {
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({ id })
+  const res = await deletePictureUsingPost({id})
   if (res.data.code === 0) {
     message.success('删除成功')
     // 让外层刷新

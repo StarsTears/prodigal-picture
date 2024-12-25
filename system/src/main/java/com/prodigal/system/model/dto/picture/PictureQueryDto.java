@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -102,6 +103,20 @@ public class PictureQueryDto extends PageRequest implements Serializable {
      */
     private boolean nullSpaceId;
 
+    /**
+     * 开始编辑时间
+     */
+    private Date startEditTime;
+
+    /**
+     * 结束编辑时间  
+     */
+    private Date endEditTime;
+
+    /**
+     * 主色调
+     */
+    private String picColor;
 }
 
 

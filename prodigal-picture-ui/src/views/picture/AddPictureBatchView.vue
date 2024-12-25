@@ -58,6 +58,7 @@ const loading = ref(false)
 const router = useRouter();
 const handleSubmit = async (values: any) => {
   loading.value = true
+  console.log("请求参数："+JSON.stringify(formData))
   const res = await uploadPictureByBatchUsingPost({
     ...formData
   })

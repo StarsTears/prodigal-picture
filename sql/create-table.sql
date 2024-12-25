@@ -63,11 +63,14 @@ create table if not exists picture
 ALTER TABLE picture
     ADD COLUMN  sourceUrl   varchar(512)    NULL  comment '源图片url',
     ADD COLUMN originUrl varchar(512) NULL  comment '原图url',
-    ADD COLUMN thumbnailUrl varchar(512) NULL  comment '缩略图url'
+    ADD COLUMN thumbnailUrl varchar(512) NULL  comment '缩略图url';
 
 -- 添加新列
 ALTER TABLE picture
     ADD COLUMN spaceId  bigint  null comment '空间 id（为空表示公共空间）';
+ALTER TABLE picture
+    ADD COLUMN picColor varchar(16) null comment '图片主色调';
+
 
 -- 创建索引
 CREATE INDEX idx_spaceId ON picture (spaceId);

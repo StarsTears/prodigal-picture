@@ -327,8 +327,12 @@ const visible = ref(false);
   font-weight: bold;
   margin-left: 10px;
 }
+/*#globalHeader :deep(.ant-space-item) {*/
+/*  padding-right: 0 ;*/
+/*}*/
 .detail-footer{
   display: flex;
   justify-content: flex-end; /* 将内容推到右侧 */
 }
+
 </style>

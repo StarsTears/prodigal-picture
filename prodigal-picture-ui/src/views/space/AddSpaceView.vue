@@ -73,7 +73,7 @@ const space = ref<API.SpaceVO>();
 const spaceForm = reactive<API.SpaceAddDto | API.SpaceUpdateDto>({
   spaceName: '',
   spaceLevel: SPACE_LEVEL_ENUM.COMMON,
-  maxSize: 100,
+  maxSize: 100.00,
   maxCount: 100
 })
 

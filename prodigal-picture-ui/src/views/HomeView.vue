@@ -2,13 +2,27 @@
   <div class="homeView">
     <!--搜索框-->
     <div class="search-bar">
-      <a-input-search
-        v-model:value="searchParams.searchText"
-        placeholder="input search text"
-        enter-button="Search"
-        size="large"
-        @search="doSearch"
-      />
+<!--      <a-form layout="inline" :model="searchParams" @finish="doSearch">-->
+<!--        <a-form-item label="关键词" name="searchText">-->
+<!--          <a-input-->
+<!--            v-model:value="searchParams.searchText"-->
+<!--            placeholder="input search text"-->
+<!--            allow-clear-->
+<!--          />-->
+<!--        </a-form-item>-->
+<!--        &lt;!&ndash; 按颜色搜索 &ndash;&gt;-->
+<!--        <a-form-item label="颜色" name="picColor">-->
+<!--          <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>-->
+<!--        </a-form-item>-->
+<!--      </a-form>-->
+        <a-input-search
+          v-model:value="searchParams.searchText"
+          placeholder="input search text"
+          enter-button="Search"
+          size="large"
+          @search="doSearch"
+        />
+
     </div>
     <!--标签分类筛选-->
     <a-tabs v-model:active-key="selectCategory" @change="doSearch">
@@ -60,7 +74,9 @@ const searchParams = reactive<API.PictureQueryDto>({
   sortField: 'createTime',
   sortOrder: 'descend'
 })
-
+// const onColorChange=(color:string)=>{
+//   searchParams.picColor = color
+// }
 // 获取数据
 const fetchData = async () => {
   loading.value = true
@@ -73,13 +89,13 @@ const fetchData = async () => {
   if (selectCategory.value !== 'all') {
     params.category = selectCategory.value
   }
-  selectTagList.value.forEach((useTag,index)=>{
-    if (useTag){
+  selectTagList.value.forEach((useTag, index) => {
+    if (useTag) {
       params.tags.push(tagList.value[index])
     }
   })
   // const res = await listPictureVoByPageCacheUsingPost( params)
-  const res = await listPictureVoByPageUsingPost( params)
+  const res = await listPictureVoByPageUsingPost(params)
   if (res.data) {
     dataList.value = res.data.records ?? []
     total.value = res.data.total
@@ -100,9 +116,9 @@ const locale = {
 };
 // 分页参数
 const onPageChange = (page: number, pageSize: number) => {
-      searchParams.current = page
-      searchParams.pageSize = pageSize
-      fetchData()
+  searchParams.current = page
+  searchParams.pageSize = pageSize
+  fetchData()
 }
 
 // 获取数据

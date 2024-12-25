@@ -3,6 +3,7 @@ package com.prodigal.system.model.dto.picture;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @program: prodigal-picture
@@ -39,5 +40,5 @@ public class PictureUploadByBatchDto implements Serializable {
     /**
      * 标签
      */
-    private String tags;
+    private List<String> tags;
 }

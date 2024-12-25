@@ -11,6 +11,8 @@ import com.prodigal.system.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
+import java.util.List;
 
 /**
 * @author Lang
@@ -34,6 +36,8 @@ public interface PictureService extends IService<Picture> {
     void validPicture(Picture picture);
 
     Page<PictureVO> getPictureVOPageCache(PictureQueryDto pictureQueryDto, HttpServletRequest request);
+
+    List<Picture> getPicturePageWithColor(Color targetColor, List<Picture> pictureList);
 
     void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser);
 

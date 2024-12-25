@@ -1,8 +1,12 @@
 package com.prodigal.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
+import com.prodigal.system.api.imagesearch.BaiduImageSearchApiFaced;
+import com.prodigal.system.api.imagesearch.ImageSearchDto;
+import com.prodigal.system.api.imagesearch.ImageSearchResult;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
@@ -27,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -60,6 +65,7 @@ public class PictureController {
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadDto, loginUser);
         return ResultUtils.success(pictureVO);
     }
+
     @PostMapping("/upload/url")
     public BaseResult<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadDto pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
@@ -70,8 +76,9 @@ public class PictureController {
 
     /**
      * 抓取图片
+     *
      * @param pictureUploadByBatchDto 接收请求参数
-     * @param request 浏览器请求
+     * @param request                 浏览器请求
      */
     @PostMapping("/upload/batch")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
@@ -80,6 +87,22 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchDto, loginUser);
         return ResultUtils.success(uploadCount);
+    }
+
+    /**
+     * 使用百度识图来抓取相似图片
+     * @param imageSearchDto 图片搜索请求参数
+     * @return List<ImageSearchResult>
+     */
+    @PostMapping("/search/picture")
+    public BaseResult<List<ImageSearchResult>> searchImageByBaidu(@RequestBody ImageSearchDto imageSearchDto) {
+        ThrowUtils.throwIf(imageSearchDto == null, ErrorCode.PARAMS_ERROR);
+        Long pictureId = imageSearchDto.getPictureId();
+        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        List<ImageSearchResult> imageSearchResults = BaiduImageSearchApiFaced.searchImage(oldPicture.getOriginUrl());
+        return ResultUtils.success(imageSearchResults);
     }
 
     /**
@@ -100,8 +123,9 @@ public class PictureController {
 
     /**
      * 图片审核（管理员）
+     *
      * @param pictureReviewDto 接收图片审核请求参数
-     * @param request 浏览器请求
+     * @param request          浏览器请求
      */
     @PostMapping("/review")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
@@ -175,7 +199,7 @@ public class PictureController {
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         //空间权限校验
         Long spaceId = picture.getSpaceId();
-        if (spaceId != null){
+        if (spaceId != null) {
             User loginUser = userService.getLoginUser(request);
             pictureService.checkPicturePermission(loginUser, picture);
         }
@@ -195,7 +219,7 @@ public class PictureController {
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         Long spaceId = picture.getSpaceId();
-        if (spaceId!=null){
+        if (spaceId != null) {
             User loginUser = userService.getLoginUser(request);
             pictureService.checkPicturePermission(loginUser, picture);
         }
@@ -213,7 +237,21 @@ public class PictureController {
     public BaseResult<Page<Picture>> listPictureByPage(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
-        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
+        List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
+
+//        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),pictureService.getQueryWrapper(pictureQueryDto) );
+        //若包含主色调，则需对主色调进行筛选
+        //将目标颜色转换为 color 对象
+        String picColor = pictureQueryDto.getPicColor();
+        if (StrUtil.isNotBlank(picColor)) {
+            Color targetColor = Color.decode(picColor);
+            pictureList = pictureService.getPicturePageWithColor(targetColor, pictureList);
+        }
+        long total = pictureList.size();
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size,total,false));
+        int fromIndex = (int) ((current - 1) * size);
+        int toIndex = (int) Math.min(current * size, total);
+        picturePage.setRecords(pictureList.subList(fromIndex,toIndex));
         return ResultUtils.success(picturePage);
     }
 
@@ -226,7 +264,7 @@ public class PictureController {
     @PostMapping("/list/page/vo")
     public BaseResult<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
-        long size = pictureQueryDto.getPageSize();
+        long size = pictureQueryDto.getPageSize() == 0 ? 20 : pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
@@ -236,20 +274,36 @@ public class PictureController {
             //普通用户查看公共图库(已过审)
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryDto.setNullSpaceId(true);
-        }else{
+        } else {
             User loginUser = userService.getLoginUser(request);
             Space space = spaceService.getById(spaceId);
-            if (space == null){
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"空间不存在");
+            if (space == null) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "空间不存在");
             }
             ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
         }
-        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
-        return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
+        List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
+
+//        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
+        //若包含主色调，则需对主色调进行筛选
+        //将目标颜色转换为 color 对象
+
+        String picColor = pictureQueryDto.getPicColor();
+        if (StrUtil.isNotBlank(picColor)) {
+            Color targetColor = Color.decode(picColor);
+            pictureList = pictureService.getPicturePageWithColor(targetColor, pictureList);
+        }
+        long total = pictureList.size();
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size,total,false));
+        int fromIndex = (int) ((current - 1) * size);
+        int toIndex = (int) Math.min(current * size, total);
+        picturePage.setRecords(pictureList.subList(fromIndex,toIndex));
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
+        return ResultUtils.success(pictureVOPage);
     }
 
     /**
-     * 图片分页查询(VO)
+     * 图片分页查询(VO-cache)
      *
      * @param pictureQueryDto 接收图片查询请求参数
      * @param request         浏览器请求
@@ -266,11 +320,11 @@ public class PictureController {
             //普通用户查看公共图库(已过审)
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryDto.setNullSpaceId(true);
-        }else{
+        } else {
             User loginUser = userService.getLoginUser(request);
             Space space = spaceService.getById(spaceId);
-            if (space == null){
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"空间不存在");
+            if (space == null) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "空间不存在");
             }
             ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
         }
@@ -287,7 +341,7 @@ public class PictureController {
     public BaseResult<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
         List<String> tagList = Arrays.asList("热门", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意");
-        List<String> categoryList = Arrays.asList("模板", "电商", "表情包", "素材", "海报");
+        List<String> categoryList = Arrays.asList("默认", "模板", "素材", "壁纸", "电商", "表情包", "海报");
         pictureTagCategory.setTagList(tagList);
         pictureTagCategory.setCategoryList(categoryList);
         return ResultUtils.success(pictureTagCategory);

@@ -51,9 +51,22 @@
             <a-descriptions-item label="大小">
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
+            <a-descriptions-item label="主色调">
+              <a-space>
+                {{ picture.picColor ?? '-' }}
+                <div v-if="picture.picColor"
+                  :style="{
+                          backgroundColor: toHexColor(picture.picColor),
+                          width: '16px',
+                          height: '16px',
+                          }"
+                />
+              </a-space>
+            </a-descriptions-item>
+
           </a-descriptions>
           <a-space wrap>
-            <a-button  :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
+            <a-button :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
               免费下载
             </a-button>
             <a-button v-if="canEdit"
@@ -62,6 +75,13 @@
                       @click="doEdit">
               编辑
             </a-button>
+            <a-button type="primary" ghost @click="(e)=>doShare(picture, e)">
+              分享
+              <template #icon>
+                <share-alt-outlined />
+              </template>
+            </a-button>
+
             <a-button v-if="isAdmin"
                       :icon="h(CheckOutlined)"
                       type="primary"
@@ -90,19 +110,22 @@
         </a-card>
       </a-col>
     </a-row>
+    <ShareModal ref="shareModalRef" :link="shareLink"/>
   </div>
 </template>
 
 <script setup lang="ts">
-import {computed, onMounted, ref,h} from "vue";
+import {computed, onMounted, ref, h} from "vue";
 import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoUsingGet} from "@/api/pictureController";
-import {DeleteOutlined, EditOutlined,DownloadOutlined,CheckOutlined,SmileOutlined} from '@ant-design/icons-vue';
+import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize} from "@/utils";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import ACCESS_ENUM from "@/access/accessEnum";
 import {useRouter} from "vue-router";
 import {PIC_REVIEW_STATUS_ENUM} from "@/constants/picture";
+import {toHexColor} from '@/utils/index'
+import ShareModal from "@/components/ShareModal.vue";
 
 interface Props {
   id: string | number
@@ -159,29 +182,44 @@ const doEdit = () => {
   // 跳转编辑页面
   router.push('/picture/add_picture?id=' + picture.value.id)
 }
-//审核图片
-const handleReview = async (reviewStatus: number)=>{
+
+
+//------------------------------- 分享 ---------------------------
+// 分享弹窗引用
+const shareModalRef = ref(true)
+// 分享链接
+const shareLink = ref<string>()
+const doShare = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  if (shareModalRef.value) {
+    shareModalRef.value.openModal()
+  }
+}
+//-----------------------------------审核图片----------------------
+const handleReview = async (reviewStatus: number) => {
   const reviewMessage = prompt("请输入审核信息")
   const res = await doPictureReviewUsingPost({
     id: picture.value.id,
     reviewMessage,
     reviewStatus
   })
-  if (res.code === 0){
+  if (res.code === 0) {
     message.success("审核操作成功")
     // 刷新数据
     fetchData()
-  }else{
+  } else {
     message.error("审核操作失败")
   }
   console.log("审核图片")
 }
+//-----------------------------删除----------------------------
 const doDelete = async () => {
   let id = picture.value.id;
-  if (!id){
+  if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({id:id})
+  const res = await deletePictureUsingPost({id: id})
   if (res.code === 0) {
     message.success('删除成功')
     //跳转到图片列表页
@@ -193,7 +231,7 @@ const doDelete = async () => {
 </script>
 
 <style scoped>
-#pictureDetailView{
+#pictureDetailView {
   margin-bottom: 16px;
 }
 </style>

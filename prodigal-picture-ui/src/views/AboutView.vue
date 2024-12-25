@@ -2,17 +2,34 @@
   <a-typography>
     <a-typography-title>Introduction</a-typography-title>
     <a-typography-paragraph>
-      In the process of internal desktop applications development, many different design specs and
-      implementations would be involved, which might cause designers and developers difficulties and
-      duplication and reduce the efficiency of development.
+      - Java Spring Boot 框架(2.7.6)
+      - MySQL数据库+ MyBatis-Plus 框架+ MyBatis  X +Redis 分布式缓存 +Caffeine 本地缓存Jsoup 数据抓取
+      -  COS 对象存储
     </a-typography-paragraph>
     <a-typography-paragraph>
-      After massive project practice and summaries, Ant Design, a design language for background
-      applications, is refined by Ant UED Team, which aims to
+      1.建立初始会话:前端与服务器建立连接后，服务器会为该客户端创建一个初始的匿名 Session，并将其状态保存下来。这个 Session 的 ID 会作为唯一标识，返回给前端。
+      2.登录成功，更新会话信息:当用户在前端输入正确的账号密码并提交到后端验证成功后，后端会更新该用户的 Session，将用户的登录信息(如用户 ID、用户名等)保存到与该 Session 关联的存储中。同时，服务器会生成一个 Set-Cookie的响应头，指示前端保存该用户的 Session ID,
+      3.前端保存 Cookie:前端接收到后端的响应后，浏览器会自动根据 Set-Cookie 指令，将 Session ID 存储到浏览器的 Cookie 中，与该域名绑定。
+      4.带 Cookie 的后续请求:当前端再次向相同域名的服务器发送请求时，浏览器会自动在请求头中附带之前保存的 Cookie，其中包含 Session lD.
+      5.后端验证会话:服务器接收到请求后，从请求头中提取 Session ID，找到对应的 Session 数据
+      6.获取会话中存储的信息:后端通过该 Session 获取之前存储的用户信息(如登录名、权限等)，从而识别用户身份并执行相应的业务逻辑。
+      如何对用户权限进行控制?
+      可以将接口分为 4 种权限:
+      1.未登录也可以使用
+      2.登录用户才能使用
+      3.未登录也可以使用，但是登录用户能进行更多操作(比如登录后查看全文)
+      4.仅管理员才能使用
+      传统的权限控制方法是，在每个接口内单独编写逻辑:先获取到当前登录用户信息，然后判断用户的权限是否符合要求。这种方法最灵活，但是会写很多重复的代码，而且其他开发者无法一眼得知接口所需要的权限。
+      权限校验其实是一个比较通用的业务需求，一般会通过 Spring AOP 切面 + 自定义权限校验注解 实现统一的接口拦截和权限校验;如果有特殊的权限校验逻辑，再单独在接口中编码。
       <a-typography-text strong>
-        uniform the user interface specs for internal background projects, lower the unnecessary
-        cost of design differences and implementation and liberate the resources of design and
-        front-end development.
+        图片管理功能具体可以拆分为:
+        - 【管理员】根据 id 删除图片
+        - 【管理员】更新图片
+        - 【管理员】分页获取图片列表(不需要脱敏和限制条数)
+        - 【管理员】根据 id 获取图片(不需要脱敏)
+        - 分页获取图片列表(需要脱敏和限制条数)
+        - 根据 id 获取图片(需要脱敏)
+        - 修改图片
       </a-typography-text>
     </a-typography-paragraph>
     <a-typography-title :level="2">Guidelines and Resources</a-typography-title>
