@@ -261,6 +261,19 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         }
     }
 
+    /**
+     * 校验当前用户是否有权限操作空间信息
+     * @param loginUser 当前操作用户
+     * @param space  空间信息
+     */
+    @Override
+    public void checkSpacePermission(Space space,User loginUser) {
+        //只有该空间的所有人 才能修改该空间的数据
+        if (!space.getUserId().equals(loginUser.getId())){
+            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION,"没有空间访问权限");
+        }
+    }
+
 }
 
 

@@ -39,28 +39,36 @@
           @change="onRangeChange"
         />
       </a-form-item>
-      <a-form-item label="名称" name="name">
-        <a-input v-model:value="searchParams.name" placeholder="请输入名称" allow-clear/>
-      </a-form-item>
-      <a-form-item label="简介" name="introduction">
-        <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear/>
-      </a-form-item>
-      <a-form-item label="宽度" name="picWidth">
-        <a-input-number v-model:value="searchParams.picWidth"/>
-      </a-form-item>
-      <a-form-item label="高度" name="picHeight">
-        <a-input-number v-model:value="searchParams.picHeight"/>
-      </a-form-item>
-      <a-form-item label="格式" name="picFormat">
-        <a-input v-model:value="searchParams.picFormat" placeholder="请输入格式" allow-clear/>
-      </a-form-item>
       <!-- 按颜色搜索 -->
       <a-form-item label="颜色" name="picColor">
         <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
       </a-form-item>
+      <a-collapse v-model:active-key(v-model)="activeKey" ghost class="custom-collapse">
+        <a-collapse-panel key="1">
+          <a-form layout="inline" :model="searchParams">
+            <a-form-item label="名称" name="name">
+              <a-input v-model:value="searchParams.name" placeholder="请输入名称" allow-clear/>
+            </a-form-item>
+            <a-form-item label="简介" name="introduction">
+              <a-input v-model:value="searchParams.introduction" placeholder="请输入简介" allow-clear/>
+            </a-form-item>
+            <a-form-item label="宽度" name="picWidth">
+              <a-input-number v-model:value="searchParams.picWidth"/>
+            </a-form-item>
+            <a-form-item label="高度" name="picHeight">
+              <a-input-number v-model:value="searchParams.picHeight"/>
+            </a-form-item>
+            <a-form-item label="格式" name="picFormat">
+              <a-input v-model:value="searchParams.picFormat" placeholder="请输入格式" allow-clear/>
+            </a-form-item>
+          </a-form>
+        </a-collapse-panel>
+      </a-collapse>
       <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 96px">搜索</a-button>
-        <a-button html-type="rest" style="width: 96px" @click="doClear">重置</a-button>
+        <a-space>
+          <a-button type="primary" html-type="submit" style="width: 96px">搜索</a-button>
+          <a-button html-type="rest" style="width: 96px" @click="doClear">重置</a-button>
+        </a-space>
       </a-form-item>
     </a-form>
   </div>
@@ -166,8 +174,28 @@ const doClear = () => {
 </script>
 
 <style scoped>
-.picture-search-form .ant-form-item {
+.picture-search-form .ant-form-item{
   margin-top: 16px;
 }
 
+.custom-collapse >>> .ant-collapse-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.custom-collapse >>> .ant-collapse-item > .ant-collapse-header {
+  flex: 0 0 auto; /* 不允许头部伸缩 */
+}
+
+.custom-collapse >>> .ant-collapse-item > .ant-collapse-content {
+  flex: 1; /* 内容区域占据剩余空间 */
+  display: flex;
+  flex-direction: row; /* 子元素一行显示 */
+}
+
+.custom-collapse >>> .ant-form-item {
+  margin-right: 16px; /* 表单项之间的间距 */
+  margin-top:0
+}
 </style>

@@ -25,6 +25,9 @@
 
     </div>
     <!--标签分类筛选-->
+<!--    <div label="颜色" name="picColor">-->
+<!--      <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>-->
+<!--    </div>-->
     <a-tabs v-model:active-key="selectCategory" @change="doSearch">
       <a-tab-pane key="all" tab="全部"/>
       <a-tab-pane v-for="category in categoryList" :key="category" :tab="category"/>
@@ -48,6 +51,7 @@
     <a-pagination v-model:current="searchParams.current"
                   v-model:page-size="searchParams.pageSize"
                   :total="total"
+                  :locale="locale"
                   @change="onPageChange"
                   style="text-align: right"
     />

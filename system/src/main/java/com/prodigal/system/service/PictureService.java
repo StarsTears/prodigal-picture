@@ -2,13 +2,12 @@ package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.prodigal.system.common.DeleteRequest;
+import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.PictureVO;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -26,6 +25,8 @@ public interface PictureService extends IService<Picture> {
     int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser);
 
     void editPicture(PictureEditDto pictureEditDto, User loginUser);
+
+    void editPictureByBatch(PictureEditByBatchDto pictureEditByBatchDto, User loginUser);
 
     LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto);
 
@@ -48,4 +49,6 @@ public interface PictureService extends IService<Picture> {
     void clearPictureFile(Picture oldPicture);
 
     void checkPicturePermission(User loginUser, Picture picture);
+
+    CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDto createPictureOutPaintingTaskDto, User loginUser);
 }

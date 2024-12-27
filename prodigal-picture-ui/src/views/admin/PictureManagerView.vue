@@ -2,10 +2,10 @@
   <div id="pictureManagerView">
     <a-flex justify="space-between">
       <h2>图片管理</h2>
-        <a-space>
-          <a-button type="primary" href="/picture/add_picture" target="_blank">+ 创建图片</a-button>
-          <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
-        </a-space>
+      <a-space>
+        <a-button type="primary" href="/picture/add_picture" target="_blank">+ 创建图片</a-button>
+        <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+      </a-space>
     </a-flex>
     <div style="margin-bottom: 16px"/>
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
@@ -36,6 +36,7 @@
     </a-form>
     <div style="margin-bottom: 16px"/>
     <a-table
+      :row-selection="rowSelection"
       :columns="columns"
       :data-source="dataList"
       :pagination="pagination"
@@ -120,9 +121,9 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {h, computed, onMounted, reactive, ref, UnwrapRef} from "vue";
+import {h, computed, onMounted, reactive, ref, UnwrapRef, unref} from "vue";
 import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined, CheckOutlined} from '@ant-design/icons-vue';
-import {message} from "ant-design-vue";
+import {Table, message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
 import {PIC_REVIEW_STATUS_ENUM, PIC_REVIEW_STATUS_MAP, PIC_REVIEW_STATUS_OPTIONS} from "@/constants/picture";
@@ -245,7 +246,7 @@ const doTableChange = (page: any) => {
 }
 
 // 获取数据
-const onColorChange=(color:string)=>{
+const onColorChange = (color: string) => {
   searchParams.picColor = color
 }
 const doSearch = () => {
@@ -294,6 +295,56 @@ const doDelete = async (id: string) => {
     message.error('删除失败')
   }
 }
+
+
+//选中
+const selectedRowKeys = ref<API.Picture['id'][]>([]); // Check here to configure the default column
+
+const onSelectChange = (changableRowKeys: string[]) => {
+  console.log('selectedRowKeys changed: ', changableRowKeys);
+  selectedRowKeys.value = changableRowKeys;
+};
+
+const rowSelection = computed(() => {
+  return {
+    selectedRowKeys: unref(selectedRowKeys),
+    onChange: onSelectChange,
+    hideDefaultSelections: true,
+    selections: [
+      Table.SELECTION_ALL,
+      Table.SELECTION_INVERT,
+      Table.SELECTION_NONE,
+      {
+        key: 'odd',
+        text: 'Select Odd Row',
+        onSelect: changableRowKeys => {
+          let newSelectedRowKeys = [];
+          newSelectedRowKeys = changableRowKeys.filter((_key, index) => {
+            if (index % 2 !== 0) {
+              return false;
+            }
+            return true;
+          });
+          selectedRowKeys.value = newSelectedRowKeys;
+        },
+      },
+      {
+        key: 'even',
+        text: 'Select Even Row',
+        onSelect: changableRowKeys => {
+          let newSelectedRowKeys = [];
+          newSelectedRowKeys = changableRowKeys.filter((_key, index) => {
+            if (index % 2 !== 0) {
+              return true;
+            }
+            return false;
+          });
+          selectedRowKeys.value = newSelectedRowKeys;
+        },
+      },
+    ],
+  };
+});
 </script>
 
 <style scoped>

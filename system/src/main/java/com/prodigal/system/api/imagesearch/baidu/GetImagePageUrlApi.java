@@ -36,20 +36,20 @@ public class GetImagePageUrlApi {
                     .timeout(5000)
                     .execute();
             if (!response.isOk()){
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图失败:"+response.getStatus());
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,String.valueOf(response.getStatus()));
             }
             //解析响应
             String responseBody = response.body();
             Map<String,Object> result = JSONUtil.toBean(responseBody, Map.class);
             if (result == null || !Integer.valueOf(0).equals(result.get("status"))){
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图-接口调用失败");
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,"接口调用失败");
             }
             Map<String, Object> data = (Map<String, Object>) result.get("data");
             String rowUrl = (String) data.get("url");
             //对地址进行解码
             String decodeUrl = URLDecoder.decode(rowUrl, StandardCharsets.UTF_8);
             if (decodeUrl==null){
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图-地址解码失败-未返回有效结果");
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,"地址解码失败-未返回有效结果");
             }
             return decodeUrl;
         }catch (Exception e){

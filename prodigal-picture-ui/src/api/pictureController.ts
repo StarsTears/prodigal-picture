@@ -32,6 +32,21 @@ export async function editPictureUsingPost(
   })
 }
 
+/** editPictureByBatch POST /api/picture/edit/batch */
+export async function editPictureByBatchUsingPost(
+  body: API.PictureEditByBatchDto,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultBoolean_>('/api/picture/edit/batch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** getPictureByID GET /api/picture/get */
 export async function getPictureByIdUsingGet(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -103,6 +118,36 @@ export async function listPictureVoByPageCacheUsingPost(
       'Content-Type': 'application/json',
     },
     data: body,
+    ...(options || {}),
+  })
+}
+
+/** createPictureOutPaintingTask POST /api/picture/out_painting/create_task */
+export async function createPictureOutPaintingTaskUsingPost(
+  body: API.CreatePictureOutPaintingTaskDto,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultCreateOutPaintingTaskVO_>('/api/picture/out_painting/create_task', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** getPictureOutPaintingTask GET /api/picture/out_painting/get_task */
+export async function getPictureOutPaintingTaskUsingGet(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getPictureOutPaintingTaskUsingGETParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultGetOutPaintingTaskVO_>('/api/picture/out_painting/get_task', {
+    method: 'GET',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   })
 }

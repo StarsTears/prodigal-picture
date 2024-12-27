@@ -24,7 +24,7 @@ public class GetImageUrlApi {
         try {
             HttpResponse response = HttpUtil.createGet(url).execute();
             if (!response.isOk()) {
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图失败:" + response.getStatus());
+                throw new BusinessException(ErrorCode.OPERATION_ERROR,String.valueOf(response.getStatus()));
             }
             String body = response.body();
             List<ImageSearchResult> imageResult= processResponse(body);
@@ -39,11 +39,11 @@ public class GetImageUrlApi {
         List<ImageSearchResult> response = new ArrayList<>();
         JSONObject jsonObject = new JSONObject(body);
         if (!jsonObject.containsKey("data")){
-            throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图-图片列表获取失败:data不存在");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"图片列表获取失败:data不存在");
         }
         JSONObject data = jsonObject.getJSONObject("data");
         if (!data.containsKey("list")) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "以图搜图-图片列表获取失败:list不存在");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "图片列表获取失败:list不存在");
         }
         JSONArray list = data.getJSONArray("list");
         return JSONUtil.toList(list, ImageSearchResult.class);

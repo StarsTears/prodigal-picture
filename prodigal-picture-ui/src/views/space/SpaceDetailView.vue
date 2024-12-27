@@ -4,12 +4,9 @@
   <a-flex justify="space-between">
     <h2>{{ space.spaceName }}（私有空间）</h2>
     <a-space size="middle">
-<!--      <a-button type="primary" @click="doShow">-->
-<!--        + 创建图片（模态框）-->
-<!--      </a-button>-->
-      <a-button type="primary" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">
-        + 创建图片
-      </a-button>
+      <a-button danger :icon="h(EditOutlined)" :href="`/space/add_space?id=${space.id}`"> 编辑空间信息</a-button>
+      <a-button type="primary" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>
+      <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
       <a-tooltip
         :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
       >
@@ -34,13 +31,12 @@
     :show-total="() => `图片总数 ${total} / ${space.maxCount}`"
     @change="onPageChange"
   />
-
-  <UploadPictureModelView  :open="showModel" :spaceId="id" />
+  <BatchEditPictureModal ref="batchEditPictureModalRef" :spaceId="id" :pictureList="dataList" :onSuccess="onBatchEditPictureSuccess"/>
 </div>
 </template>
 
 <script setup lang="ts">
-import {onMounted, reactive, ref} from "vue";
+import {h,onMounted, reactive, ref} from "vue";
 import {DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
 import {listPictureVoByPageCacheUsingPost, listPictureVoByPageUsingPost} from "@/api/pictureController";
 import {getSpaceVoByIdUsingGet} from "@/api/spaceController";
@@ -49,6 +45,7 @@ import {formatSize} from '@/utils/index'
 import PictureList from "@/components/PictureList.vue";
 import PictureSearchForm from "@/components/PictureSearchForm.vue";
 import UploadPictureModelView from "@/components/UploadPictureModelView.vue";
+import BatchEditPictureModal from "@/components/BatchEditPictureModal.vue";
 
 interface Props {
   id: string | number
@@ -93,7 +90,7 @@ const onSearch = (newSearchParams: API.PictureQueryDto) => {
   }
   fetchData()
 }
-// 获取数据
+// ------------------------------------------获取数据------------------------------------------
 const fetchData = async () => {
   loading.value = true
   //转换搜索参数
@@ -128,10 +125,19 @@ const onPageChange = (page, pageSize) => {
   fetchData()
 }
 
-const showModel = ref<boolean>(false)
-const doShow = () => {
-  showModel.value = true
+
+//----------------------------------批量修改当前页面数据的分类、标签弹窗------------------------
+const batchEditPictureModalRef = ref<boolean>(false)
+const onBatchEditPictureSuccess = () => {
+  fetchData()
 }
+// 打开批量编辑弹窗
+const doBatchEdit = () => {
+  if (batchEditPictureModalRef.value) {
+    batchEditPictureModalRef.value.openModal()
+  }
+}
+
 </script>
 
 <style scoped>

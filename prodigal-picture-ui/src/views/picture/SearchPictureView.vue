@@ -69,10 +69,10 @@ const fetchSearchResult = async () => {
     if (res.code===0 && res.data) {
         dataList.value = res.data ?? []
     } else {
-      message.error('获取图片详情数据失败，' + res.msg)
+      message.error('搜索图片失败，' + res.msg)
     }
   } catch (error) {
-    message.error('获取图片详情数据失败，' + error.msg)
+    message.error('搜索图片失败，' + error.msg)
   }
 }
 onMounted(()=>{

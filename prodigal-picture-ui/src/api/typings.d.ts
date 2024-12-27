@@ -6,6 +6,20 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultCreateOutPaintingTaskVO_ = {
+    code?: number
+    data?: CreateOutPaintingTaskVO
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultGetOutPaintingTaskVO_ = {
+    code?: number
+    data?: GetOutPaintingTaskVO
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultInt_ = {
     code?: number
     data?: number
@@ -125,6 +139,18 @@ declare namespace API {
     status?: boolean
   }
 
+  type CreateOutPaintingTaskVO = {
+    code?: string
+    message?: string
+    output?: Output
+    requestId?: string
+  }
+
+  type CreatePictureOutPaintingTaskDto = {
+    parameters?: Parameters
+    pictureId?: number
+  }
+
   type deleteCacheUsingPOSTParams = {
     /** key */
     key?: string
@@ -136,9 +162,19 @@ declare namespace API {
     id?: number
   }
 
+  type GetOutPaintingTaskVO = {
+    output?: Output1
+    requestId?: string
+  }
+
   type getPictureByIDUsingGETParams = {
     /** id */
     id?: number
+  }
+
+  type getPictureOutPaintingTaskUsingGETParams = {
+    /** taskId */
+    taskId?: string
   }
 
   type getPictureVOUsingGETParams = {
@@ -181,6 +217,23 @@ declare namespace API {
     userPassword?: string
   }
 
+  type Output = {
+    taskId?: string
+    taskStatus?: string
+  }
+
+  type Output1 = {
+    code?: string
+    endTime?: string
+    message?: string
+    outputImageUrl?: string
+    scheduledTime?: string
+    submitTime?: string
+    taskId?: string
+    taskMetrics?: TaskMetrics
+    taskStatus?: string
+  }
+
   type PagePicture_ = {
     current?: number
     pages?: number
@@ -221,6 +274,20 @@ declare namespace API {
     total?: number
   }
 
+  type Parameters = {
+    addWatermark?: boolean
+    angle?: number
+    bestQuality?: boolean
+    bottomOffset?: number
+    leftOffset?: number
+    limitImageSize?: boolean
+    outputRatio?: string
+    rightOffset?: number
+    topOffset?: number
+    xScale?: number
+    yScale?: number
+  }
+
   type Picture = {
     category?: string
     createTime?: string
@@ -247,6 +314,14 @@ declare namespace API {
     updateTime?: string
     url?: string
     userId?: number
+  }
+
+  type PictureEditByBatchDto = {
+    category?: string
+    nameRule?: string
+    pictureIdList?: number[]
+    spaceId?: number
+    tags?: string[]
   }
 
   type PictureEditDto = {
@@ -368,6 +443,7 @@ declare namespace API {
   type SpaceAddDto = {
     spaceLevel?: number
     spaceName?: string
+    userId?: number
   }
 
   type SpaceEditDto = {
@@ -414,6 +490,12 @@ declare namespace API {
     updateTime?: string
     user?: UserVO
     userId?: number
+  }
+
+  type TaskMetrics = {
+    failed?: number
+    succeeded?: number
+    total?: number
   }
 
   type testDownloadFileUsingGETParams = {

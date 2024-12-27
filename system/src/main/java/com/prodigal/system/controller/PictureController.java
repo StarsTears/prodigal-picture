@@ -4,6 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
+import com.prodigal.system.api.aliyunai.AliYunAiApi;
+import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
+import com.prodigal.system.api.aliyunai.model.vo.GetOutPaintingTaskVO;
 import com.prodigal.system.api.imagesearch.BaiduImageSearchApiFaced;
 import com.prodigal.system.api.imagesearch.ImageSearchDto;
 import com.prodigal.system.api.imagesearch.ImageSearchResult;
@@ -14,7 +17,6 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.manager.CacheManager;
 import com.prodigal.system.model.dto.picture.*;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.Space;
@@ -33,7 +35,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,6 +51,8 @@ public class PictureController {
     private UserService userService;
     @Resource
     private SpaceService spaceService;
+    @Resource
+    private AliYunAiApi aliYunAiApi;
 
     /**
      * 图片上传
@@ -59,7 +62,6 @@ public class PictureController {
      * @param request          浏览器请求
      */
     @PostMapping("/upload")
-//    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
     public BaseResult<PictureVO> uploadPicture(@RequestPart MultipartFile multipartFile, PictureUploadDto pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadDto, loginUser);
@@ -181,6 +183,16 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         pictureService.editPicture(pictureEditDto, loginUser);
 
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/edit/batch")
+    public BaseResult<Boolean> editPictureByBatch(@RequestBody PictureEditByBatchDto pictureEditByBatchDto, HttpServletRequest request) {
+        if (pictureEditByBatchDto == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        pictureService.editPictureByBatch(pictureEditByBatchDto,loginUser);
         return ResultUtils.success(true);
     }
 
@@ -341,10 +353,39 @@ public class PictureController {
     public BaseResult<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
         List<String> tagList = Arrays.asList("热门", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意");
-        List<String> categoryList = Arrays.asList("默认", "模板", "素材", "壁纸", "电商", "表情包", "海报");
+        List<String> categoryList = Arrays.asList("模板", "素材", "壁纸", "电商", "表情包", "海报");
         pictureTagCategory.setTagList(tagList);
         pictureTagCategory.setCategoryList(categoryList);
         return ResultUtils.success(pictureTagCategory);
+    }
+
+
+    /**
+     * 创建AI 扩图任务
+     * @param createPictureOutPaintingTaskDto 扩图任务参数
+     * @param request HttpRequest
+     * @return 响应
+     */
+    @PostMapping("/out_painting/create_task")
+    public BaseResult<CreateOutPaintingTaskVO> createPictureOutPaintingTask
+            (@RequestBody CreatePictureOutPaintingTaskDto createPictureOutPaintingTaskDto,
+                           HttpServletRequest request) {
+        ThrowUtils.throwIf(createPictureOutPaintingTaskDto  == null || createPictureOutPaintingTaskDto.getPictureId() == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        CreateOutPaintingTaskVO pictureOutPaintingTask = pictureService.createPictureOutPaintingTask(createPictureOutPaintingTaskDto, loginUser);
+        return ResultUtils.success(pictureOutPaintingTask);
+    }
+
+    /**
+     * 查询AI 扩图任务
+     * @param taskId 任务ID
+     * @return 响应
+     */
+    @GetMapping("/out_painting/get_task")
+    public BaseResult<GetOutPaintingTaskVO> getPictureOutPaintingTask(String taskId) {
+        ThrowUtils.throwIf(taskId  == null , ErrorCode.PARAMS_ERROR);
+        GetOutPaintingTaskVO outPaintingTask = aliYunAiApi.getOutPaintingTask(taskId);
+        return ResultUtils.success(outPaintingTask);
     }
 
 }

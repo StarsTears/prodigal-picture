@@ -38,7 +38,7 @@ public class GetImageFirstUrlApi {
                     }
                 }
             }
-            throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图失败-未找到 url");
+            throw new BusinessException(ErrorCode.OPERATION_ERROR,"暂不支持该图片格式-");
         }catch (Exception e){
             log.error(String.format("以图搜图  请求地址:%s  失败：%s",url,e));
             throw new BusinessException(ErrorCode.OPERATION_ERROR,"以图搜图失败:"+e.getMessage());

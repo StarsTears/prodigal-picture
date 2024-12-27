@@ -2,11 +2,16 @@
   <div id="addSpaceView">
     <h2 style="margin-bottom: 16px">
       {{ route.query?.id ? "修改空间" : "创建空间" }}
-      <!--      {{ 创建空间 }}-->
     </h2>
     <a-form layout="vertical" :model="spaceForm" @finish="handleSubmit">
       <a-form-item label="空间名称" name="spaceName">
         <a-input v-model:value="spaceForm.spaceName" placeholder="空间名称" allow-clear/>
+      </a-form-item>
+      <a-form-item v-if="false" label="空间所属人Id" name="userId">
+        <a-input v-model:value="spaceForm.userId" placeholder="空间所属人Id" allow-clear/>
+      </a-form-item>
+      <a-form-item v-if="space" label="空间所属人" name="userName">
+        <a-input v-model:value="spaceForm.userName" placeholder="空间所属人" disabled ="true" allow-clear/>
       </a-form-item>
       <a-form-item label="空间级别" name="spaceLevel">
         <a-select v-model:value="spaceForm.spaceLevel"
@@ -23,6 +28,7 @@
           style="min-width: 180px"
           :min="spaceForm.maxSize/10"
           :max="spaceForm.maxSize*10"
+          :disabled ="isEditable"
           allow-clear
         />
       </a-form-item>
@@ -33,6 +39,7 @@
           style="min-width: 180px"
           :min="spaceForm.maxCount/10"
           :max="spaceForm.maxCount*10"
+          :disabled ="isEditable"
           allow-clear
         />
       </a-form-item>
@@ -67,10 +74,15 @@ import {
   listSpaceLevelUsingGet,
   updateSpaceUsingPost
 } from "@/api/spaceController";
+import {useLoginUserStore} from "@/stores/loginUserStore";
+import ACCESS_ENUM from "@/access/accessEnum";
+const loginUserStore = useLoginUserStore()
 
 const route = useRoute();
 const space = ref<API.SpaceVO>();
 const spaceForm = reactive<API.SpaceAddDto | API.SpaceUpdateDto>({
+  userId: '',
+  userName: '',
   spaceName: '',
   spaceLevel: SPACE_LEVEL_ENUM.COMMON,
   maxSize: 100.00,
@@ -92,10 +104,28 @@ const fetchSpaceLevelList = async () => {
 onMounted(() => {
   fetchSpaceLevelList()
 })
+
  const handleSpaceLevelChange=()=>{
-    spaceForm.maxCount = spaceLevelList.value.find(l => l.value === spaceForm.spaceLevel)?.maxCount ?? 0
-    spaceForm.maxSize = formatSize(spaceLevelList.value.find(l => l.value === spaceForm.spaceLevel)?.maxSize ?? 0)
+   const loginUser = loginUserStore?.loginUser;
+   if (loginUser?.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)) {
+     spaceForm.maxCount = spaceLevelList.value.find(l => l.value === spaceForm.spaceLevel)?.maxCount ?? 0
+     spaceForm.maxSize = formatSize(spaceLevelList.value.find(l => l.value === spaceForm.spaceLevel)?.maxSize ?? 0)
+     isEditable.value = false
+   }else{
+     spaceForm.spaceLevel = 0;
+     message.warn('请联系管理员创建高级空间···')
+   }
  }
+
+// 计算属性，用于控制字段是否可编辑
+const isEditable = ref(true)
+// const handleSpaceEditChange = computed(() => {
+//   const loginUser = loginUserStore?.loginUser;
+//   if (!loginUser?.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)) {
+//     isEditable.value = false
+//     message.warn('请联系管理员创建高级空间···')
+//   }
+// });
 
 const loading = ref(false)
 /**
@@ -132,13 +162,14 @@ const handleSubmit = async (values: any) => {
 const getOldSpace = async () => {
   //获取id
   let id = route.query?.id;
-  console.log("创建空间：" + id)
   if (id) {
     const res = await getSpaceVoByIdUsingGet({id})
     console.log(res)
     if (res.code === 0 && res.data) {
       const data = res.data
       space.value = data
+      spaceForm.userId = data.userId
+      spaceForm.userName = data.user.userName
       spaceForm.spaceName = data.spaceName
       spaceForm.spaceLevel = data.spaceLevel
       spaceForm.maxSize = formatSize(data.maxSize)

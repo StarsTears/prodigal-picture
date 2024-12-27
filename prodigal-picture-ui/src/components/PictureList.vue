@@ -5,13 +5,26 @@
             :data-source="dataList"
             :loading="loading"
     >
-      <template #renderItem="{ item:picture }">
+      <template #renderItem="{ item:picture,index}">
         <a-list-item style="padding: 0">
           <!-- 单张图片-->
           <a-card hoverable @click="doClickPicture(picture)">
             <template #cover>
-              <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
-                   style="height: 180px;object-fit: cover"/>
+              <div class="card-cover">
+                <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
+                     style="height: 180px;object-fit: cover"/>
+<!--                <div class="card-description" v-if="hoveringRefs[index].value">-->
+<!--                  {{ picture.name }}-->
+<!--                  <a-flex>-->
+<!--                    <a-tag>-->
+<!--                      {{ picture.category ?? '默认' }}-->
+<!--                    </a-tag>-->
+<!--                    <a-tag v-for="tag in picture.tags" :key="tag">-->
+<!--                      {{ tag }}-->
+<!--                    </a-tag>-->
+<!--                  </a-flex>-->
+<!--                </div>-->
+              </div>
             </template>
             <a-card-meta :title="picture.name">
               <template #description>
@@ -28,6 +41,7 @@
             <template v-if="showOp" #actions>
               <search-outlined @click="(e) => doSearch(picture, e)"/>
               <share-alt-outlined @click="(e) => doShare(picture, e)"/>
+              <FullscreenOutlined @click="(e) => doAiOutPainting(picture, e)"/>
               <edit-outlined @click="(e) => doEdit(picture, e)"/>
               <delete-outlined @click="(e) => doDelete(picture, e)"/>
             </template>
@@ -36,17 +50,19 @@
       </template>
     </a-list>
     <ShareModal ref="shareModalRef" :link="shareLink"/>
+    <AiOutPainting ref="aiOutPaintingModalRef" :picture="AiPicture" :spaceId="AiPicture?.spaceId" :onSuccess="onAiOutPaintingSuccess"/>
   </div>
 
 </template>
 
 <script setup lang="ts">
 import {useRouter} from "vue-router";
-import {ref} from "vue";
-import {DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined} from '@ant-design/icons-vue';
+import {ref, reactive} from "vue";
+import {DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined,FullscreenOutlined} from '@ant-design/icons-vue';
 import {deletePictureUsingPost} from "@/api/pictureController";
 import {message} from "ant-design-vue";
 import ShareModal from "@/components/ShareModal.vue";
+import AiOutPainting from "@/components/AiOutPainting.vue";
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -54,16 +70,18 @@ interface Props {
   showOp?: boolean
   onReload?: () => void
 }
-
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: () => false,
   showOp: false,
 })
 
-// 数据
-const total = ref(0)
-
+// 使用 reactive 来创建一个包含 refs 的数组
+// const hoveringRefs = reactive(new Array(props.dataList.length).fill(ref(false)));
+//
+// const updateHovering=(index: number, value: boolean)=> {
+//   hoveringRefs[index].value = value;
+// }
 
 const router = useRouter()
 const doClickPicture = (picture) => {
@@ -90,6 +108,17 @@ const doShare = (picture: API.PictureVO, e: Event) => {
     shareModalRef.value.openModal()
   }
 }
+//------------------------------AI扩图----------------------------
+const aiOutPaintingModalRef = ref(false)
+const AiPicture = ref<API.PictureVO>()
+const doAiOutPainting = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  AiPicture.value = picture
+  if (aiOutPaintingModalRef.value) {
+    aiOutPaintingModalRef.value.openModal()
+  }
+}
+
 
 // 编辑
 const doEdit = (picture, e) => {
@@ -127,6 +156,29 @@ const doDelete = async (picture, e) => {
 <style scoped>
 .picture-list {
   margin-bottom: 16px;
+}
+
+.card-cover {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-description {
+  position: absolute;
+  bottom: 10px; /* 距离底部的距离 */
+  left: 10px; /* 距离左侧的距离 */
+  color: white; /* 文本颜色，确保与背景形成对比 */
+  /*background-color: rgba(0, 0, 0, 0.5); !* 半透明背景 *!*/
+  padding: 5px;
+  border-radius: 5px;
+  /*transition: opacity 0.3s;*/
 }
 
 </style>

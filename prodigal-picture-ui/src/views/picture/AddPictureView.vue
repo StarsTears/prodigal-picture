@@ -17,6 +17,13 @@
         <UrlPictureUpload :picture="picture" :spaceId = "spaceId" :onSuccess="onSuccess" />
       </a-tab-pane>
     </a-tabs>
+    <!-- 图片操作 -->
+    <div v-if="picture" class="edit-ber">
+      <a-space>
+        <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doAiOutPainting">AI 扩图</a-button>
+      </a-space>
+      <AiOutPainting ref="aiOutPaintingModalRef" :picture="picture" :spaceId="spaceId" :onSuccess="onAiOutPaintingSuccess"/>
+    </div>
 
     <!-- 图片展示组件 -->
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
@@ -45,8 +52,10 @@
 <script setup lang="ts">
 import PictureUpload from "@/views/picture/PictureUpload.vue";
 import UrlPictureUpload from "@/views/picture/UrlPictureUpload.vue";
-import {computed, onMounted, reactive, ref} from "vue";
+import AiOutPainting from "@/components/AiOutPainting.vue";
+import {h,computed, onMounted, reactive, ref} from "vue";
 import {message} from "ant-design-vue";
+import {FullscreenOutlined} from '@ant-design/icons-vue';
 import {editPictureUsingPost, getPictureVoUsingGet, listPictureTagCategoryUsingGet} from "@/api/pictureController";
 import {useRoute, useRouter} from "vue-router";
 const route = useRoute();
@@ -142,6 +151,14 @@ const getOldPicture = async () => {
 onMounted(() => {
   getOldPicture()
 })
+//---------------------------AI 扩图-------------------------------------
+const aiOutPaintingModalRef = ref()
+const doAiOutPainting = () => {
+  aiOutPaintingModalRef.value.openModal()
+}
+const onAiOutPaintingSuccess = (newPicture:API.PictureVO) => {
+  picture.value = newPicture
+}
 </script>
 
 <style scoped>
@@ -152,5 +169,9 @@ onMounted(() => {
 .addPicture .action-bar{
   display: flex;
   justify-content: flex-end;/* 将内容推到右侧 */
+}
+.addPicture .edit-ber{
+  text-align: center;
+  margin: 16px 0;
 }
 </style>

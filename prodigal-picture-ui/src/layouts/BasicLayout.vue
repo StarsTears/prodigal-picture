@@ -10,7 +10,8 @@
       <!--      </a-watermark>-->
       <a-layout>
         <GlobalSider class="sider"/>
-        <a-layout-content class="content">
+        <a-layout-content class="content" >
+          <!--:style="{ '--sider-width': siderWidth + 'px' }"--->
           <RouterView/>
         </a-layout-content>
       </a-layout>
@@ -20,7 +21,7 @@
         <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
           <GithubOutlined/>
         </a>
-        Prodigal Picture | Copyright © 20001-2024 prodigal All Rights Reserved.
+        Prodigal Picture | Copyright © prodigal 20001-2024  All Rights Reserved.
       </a-layout-footer>
     </a-layout>
   </div>
@@ -30,12 +31,25 @@
 import GlobalHeader from "@/components/GlobalHeader.vue";
 import GlobalSider from "@/components/GlobalSider.vue";
 import {GithubOutlined} from '@ant-design/icons-vue';
-
+import {ref, watchEffect} from "vue";
+// import {useLoginUserStore} from "@/stores/loginUserStore";
+// const loginUserStore = useLoginUserStore();
 export default {
   name: "BasicLayout",
   components: {GlobalHeader,GlobalSider, GithubOutlined}
 }
 
+
+// // 用于存储侧边栏宽度的响应式引用
+const siderWidth = ref(200);
+// // 监听登录状态变化，更新侧边栏宽度
+// watchEffect(() => {
+//   if (loginUserStore?.loginUser.id) {
+//     siderWidth.value = 200; // 用户登录后，设置左边距为200px
+//   } else {
+//     siderWidth.value = 0; // 用户未登录，设置左边距为0
+//   }
+// });
 </script>
 
 <style scoped>
@@ -44,13 +58,18 @@ export default {
   background: white;
   color: unset;
   margin-bottom: 1px;
-  /*z-index: 1000; !* 确保footer在最上层 *!*/
+  position: fixed;
+  z-index: 1000; /* 确保header在最上层 */
 }
 
 #basicLayout .sider {
   background: #ffffff;
   padding-top: 20px;
   border-right: 0.5px solid #eee;
+  position: fixed;
+  top: 64px;
+  height: 100vh;
+  z-index: 1000; /* 确保sider在最上层 */
 }
 
 #basicLayout :deep(.ant-menu-root){
@@ -62,6 +81,10 @@ export default {
   padding: 28px;
   background: linear-gradient(to right, #efefef, #ffffff);
   margin-bottom: 30px;
+  margin-top: 64px;
+  --sider-width: 200px; /* 默认未登录时的左边距 */
+  margin-left: var(--sider-width);
+  transition: margin-left 0.3s; /* 平滑过渡动画 */
 }
 
 #basicLayout .footer {
