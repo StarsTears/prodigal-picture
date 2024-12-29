@@ -5,6 +5,8 @@
     <h2>{{ space.spaceName }}（私有空间）</h2>
     <a-space size="middle">
       <a-button danger :icon="h(EditOutlined)" :href="`/space/add_space?id=${space.id}`"> 编辑空间信息</a-button>
+      <a-button type="primary" ghost :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${id}`">空间分析 </a-button>
+
       <a-button type="primary" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>
       <a-button :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
       <a-tooltip
@@ -37,7 +39,7 @@
 
 <script setup lang="ts">
 import {h,onMounted, reactive, ref} from "vue";
-import {DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
+import {DeleteOutlined, EditOutlined,BarChartOutlined} from '@ant-design/icons-vue';
 import {listPictureVoByPageCacheUsingPost, listPictureVoByPageUsingPost} from "@/api/pictureController";
 import {getSpaceVoByIdUsingGet} from "@/api/spaceController";
 import {message} from "ant-design-vue";

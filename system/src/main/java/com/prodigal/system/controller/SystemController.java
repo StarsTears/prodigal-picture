@@ -1,5 +1,6 @@
 package com.prodigal.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
@@ -14,6 +15,7 @@ import com.prodigal.system.model.dto.user.*;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.UserService;
+import com.prodigal.system.utils.EmailValidatorUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,6 +77,10 @@ public class SystemController {
         ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
+        String userEmail = userAddDto.getUserEmail();
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+        }
         //初始密码 123456
         final String DEFAULT_PASSWORD = "123456";
         String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
@@ -127,6 +133,10 @@ public class SystemController {
     public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto){
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
+        String userEmail = userUpdateDto.getUserEmail();
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+        }
         BeanUtils.copyProperties(userUpdateDto, user);
         boolean update = userService.updateById(user);
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
@@ -143,6 +153,10 @@ public class SystemController {
         User loginUser = userService.getLoginUser(request);
         if (!loginUser.getId().equals(userUpdateDto.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+        }
+        String userEmail = userUpdateDto.getUserEmail();
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         User user = new User();
         BeanUtils.copyProperties(userUpdateDto, user);

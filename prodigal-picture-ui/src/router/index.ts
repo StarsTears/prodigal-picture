@@ -6,6 +6,8 @@ import PictureDetailView from '../views/picture/PictureDetailView.vue'
 import MySpaceView from '../views/space/MySpaceView.vue'
 import AddSpaceView from  '../views/space/AddSpaceView.vue'
 import SpaceDetailView from '../views/space/SpaceDetailView.vue'
+import EmailNoticeView from '../views/email/EmailNoticeView.vue'
+import EmailManageView from '../views/admin/EmailManageView.vue'
 import ACCESS_ENUM from "@/access/accessEnum";
 import FullScreenLayout from "@/layouts/FullScreenLayout.vue";
 import BasicLayout from '@/layouts/BasicLayout.vue';
@@ -157,6 +159,33 @@ const router = createRouter({
         path: '',
         component: SpaceDetailView,
         props: true,
+      }],
+    },
+    {
+      path:'/space/analyze',
+      name:'空间图库分析',
+      component: BasicLayout,
+      children:[{
+        path: '',
+        component:()=>import('../views/analyze/SpaceAnalyzeView.vue'),
+        props: true,
+      }],
+    },
+    {
+      path:'/email/emailManager',
+      name:'邮件管理',
+      component: BasicLayout,
+      children:[{
+        path: '',
+        component: EmailManageView,
+      }],
+    },{
+      path:'/email/notice',
+      name:'公告',
+      component: BasicLayout,
+      children:[{
+        path: '',
+        component: EmailNoticeView,
       }],
     },
   ],

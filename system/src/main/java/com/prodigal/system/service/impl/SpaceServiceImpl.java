@@ -269,7 +269,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     @Override
     public void checkSpacePermission(Space space,User loginUser) {
         //只有该空间的所有人 才能修改该空间的数据
-        if (!space.getUserId().equals(loginUser.getId())){
+        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)){
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION,"没有空间访问权限");
         }
     }

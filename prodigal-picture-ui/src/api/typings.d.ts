@@ -13,6 +13,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultEmail_ = {
+    code?: number
+    data?: Email
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultGetOutPaintingTaskVO_ = {
     code?: number
     data?: GetOutPaintingTaskVO
@@ -27,6 +34,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListEmail_ = {
+    code?: number
+    data?: Email[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultListImageSearchResult_ = {
     code?: number
     data?: ImageSearchResult[]
@@ -34,9 +48,44 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListSpace_ = {
+    code?: number
+    data?: Space[]
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultListSpaceCategoryAnalyzeVO_ = {
+    code?: number
+    data?: SpaceCategoryAnalyzeVO[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultListSpaceLevel_ = {
     code?: number
     data?: SpaceLevel[]
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultListSpaceSizeAnalyzeVO_ = {
+    code?: number
+    data?: SpaceSizeAnalyzeVO[]
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultListSpaceTagAnalyzeVO_ = {
+    code?: number
+    data?: SpaceTagAnalyzeVO[]
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultListSpaceUserAnalyzeVO_ = {
+    code?: number
+    data?: SpaceUserAnalyzeVO[]
     msg?: string
     status?: boolean
   }
@@ -111,6 +160,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultSpaceUsageAnalyzeVO_ = {
+    code?: number
+    data?: SpaceUsageAnalyzeVO
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultSpaceVO_ = {
     code?: number
     data?: SpaceVO
@@ -158,8 +214,37 @@ declare namespace API {
     type?: string
   }
 
+  type deleteEmailUsingPOSTParams = {
+    /** emailId */
+    emailId: string
+  }
+
   type DeleteRequest = {
     id?: number
+  }
+
+  type Email = {
+    attachments?: string
+    createTime?: string
+    createUserId?: number
+    editTime?: string
+    from?: string
+    html?: boolean
+    id?: string
+    isDelete?: number
+    receiveDate?: string
+    receiveUserId?: number
+    sendTime?: string
+    status?: number
+    subject?: string
+    to?: string
+    txt?: string
+    updateTime?: string
+  }
+
+  type getEmailByIdUsingGETParams = {
+    /** emailId */
+    emailId: string
   }
 
   type GetOutPaintingTaskVO = {
@@ -419,10 +504,34 @@ declare namespace API {
     userId?: number
   }
 
+  type QueryEmailDto = {
+    from?: string
+    id?: string
+    subject?: string
+    to?: string
+    txt?: string
+  }
+
   type RegisterDto = {
     checkPassword?: string
     userAccount?: string
+    userEmail?: string
+    userName?: string
     userPassword?: string
+  }
+
+  type sendEmailByIdUsingPOSTParams = {
+    /** emailId */
+    emailId: string
+  }
+
+  type SendEmailDto = {
+    attachments?: string[]
+    html?: boolean
+    id?: string
+    subject?: string
+    to?: string
+    txt?: string
   }
 
   type Space = {
@@ -444,6 +553,18 @@ declare namespace API {
     spaceLevel?: number
     spaceName?: string
     userId?: number
+  }
+
+  type SpaceCategoryAnalyzeDto = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
+  }
+
+  type SpaceCategoryAnalyzeVO = {
+    category?: string
+    count?: number
+    totalSize?: number
   }
 
   type SpaceEditDto = {
@@ -469,12 +590,66 @@ declare namespace API {
     userId?: number
   }
 
+  type SpaceRankAnalyzeDto = {
+    topN?: number
+  }
+
+  type SpaceSizeAnalyzeDto = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
+  }
+
+  type SpaceSizeAnalyzeVO = {
+    count?: number
+    sizeRange?: string
+  }
+
+  type SpaceTagAnalyzeDto = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
+  }
+
+  type SpaceTagAnalyzeVO = {
+    count?: number
+    tag?: string
+  }
+
   type SpaceUpdateDto = {
     id?: number
     maxCount?: number
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+  }
+
+  type SpaceUsageAnalyzeDto = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
+  }
+
+  type SpaceUsageAnalyzeVO = {
+    countUsageRatio?: number
+    maxCount?: number
+    maxSize?: number
+    sizeUsageRatio?: number
+    usedCount?: number
+    usedSize?: number
+  }
+
+  type SpaceUserAnalyzeDto = {
+    queryAll?: boolean
+    queryPublic?: boolean
+    spaceId?: number
+    timeDimension?: string
+    userId?: number
+  }
+
+  type SpaceUserAnalyzeVO = {
+    count?: number
+    timeRange?: string
   }
 
   type SpaceVO = {
@@ -520,6 +695,7 @@ declare namespace API {
     updateTime?: string
     userAccount?: string
     userAvatar?: string
+    userEmail?: string
     userName?: string
     userPassword?: string
     userProfile?: string
@@ -530,6 +706,7 @@ declare namespace API {
   type UserAddDto = {
     userAccount?: string
     userAvatar?: string
+    userEmail?: string
     userName?: string
     userProfile?: string
     userRole?: string
@@ -552,6 +729,7 @@ declare namespace API {
     id?: number
     userAccount?: string
     userAvatar?: string
+    userEmail?: string
     userName?: string
     userProfile?: string
     userRole?: string
@@ -566,6 +744,7 @@ declare namespace API {
     updateTime?: string
     userAccount?: string
     userAvatar?: string
+    userEmail?: string
     userName?: string
     userProfile?: string
     userRole?: string

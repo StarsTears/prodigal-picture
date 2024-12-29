@@ -19,7 +19,9 @@ create table if not exists user
     INDEX idx_userName (userName),
     INDEX idx_vipNumber (vipNumber)
     ) comment '用户' collate = utf8mb4_unicode_ci;
-
+-- 添加新列
+ALTER TABLE user
+    ADD COLUMN userEmail varchar(256)  null comment '邮箱';
 
 -- 图片表
 create table if not exists picture

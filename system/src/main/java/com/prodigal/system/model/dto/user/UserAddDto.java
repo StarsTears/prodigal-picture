@@ -20,6 +20,11 @@ public class UserAddDto implements Serializable {
     private String userAccount;
 
     /**
+     * 用户邮箱
+     */
+    private String userEmail;
+
+    /**
      * 用户昵称
      */
     private String userName;

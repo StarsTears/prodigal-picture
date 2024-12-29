@@ -60,6 +60,7 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
             <!-- 添加Jedis依赖 -->
             <dependency>
                 <groupId>redis.clients</groupId>
@@ -71,6 +72,7 @@
                 <artifactId>commons-pool2</artifactId>
                 <version>${commons-pool2.version}</version>
             </dependency>
+
             <!-- 本地缓存 Caffeine -->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>

@@ -4,6 +4,8 @@
     <h2>空间管理</h2>
     <a-space>
       <a-button type="primary" href="/space/add_space" target="_blank">+ 创建空间</a-button>
+      <a-button type="primary" ghost href="/space/analyze?queryPublic=1">分析公共图库</a-button>
+      <a-button type="primary" ghost href="/space/analyze?queryAll=1">分析全空间</a-button>
     </a-space>
   </a-flex>
   <div style="margin-bottom: 16px"/>
@@ -59,6 +61,10 @@
                     target="_blank">
             编辑
           </a-button>
+          <a-button type="link" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
+            分析
+          </a-button>
+
           <a-popconfirm okText="确定"
                         cancelText="取消"
                         title="Sure to delete?"
@@ -79,7 +85,7 @@
 
 <script setup lang="ts">
 import {h,computed, onMounted, reactive, ref} from "vue";
-import {DeleteOutlined, EditOutlined} from '@ant-design/icons-vue';
+import {DeleteOutlined, EditOutlined,BarChartOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {formatSize} from "@/utils/index";

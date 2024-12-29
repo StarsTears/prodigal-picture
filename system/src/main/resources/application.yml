@@ -27,6 +27,25 @@ spring:
     host: 127.0.0.1
     port: 6379
     timeout: 5000
+  data:
+    #mongoDB
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: prodigal-picture
+      auto-index-creation: true
+  mail:
+    host: imap.qq.com
+    username: XXX
+    password: XXX
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 # mybatis plus
 mybatis-plus:
   configuration:

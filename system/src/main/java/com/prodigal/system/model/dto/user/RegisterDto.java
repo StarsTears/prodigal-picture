@@ -17,6 +17,14 @@ public class RegisterDto implements Serializable {
      */
     private String userAccount;
     /**
+     * 用户昵称
+     */
+    private String userName;
+    /**
+     * 用户邮箱
+     */
+    private String userEmail;
+    /**
      * 密码
      */
     private String userPassword;

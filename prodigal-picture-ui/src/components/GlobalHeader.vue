@@ -12,33 +12,37 @@
       <a-col flex="auto">
         <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="doMenuClick"/>
       </a-col>
-      <a-col flex="100px">
+      <a-col flex="200px">
         <div class="login-status">
+
           <div v-if="loginUserStore.loginUser.id">
-            <a-dropdown>
-              <a-space>
-                <a-avatar :src="loginUserStore.loginUser.userAvatar"/>
-                {{ loginUserStore.loginUser.userName ?? "无名" }}
-              </a-space>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item @click="doShow">
-                    <UserOutlined/>
-                    个人中心
-                  </a-menu-item>
-                  <a-menu-item>
-                    <RouterLink to="/space/my_space">
-                      <EyeOutlined />
-                      我的空间
-                    </RouterLink>
-                  </a-menu-item>
-                  <a-menu-item @click=doLogout>
-                    <LogoutOutlined/>
-                    退出
-                  </a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
+            <a-flex >
+              <BellOutlined @click="doNotice"  style="margin: 25px 10px;color: grey"/>
+              <a-dropdown>
+                <a-space>
+                  <a-avatar :src="loginUserStore.loginUser.userAvatar"/>
+                  {{ loginUserStore.loginUser.userName ?? "无名" }}
+                </a-space>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item @click="doShow">
+                      <UserOutlined/>
+                      个人中心
+                    </a-menu-item>
+                    <a-menu-item>
+                      <RouterLink to="/space/my_space">
+                        <EyeOutlined/>
+                        我的空间
+                      </RouterLink>
+                    </a-menu-item>
+                    <a-menu-item @click=doLogout>
+                      <LogoutOutlined/>
+                      退出
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </a-flex>
           </div>
           <div v-else>
             <a-button type="primary" href="/login">登录</a-button>
@@ -47,7 +51,8 @@
       </a-col>
     </a-row>
   </div>
-
+  <!--用户邮件 告警信息-->
+<EmailDrawView ref="emailModalRef"/>
   <!-- 个人中心对话框-->
   <a-modal v-model:open="open"
            title="个人中心"
@@ -67,10 +72,10 @@
       <a-form-item name="userProfile" label="头像">
         <a-image :src="userDetail?.userAvatar" :width="50"/>
         <a-upload v-if="!componentDisabled"
-          name="file"
-          list-type="picture"
-          :custom-request="doUpload"
-          :before-upload="beforeUpload"
+                  name="file"
+                  list-type="picture"
+                  :custom-request="doUpload"
+                  :before-upload="beforeUpload"
         >
           <a-button>
             <upload-outlined/>
@@ -100,35 +105,37 @@
         </a-radio-group>
       </a-form-item>
     </a-form>
-      <a-space  wrap class="detail-footer">
-        <a-button v-if="componentDisabled" :icon="h(EditOutlined)" type="default" @click="doEdit">
-          修改
+    <a-space wrap class="detail-footer">
+      <a-button v-if="componentDisabled" :icon="h(EditOutlined)" type="default" @click="doEdit">
+        修改
+      </a-button>
+      <a-space wrap v-if="!componentDisabled">
+        <a-button :icon="h(SaveOutlined)" type="default" @click="doSave">
+          保存
         </a-button>
-        <a-space wrap v-if="!componentDisabled">
-          <a-button  :icon="h(SaveOutlined)" type="default" @click="doSave">
-            保存
-          </a-button>
-          <a-button type="dashed" @click="doCancel">
-            取消
-            <template #icon>
-              <UndoOutlined />
-            </template>
-          </a-button>
-        </a-space>
+        <a-button type="dashed" @click="doCancel">
+          取消
+          <template #icon>
+            <UndoOutlined/>
+          </template>
+        </a-button>
       </a-space>
+    </a-space>
   </a-modal>
 </template>
 <script lang="ts" setup>
 import {computed, h, reactive, ref} from 'vue';
 import {
-  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined,FolderOutlined,
-  EyeOutlined,UploadOutlined,EditOutlined, GlobalOutlined, SaveOutlined,UndoOutlined
+  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
+  EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
+  BellOutlined,MailOutlined
 } from '@ant-design/icons-vue';
 import {MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {editUserUsingPost, helloUsingGet, logoutUsingPost, updateUserUsingPost} from "@/api/systemController";
 import ACCESS_ENUM from "@/access/accessEnum";
+import EmailDrawView from "@/views/email/EmailDrawView.vue";
 
 const loginUserStore = useLoginUserStore();
 
@@ -138,7 +145,7 @@ const originItems = [
     icon: h(HomeOutlined),
     label: '首页',
     title: '首页',
-  },  {
+  }, {
     key: '/picture/add_picture',
     icon: h(UploadOutlined),
     label: '创建图片',
@@ -154,10 +161,20 @@ const originItems = [
     label: '空间管理',
     title: '空间管理',
   }, {
+    key: '/email/emailManager',
+    icon: h(MailOutlined),
+    label: '邮件管理',
+    title: '邮件管理',
+  }, {
     key: '/admin/userManager',
     icon: h(UserOutlined),
     label: '用户管理',
     title: '用户管理',
+  },{
+    key: "/email/notice",
+    icon: h(SoundOutlined),
+    label: '公告',
+    title: '公告',
   }, {
     key: "/about",
     icon: h(GlobalOutlined),
@@ -224,8 +241,8 @@ const componentDisabled = ref<boolean>(true);
 const confirmLoading = ref<boolean>(false);
 const labelCol = {style: {width: '150px'}};
 const wrapperCol = {span: 14};
-const  userDetail = reactive<API.UserVO>({
-  id:'',
+const userDetail = reactive<API.UserVO>({
+  id: '',
   userName: '',
   userAvatar: '',
   useAccount: '',
@@ -244,7 +261,7 @@ const doShow = () => {
   componentDisabled.value = true
 };
 
-const showRole =ref<boolean>(false)
+const showRole = ref<boolean>(false)
 const doEdit = () => {
   componentDisabled.value = false
   showRole.value = true
@@ -252,7 +269,7 @@ const doEdit = () => {
 
 const doSave = async () => {
   const res = await editUserUsingPost(userDetail)
-  if (res.code === 0 && res.data){
+  if (res.code === 0 && res.data) {
     message.success('修改成功')
     await loginUserStore.fetchLoginUser()
     userDetailText.value = 'The modal will be closed after two seconds';
@@ -261,12 +278,12 @@ const doSave = async () => {
       open.value = false;
       confirmLoading.value = false;
     }, 2000);
-  }else{
-    message.error('修改失败,'+res.msg)
+  } else {
+    message.error('修改失败,' + res.msg)
   }
   showRole.value = false
 };
-const doCancel = ()=>{
+const doCancel = () => {
   componentDisabled.value = true
 }
 
@@ -289,29 +306,23 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
 };
 
 
-const visible = ref(false);
+//-------------------------------------邮件告警信息-------------------------------------
+const emailModalRef = ref(false)
+// 分享
+const doNotice = (e: Event) => {
+  e.stopPropagation()
+  if (emailModalRef.value) {
+    emailModalRef.value.showDrawer()
+  }
+}
 
-
-// const onOk = () => {
-//   formRef.value
-//     .validateFields()
-//     .then(values => {
-//       console.log('Received values of form: ', values);
-//       console.log('formState: ', toRaw(formState));
-//       visible.value = false;
-//       formRef.value.resetFields();
-//       console.log('reset formState: ', toRaw(formState));
-//     })
-//     .catch(info => {
-//       console.log('Validate Failed:', info);
-//     });
-// };
 </script>
 
 <style scoped>
-#globalHeader{
+#globalHeader {
   background: #ffffff;
 }
+
 #globalHeader .title-bar {
   display: flex;
   align-items: center;
@@ -327,10 +338,11 @@ const visible = ref(false);
   font-weight: bold;
   margin-left: 10px;
 }
+
 /*#globalHeader :deep(.ant-space-item) {*/
 /*  padding-right: 0 ;*/
 /*}*/
-.detail-footer{
+.detail-footer {
   display: flex;
   justify-content: flex-end; /* 将内容推到右侧 */
 }

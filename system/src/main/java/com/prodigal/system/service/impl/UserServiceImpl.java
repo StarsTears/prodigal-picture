@@ -16,6 +16,7 @@ import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.UserService;
+import com.prodigal.system.utils.EmailValidatorUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -48,6 +49,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (registerDto.getUserAccount().length() < 4) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度过短!");
         }
+        String userEmail = registerDto.getUserEmail();
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+        }
         if (registerDto.getUserPassword().length() < 6 || registerDto.getCheckPassword().length() < 6) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短!");
         }
@@ -56,7 +61,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //查询账户是否重复
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
-        wrapper.eq(User::getUserAccount, registerDto.getUserAccount());
+        wrapper.eq(User::getUserAccount, registerDto.getUserAccount())
+                .or()
+                .eq(StrUtil.isNotBlank(userEmail),User::getUserEmail, registerDto.getUserEmail());
         Long count = this.baseMapper.selectCount(wrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户已存在!");
@@ -68,6 +75,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserAccount(registerDto.getUserAccount());
         user.setUserPassword(encryptPassword);
         user.setUserRole(UserRoleEnum.USER.getRole());
+        String userName = registerDto.getUserName();
+        user.setUserName(StrUtil.isNotBlank(userName)?userName:user.getUserAccount());
+        if (StrUtil.isNotBlank(userEmail)){
+            user.setUserEmail(userEmail);
+        }
+
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败!");
