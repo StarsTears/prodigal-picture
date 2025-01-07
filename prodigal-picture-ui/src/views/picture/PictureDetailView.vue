@@ -116,7 +116,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref, h} from "vue";
-import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingGet} from "@/api/pictureController";
+import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize} from "@/utils";
@@ -129,7 +129,8 @@ import ShareModal from "@/components/ShareModal.vue";
 import {SPACE_PERMISSION_ENUM} from "@/constants/space";
 
 interface Props {
-  id: string | number
+  id: string | number,
+  spaceId: string | number
 }
 
 const props = defineProps<Props>()
@@ -137,7 +138,10 @@ const picture = ref<API.PictureVO>({})
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
-    const res = await getPictureVoByIdUsingGet({id: props.id})
+    const res = await getPictureVoByIdUsingPost({
+      id: props.id,
+      spaceId: props.spaceId
+    })
     if (res.data) {
       picture.value = res.data
     } else {
@@ -196,7 +200,7 @@ const isAdmin = computed(() => {
 const router = useRouter();
 const doEdit = () => {
   // 跳转编辑页面
-  router.push('/picture/add_picture?id=' + picture.value.id)
+  router.push('/picture/add_picture?id=' + picture.value.id+ '&spaceId=' + picture.value.spaceId)
 }
 
 
@@ -207,7 +211,7 @@ const shareModalRef = ref(true)
 const shareLink = ref<string>()
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
-  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
   }
@@ -217,6 +221,7 @@ const handleReview = async (reviewStatus: number) => {
   const reviewMessage = prompt("请输入审核信息")
   const res = await doPictureReviewUsingPost({
     id: picture.value.id,
+    spaceId:picture.value.spaceId,
     reviewMessage,
     reviewStatus
   })
@@ -235,7 +240,10 @@ const doDelete = async () => {
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({id: id})
+  const res = await deletePictureUsingPost({
+    id: id,
+    spaceId: picture.value.spaceId
+  })
   if (res.code === 0) {
     message.success('删除成功')
     //跳转到图片列表页

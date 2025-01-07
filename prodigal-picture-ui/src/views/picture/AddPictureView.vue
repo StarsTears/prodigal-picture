@@ -56,7 +56,11 @@ import AiOutPainting from "@/components/AiOutPainting.vue";
 import {h,computed, onMounted, reactive, ref} from "vue";
 import {message} from "ant-design-vue";
 import {FullscreenOutlined} from '@ant-design/icons-vue';
-import {editPictureUsingPost, getPictureVoByIdUsingGet, listPictureTagCategoryUsingGet} from "@/api/pictureController";
+import {
+  editPictureUsingPost,
+  getPictureVoByIdUsingPost,
+  listPictureTagCategoryUsingGet
+} from "@/api/pictureController";
 import {useRoute, useRouter} from "vue-router";
 const route = useRoute();
 const router = useRouter();
@@ -97,7 +101,7 @@ const handleSubmit = async (values: any) => {
   if (res.code === 0 && res.data) {
     message.success('创建成功')
     //跳转到图片详情页
-    router.push({path:`/picture/${pictureID}`})
+    router.push({path:`/picture/${spaceId.value}/${pictureID}`})
   } else {
     message.error('创建失败，' + res.msg)
   }
@@ -135,8 +139,12 @@ onMounted(() => {
 const getOldPicture = async () => {
   //获取id
   let id = route.query?.id;
+  let spaceId = route.query?.spaceId;
   if (id) {
-    const res = await getPictureVoByIdUsingGet({id})
+    const res = await getPictureVoByIdUsingPost({
+      id:id,
+      spaceId:spaceId
+    })
     if (res.code === 0 && res.data) {
       const data = res.data
       picture.value = data

@@ -118,7 +118,7 @@
             <a-popconfirm okText="确定"
                           cancelText="取消"
                           title="Sure to delete?"
-                          @confirm="doDelete(record.id)">
+                          @confirm="doDelete(record)">
               <a-button danger>
                 删除
                 <template #icon>
@@ -294,6 +294,7 @@ const handleReview = async (record: API.PictureVO, reviewStatus: number) => {
   const reviewMessage = prompt("请输入审核信息")
   const res = await doPictureReviewUsingPost({
     id: record.id,
+    spaceId:record.spaceId,
     reviewMessage,
     reviewStatus
   })
@@ -309,11 +310,14 @@ const handleReview = async (record: API.PictureVO, reviewStatus: number) => {
 
 
 // 删除数据
-const doDelete = async (id: string) => {
-  if (!id) {
+const doDelete = async (record: API.PictureVO) => {
+  if (!record.id) {
     return
   }
-  const res = await deletePictureUsingPost({id})
+  const res = await deletePictureUsingPost({
+    id:record.id,
+    spaceId:record.spaceId
+  })
   if (res.code === 0) {
     message.success('删除成功')
     // 刷新数据

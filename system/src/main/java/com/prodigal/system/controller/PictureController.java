@@ -112,7 +112,17 @@ public class PictureController {
         ThrowUtils.throwIf(imageSearchDto == null, ErrorCode.PARAMS_ERROR);
         Long pictureId = imageSearchDto.getPictureId();
         ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
-        Picture oldPicture = pictureService.getById(pictureId);
+
+        Long spaceId = imageSearchDto.getSpaceId()==null?0L:imageSearchDto.getSpaceId();
+        // 构造 QueryWrapper
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", pictureId)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+
+        // 执行查询
+        Picture oldPicture = pictureService.getOne(queryWrapper);
+
+//        Picture oldPicture = pictureService.getById(pictureId);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         List<ImageSearchResult> imageSearchResults = BaiduImageSearchApiFaced.searchImage(oldPicture.getOriginUrl());
         return ResultUtils.success(imageSearchResults);
@@ -121,17 +131,18 @@ public class PictureController {
     /**
      * 图片删除
      *
-     * @param deleteRequest 接收请求参数
+     * @param pictureDeleteDto 接收请求参数
      * @param request       浏览器请求
      */
     @PostMapping("/delete")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
-    public BaseResult<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+    public BaseResult<Boolean> deletePicture(@RequestBody PictureDeleteDto pictureDeleteDto, HttpServletRequest request) {
+        if (pictureDeleteDto == null || pictureDeleteDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        pictureService.deletePicture(deleteRequest.getId(), loginUser);
+        Long spaceId=pictureDeleteDto.getSpaceId()==null?0:pictureDeleteDto.getSpaceId();
+        pictureService.deletePicture(pictureDeleteDto.getId(),spaceId, loginUser);
         return ResultUtils.success(true);
     }
 
@@ -170,21 +181,28 @@ public class PictureController {
         pictureService.validPicture(picture);
         //判断图片是否存在
         Long id = pictureUpdateDto.getId();
-//        // 构造 UpdateWrapper
-//        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
-//        updateWrapper.eq("id", picture.getId()) // 指定主键条件，批量更新则使用 in 传递多条
-//                .eq("spaceId", pictureUpdateDto.getSpaceId()==null?0:pictureUpdateDto.getSpaceId());      // 补充条件 spaceId=xxx
-//
-//        // 执行更新
-//        boolean result = pictureService.update(picture, updateWrapper);
+        Long spaceId=pictureUpdateDto.getSpaceId()==null?0:pictureUpdateDto.getSpaceId();
+        // 构造 QueryWrapper
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
 
-        Picture oldPicture = pictureService.getById(id);
+        // 执行查询
+        Picture oldPicture = pictureService.getOne(queryWrapper);
+//        Picture oldPicture = pictureService.getOne(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         //补充审核参数
         User loginUser = userService.getLoginUser(request);
         pictureService.fillReviewParams(picture, loginUser);
 
-        boolean result = pictureService.updateById(picture);
+        // 构造 UpdateWrapper
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", picture.getId()) // 指定主键条件，批量更新则使用 in 传递多条
+                .eq("spaceId", spaceId);      // 补充条件 spaceId=xxx
+
+        // 执行更新
+        boolean result = pictureService.update(picture, updateWrapper);
+//        boolean result = pictureService.updateById(picture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
@@ -220,25 +238,26 @@ public class PictureController {
     /**
      * 图片查询(管理员)
      *
-     * @param id      接收请求参数
+     * @param pictureGetDto      接收请求参数
      * @param request 浏览器请求
      */
-    @GetMapping("/get")
+    @PostMapping("/get")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<Picture> getPictureByID(long id, HttpServletRequest request) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
-//        // 构造 QueryWrapper
-//        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("id", id)         // 根据主键 id 查询
-//                .eq("spaceId", spaceId); // 附加 spaceId 条件
-//         //执行查询
-//        Picture picture = pictureService.getOne(queryWrapper);
-
-         Picture picture = pictureService.getById(id);
+    public BaseResult<Picture> getPictureByID(@RequestBody PictureGetDto pictureGetDto, HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureGetDto == null||pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        Long id = pictureGetDto.getId();
+        Long spaceId=pictureGetDto.getSpaceId()==null ? 0L :pictureGetDto.getSpaceId();
+        // 构造 QueryWrapper
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+         //执行查询
+        Picture picture = pictureService.getOne(queryWrapper);
+//         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         //空间权限校验
-        Long spaceId = picture.getSpaceId();
-        if (spaceId != null) {
+        spaceId = picture.getSpaceId();
+        if (spaceId != 0L) {
             User loginUser = userService.getLoginUser(request);
             pictureService.checkPicturePermission(loginUser, picture);
         }
@@ -248,18 +267,26 @@ public class PictureController {
     /**
      * 图片查询VO
      *
-     * @param id      图片id
+     * @param pictureGetDto      图片id
      * @param request 浏览器请求
      */
-    @GetMapping("/get/vo")
-    public BaseResult<PictureVO> getPictureVOByID(long id, HttpServletRequest request) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+    @PostMapping("/get/vo")
+    public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDto pictureGetDto, HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureGetDto==null|| pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
 
-        Picture picture = pictureService.getById(id);
+        Long id = pictureGetDto.getId();
+        Long spaceId=pictureGetDto.getSpaceId()==null ? 0L :pictureGetDto.getSpaceId();
+        // 构造 QueryWrapper
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+        //执行查询
+        Picture picture = pictureService.getOne(queryWrapper);
+//        Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         Space space = null;
-        Long spaceId = picture.getSpaceId();
-        if (spaceId != null) {
+        spaceId = picture.getSpaceId();
+        if (spaceId != 0) {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
             ThrowUtils.throwIf(!hasPermission, ErrorCode.USER_NOT_PERMISSION);
             space = spaceService.getById(spaceId);

@@ -6,6 +6,8 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.api.aliyunai.AliYunAiApi;
@@ -204,9 +206,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setPicScale(uploadPictureResult.getPicScale());
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
-        picture.setSpaceId(spaceId);
+//        picture.setSpaceId(spaceId);
         // 设置空间ID;将公共空间的空间ID设置为0
-//        picture.setSpaceId(spaceId !=null ? spaceId : 0L);
+        picture.setSpaceId(spaceId !=null ? spaceId : 0L);
         //补充审核参数
         this.fillReviewParams(picture, loginUser);
         //如果pictureID 不为空则进行更新
@@ -374,7 +376,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         this.validPicture(picture);
         //判断图片是否存在
         Long id = pictureEditDto.getId();
-        Picture oldPicture = this.getById(id);
+        Long spaceId=pictureEditDto.getSpaceId()==null?0:pictureEditDto.getSpaceId();
+        // 构造 QueryWrapper
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+
+        // 执行查询
+        Picture oldPicture = this.getOne(queryWrapper);
+
+//        Picture oldPicture = this.getById(id);
         picture.setUserId(oldPicture.getUserId());
         //验证权限
         //图片应只能管理员/本人删除
@@ -386,7 +397,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 //        checkPicturePermission(loginUser, picture);
         //补充审核参数
         this.fillReviewParams(picture, loginUser);
-        boolean result = this.updateById(picture);
+
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+        boolean result = this.update(picture,updateWrapper);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
     }
 
@@ -438,6 +453,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         this.fillPictureWithNameRule(pictureList, nameRule);
         //5、批量修改
         boolean result = this.updateBatchById(pictureList);
+
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "批量编辑图片失败");
     }
 
@@ -541,8 +557,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         wrapper.eq(true, Picture::getIsDelete, 0)
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getSpaceId()), Picture::getSpaceId, pictureQueryDto.getSpaceId())
-                .isNull(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId) //公共图库的空间ID 为 0
-//                .eq(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId,0) //公共图库的空间ID 为 0
+//                .isNull(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId) //公共图库的空间ID 为 0
+                .eq(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId,0L) //公共图库的空间ID 为 0
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getId()), Picture::getId, pictureQueryDto.getId())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getUserId()), Picture::getUserId, pictureQueryDto.getUserId())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getName()), Picture::getName, pictureQueryDto.getName())
@@ -564,13 +580,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 wrapper.like(Picture::getTags, "\"" + tag + "\"");
             }
         }
-        // 颜色相似度查询条件
-//        if (StrUtil.isNotBlank(pictureQueryDto.getPicColor())) {
-//            // 假设您有一个方法来获取与给定颜色相似的图片ID列表
-//            List<String> similarPictureIds = ColorSimilarUtils.calculateSimilarity(pictureQueryDto.getPicColor());
-//            // 将相似的图片ID添加到查询条件中
-//            wrapper.in(similarPictureIds.size() > 0, Picture::getId, similarPictureIds);
-//        }
         switch (sortField) {
             case "name":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getName);
@@ -760,7 +769,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         //2、获取旧图片信息
-        Picture oldPicture = this.getById(pictureReviewDto.getId());
+        // 构造 QueryWrapper
+        Long spaceId=pictureReviewDto.getSpaceId()==null?0:pictureReviewDto.getSpaceId();
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+
+        Picture oldPicture = this.getOne(queryWrapper);
+
+//        Picture oldPicture = this.getById(pictureReviewDto.getId());
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         if (reviewStatus.equals(oldPicture.getReviewStatus())) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "请勿重复审核后");
@@ -772,7 +789,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         updatePicture.setReviewMessage(pictureReviewDto.getReviewMessage());
         updatePicture.setReviewTime(new Date());
 
-        boolean result = this.updateById(updatePicture);
+        // 构造 UpdateWrapper
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id) // 指定主键条件，批量更新则使用 in 传递多条
+                .eq("spaceId", spaceId);      // 补充条件 spaceId=xxx
+
+        // 执行更新
+        boolean result = this.update(updatePicture, updateWrapper);
+
+//        boolean result = this.updateById(updatePicture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
     }
 
@@ -795,10 +820,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Override
-    public void deletePicture(long pictureId, User loginUser) {
+    public void deletePicture(long pictureId,long spaceId, User loginUser) {
         //图片应只能管理员/本人删除
         //查询该图片是否存在
-        Picture picture = this.getById(pictureId);
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", pictureId)         // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
+
+        Picture picture = this.getOne(queryWrapper);
+//        Picture picture = this.getById(pictureId);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         //验证权限
 //        checkPicturePermission(loginUser, picture);
@@ -807,11 +837,14 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 //        }
         //删除图片开启事物、删除成功后释放额度
         transactionTemplate.execute(status -> {
+            // 执行删除
+            boolean result = this.remove(queryWrapper);
+
             //删除图片
-            boolean result = this.removeById(pictureId);
+//            boolean result = this.removeById(pictureId);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-            Long spaceId = picture.getSpaceId();
-            if (spaceId != null) {
+//            spaceId = picture.getSpaceId();
+            if (spaceId != 0) {
                 boolean update = spaceService.lambdaUpdate().eq(Space::getId, spaceId)
                         .setSql("totalCount = totalCount -1")
                         .setSql("totalSize = totalSize -" + picture.getPicSize())

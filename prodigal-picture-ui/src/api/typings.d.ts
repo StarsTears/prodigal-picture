@@ -298,19 +298,9 @@ declare namespace API {
     requestId?: string
   }
 
-  type getPictureByIDUsingGETParams = {
-    /** id */
-    id?: number
-  }
-
   type getPictureOutPaintingTaskUsingGETParams = {
     /** taskId */
     taskId?: string
-  }
-
-  type getPictureVOByIDUsingGETParams = {
-    /** id */
-    id?: number
   }
 
   type getSpaceByIDUsingGETParams = {
@@ -463,6 +453,11 @@ declare namespace API {
     userId?: number
   }
 
+  type PictureDeleteDto = {
+    id?: number
+    spaceId?: number
+  }
+
   type PictureEditByBatchDto = {
     category?: string
     nameRule?: string
@@ -479,6 +474,11 @@ declare namespace API {
     spaceId?: number
     tags?: string[]
     userId?: number
+  }
+
+  type PictureGetDto = {
+    id?: number
+    spaceId?: number
   }
 
   type PictureQueryDto = {
@@ -512,6 +512,7 @@ declare namespace API {
     id?: number
     reviewMessage?: string
     reviewStatus?: number
+    spaceId?: number
   }
 
   type PictureTagCategory = {
@@ -524,6 +525,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    spaceId?: number
     tags?: string[]
   }
 

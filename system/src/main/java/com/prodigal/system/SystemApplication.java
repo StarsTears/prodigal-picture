@@ -8,7 +8,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @EnableAspectJAutoProxy
 //关闭分库分表,启动类排除依赖(配置文件可以不注释;要注释分表相关的代码)
-@SpringBootApplication(exclude = {ShardingSphereAutoConfiguration.class})
+@SpringBootApplication //(exclude = {ShardingSphereAutoConfiguration.class})
 public class SystemApplication {
     public static void main(String[] args) {
         SpringApplication.run(SystemApplication.class, args);

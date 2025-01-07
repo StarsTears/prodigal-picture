@@ -16,7 +16,10 @@ public class PictureReviewDto implements Serializable {
      * id
      */
     private Long id;
-
+    /**
+     * 空间id
+     */
+    private Long spaceId;
     /**
      * 审核状态
      */

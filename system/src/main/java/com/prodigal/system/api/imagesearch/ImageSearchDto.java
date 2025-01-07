@@ -16,4 +16,8 @@ public class ImageSearchDto implements Serializable {
      * 图片id
      */
     private Long pictureId;
+    /**
+     * 图片id
+     */
+    private Long spaceId;
 }

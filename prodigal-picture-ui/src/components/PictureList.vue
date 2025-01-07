@@ -89,14 +89,14 @@ const props = withDefaults(defineProps<Props>(), {
 
 const router = useRouter()
 const doClickPicture = (picture) => {
-  router.push(`/picture/${picture.id}/`)
+  router.push(`/picture/${picture.spaceId}/${picture.id}/`)
 }
 
 //搜索
 const doSearch = (picture, e) => {
   //阻止事件传播
   e.stopPropagation()
-  window.open(`/picture/search_picture?pictureId=${picture.id}`)
+  window.open(`/picture/search_picture?spaceId=${picture.spaceId}&pictureId=${picture.id}`)
 }
 
 // 分享弹窗引用
@@ -107,7 +107,7 @@ const shareLink = ref<string>()
 // 分享
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
-  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
+  shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
   }
@@ -144,7 +144,10 @@ const doDelete = async (picture, e) => {
   if (!id) {
     return
   }
-  const res = await deletePictureUsingPost({id})
+  const res = await deletePictureUsingPost({
+    id:id,
+    spaceId: picture.spaceId,
+  })
   if (res.data.code === 0) {
     message.success('删除成功')
     // 让外层刷新

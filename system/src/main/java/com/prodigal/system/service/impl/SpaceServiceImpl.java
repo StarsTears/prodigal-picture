@@ -57,9 +57,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     private SpaceUserService spaceUserService;
     @Resource
     private TransactionTemplate transactionTemplate;
-//    @Resource
-//    @Lazy
-//    private DynamicShardingManager dynamicShardingManager;
+    @Resource
+    @Lazy
+    private DynamicShardingManager dynamicShardingManager;
     private Map<Long, Object> lockMap = new ConcurrentHashMap<>();
 
     /**
@@ -152,7 +152,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR,"创建团队成员记录失败···");
                     }
                     //创建分表
-//                    dynamicShardingManager.createSpacePictureTable(space);
+                    dynamicShardingManager.createSpacePictureTable(space);
                     return space.getId();
                 } finally {
                     //释放锁、防止内存泄露
@@ -299,13 +299,13 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     public void fillSpaceBySpaceLevel(Space space) {
         //根据空间级别，自动填充限额
         SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(space.getSpaceLevel());
-        if (spaceLevelEnum != null) {
+        if (spaceLevelEnum == null) {
             long maxSize = spaceLevelEnum.getMaxSize();
-            if (space.getMaxSize() != null)
+            if (space.getMaxSize() == null)
                 space.setMaxSize(maxSize);
 
             long maxCount = spaceLevelEnum.getMaxCount();
-            if (space.getMaxCount() != null)
+            if (space.getMaxCount() == null)
                 space.setMaxCount(maxCount);
         }
     }

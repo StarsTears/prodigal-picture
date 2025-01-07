@@ -33,7 +33,10 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
-import {getPictureVoByIdUsingGet, searchImageByBaiduUsingPost} from "@/api/pictureController.js";
+import {
+  getPictureVoByIdUsingPost,
+  searchImageByBaiduUsingPost
+} from "@/api/pictureController.js";
 import {message} from "ant-design-vue";
 import {useRoute} from "vue-router";
 
@@ -43,12 +46,17 @@ const route = useRoute()
 const pictureId = computed(() => {
   return route.query?.pictureId
 })
+const spaceId = computed(() => {
+  return route.query?.spaceId
+})
 //获取原图数据
 const picture = ref<API.PictureVO>({})
 const getOldPicture = async () => {
-  const id = route.query?.pictureId
   try {
-    const res = await getPictureVoByIdUsingGet({id: id})
+    const res = await getPictureVoByIdUsingPost({
+      id: pictureId.value,
+      spaceId: spaceId.value
+    })
     if (res.data) {
       picture.value = res.data
     } else {
@@ -65,7 +73,10 @@ onMounted(() => {
 const dataList = ref<API.ImageSearchResult[]>([])
 const fetchSearchResult = async () => {
   try {
-    const res = await searchImageByBaiduUsingPost({pictureId: pictureId.value})
+    const res = await searchImageByBaiduUsingPost({
+      pictureId: pictureId.value,
+      spaceId: spaceId.value
+    })
     if (res.code===0 && res.data) {
         dataList.value = res.data ?? []
     } else {

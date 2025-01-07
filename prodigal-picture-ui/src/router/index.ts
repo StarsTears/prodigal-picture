@@ -115,7 +115,7 @@ const router = createRouter({
       }],
     },
     {
-      path:'/picture/:id',
+      path:'/picture/:spaceId/:id',
       name:'图片详情',
       component: BasicLayout,
       children:[{

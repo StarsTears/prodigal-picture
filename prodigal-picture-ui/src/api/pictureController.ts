@@ -4,7 +4,7 @@ import request from '@/request.ts'
 
 /** deletePicture POST /api/picture/delete */
 export async function deletePictureUsingPost(
-  body: API.DeleteRequest,
+  body: API.PictureDeleteDto,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/delete', {
@@ -47,32 +47,32 @@ export async function editPictureByBatchUsingPost(
   })
 }
 
-/** getPictureByID GET /api/picture/get */
-export async function getPictureByIdUsingGet(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getPictureByIDUsingGETParams,
+/** getPictureByID POST /api/picture/get */
+export async function getPictureByIdUsingPost(
+  body: API.PictureGetDto,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPicture_>('/api/picture/get', {
-    method: 'GET',
-    params: {
-      ...params,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    data: body,
     ...(options || {}),
   })
 }
 
-/** getPictureVOByID GET /api/picture/get/vo */
-export async function getPictureVoByIdUsingGet(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getPictureVOByIDUsingGETParams,
+/** getPictureVOByID POST /api/picture/get/vo */
+export async function getPictureVoByIdUsingPost(
+  body: API.PictureGetDto,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPictureVO_>('/api/picture/get/vo', {
-    method: 'GET',
-    params: {
-      ...params,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
+    data: body,
     ...(options || {}),
   })
 }
