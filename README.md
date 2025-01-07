@@ -9,7 +9,8 @@
 ## 平台简介
 * 采用前后端分离的模式。
 * 后端采用Spring Boot、Spring Cloud & Alibaba。
-* 注册中心、配置中心选型Nacos，权限认证使用Redis。
+* 注册中心、配置中心选型Nacos，权限认证使用 Sa-Token、Redis。
+* 采用 apache shardingSphere-jdbc实现数据库分库分表。
 * 流量控制框架选型Sentinel，分布式事务选型Seata。
 
 ## 系统模块
@@ -19,12 +20,7 @@
 ├─aop      
 ├─api                           //调用第三方API,如阿里云百炼
 │  ├─aliyunai
-│  │  └─model
-│  │      ├─dto
-│  │      └─vo
 │  └─imagesearch
-│      ├─baidu
-│      └─bing
 ├─common                        //公共模块
 ├─config                        //配置
 ├─constant                      //常量
@@ -36,10 +32,6 @@
 ├─mapper
 ├─model                         //实体对象
 │  ├─dto
-│  │  ├─file
-│  │  ├─picture
-│  │  ├─space
-│  │  └─user
 │  ├─entity
 │  ├─enums
 │  └─vo
@@ -52,12 +44,14 @@
 2. Spring Cloud 2021.0.3
 3. MySQL 8.0+
 4. MyBatis Plus 3.5.9
-5. mybatis-plus-bom  3.5.9
+5. Mybatis-plus-bom  3.5.9
 6. 腾讯云对象存储COS
-7. knife4j-openapi2  4.4.0
-8. hutool 工具类  5.8.26
+7. Knife4j-openapi2  4.4.0
+8. Hutool 工具类  5.8.26
 9. jsoup  1.15.3
-10. lombok 1.18.32
+10. Lombok 1.18.32
+11. Sa-Token 1.39.0
+12. ShardingSphere 5.2.0
 
 
 ## 功能

@@ -48,18 +48,30 @@
         <template v-if="column.title === '序号'">
           {{ (pagination.current - 1) * pagination.pageSize + parseInt(index) + 1 }}
         </template>
-
-        <template v-if="column.dataIndex === 'url'">
+        <template v-else-if="column.dataIndex === 'id'">
+          <a-tooltip placement="topLeft">
+            <template #title>{{ record.id }}</template>
+            {{ record.id }}
+          </a-tooltip>
+        </template>
+        <template v-else-if="column.dataIndex === 'url'">
           <a-image :src="record.url" :width="120"/>
         </template>
-        <template v-if="column.dataIndex === 'tags'">
+        <template v-else-if="column.dataIndex === 'introduction'" >
+          <a-tooltip placement="topLeft">
+            <template #title>{{ record.introduction }}</template>
+            {{ record.introduction }}
+          </a-tooltip>
+        </template>
+
+        <template v-else-if="column.dataIndex === 'tags'">
           <a-space wrap>
             <a-tag v-for="tag in JSON.parse(record.tags||'[]')" :key="tag">
               {{ tag }}
             </a-tag>
           </a-space>
         </template>
-        <template v-if="column.dataIndex === 'picInfo'">
+        <template v-else-if="column.dataIndex === 'picInfo'">
           <div>格式：{{ record.picFormat }}</div>
           <div>宽度：{{ record.picWidth }}</div>
           <div>高度：{{ record.picHeight }}</div>
@@ -67,14 +79,14 @@
           <div>大小：{{ (record.picSize / 1024).toFixed(2) }}KB</div>
         </template>
         <!-- 审核信息 -->
-        <template v-if="column.dataIndex === 'reviewMessage'">
+        <template v-else-if="column.dataIndex === 'reviewMessage'">
           <div>审核状态：{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus] }}</div>
           <div>审核信息：{{ record.reviewMessage }}</div>
           <div>审核人：{{ record.reviewerId }}</div>
         </template>
 
 
-        <template v-if="column.dataIndex === 'createTime'">
+        <template v-else-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
         </template>
         <template v-if="column.dataIndex === 'editTime'">
@@ -136,57 +148,72 @@ import {
 const columns = [
   {
     title: '序号',
+    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
-    width: 80,
-  },
-  {
-    title: '图片',
-    dataIndex: 'url',
+    width: 150,
+    fixed: 'left',
+    ellipsis: true,
   },
   {
     title: '名称',
     dataIndex: 'name',
-    width: 200
+    width: 200,
+    fixed: 'left'
+  },
+  {
+    title: '图片',
+    dataIndex: 'url',
+    width: 200,
   },
   {
     title: '简介',
     dataIndex: 'introduction',
+    width: 200,
+    ellipsis: true,
   },
   {
     title: '类型',
     dataIndex: 'category',
+    width: 100,
   },
   {
     title: '标签',
     dataIndex: 'tags',
+    width: 100,
   },
   {
     title: '图片信息',
     dataIndex: 'picInfo',
+    width: 200,
   },
   {
     title: '审核信息',
     dataIndex: 'reviewMessage',
+    width: 200,
   },
   {
     title: '用户ID',
     dataIndex: 'userId',
+    width: 200,
   },
   {
     title: '创建时间',
     dataIndex: 'createTime',
+    width: 200,
   },
   {
     title: '编辑时间',
     dataIndex: 'editTime',
+    width: 200,
   },
   {
     title: '操作',
     key: 'action',
-    width: 200
+    // width: 260,
+    fixed: 'right'
   },
 ]
 // 数据

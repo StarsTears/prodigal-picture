@@ -9,17 +9,14 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.model.dto.picture.PictureEditDto;
-import com.prodigal.system.model.dto.picture.PictureQueryDto;
+import com.prodigal.system.manager.auth.SpaceUserAuthManager;
 import com.prodigal.system.model.dto.space.SpaceAddDto;
 import com.prodigal.system.model.dto.space.SpaceEditDto;
 import com.prodigal.system.model.dto.space.SpaceQueryDto;
 import com.prodigal.system.model.dto.space.SpaceUpdateDto;
-import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.SpaceLevelEnum;
-import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.model.vo.SpaceLevel;
 import com.prodigal.system.model.vo.SpaceVO;
 import com.prodigal.system.service.SpaceService;
@@ -45,6 +42,8 @@ public class SpaceController {
     private SpaceService spaceService;
     @Resource
     private UserService userService;
+    @Resource
+    private SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/add")
     public BaseResult<Long> addSpace(@RequestBody SpaceAddDto spaceAddDto, HttpServletRequest request) {
@@ -74,13 +73,13 @@ public class SpaceController {
     }
 
     /**
-     * 图片编辑（用户使用）
+     * 空间编辑
      *
-     * @param pictureEditDto 接收图片编辑请求参数
+     * @param spaceEditDto 接收空间编辑请求参数
      * @param request        浏览器请求
      */
     @PostMapping("/edit")
-    public BaseResult<Boolean> editPicture(@RequestBody SpaceEditDto spaceEditDto, HttpServletRequest request) {
+    public BaseResult<Boolean> editSpace(@RequestBody SpaceEditDto spaceEditDto, HttpServletRequest request) {
         if (spaceEditDto == null || spaceEditDto.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -108,14 +107,18 @@ public class SpaceController {
     /**
      * 空间查询VO
      *
-     * @param id      图片id
+     * @param id      空间id
      * @param request 浏览器请求
      */
     @GetMapping("/get/vo")
     public BaseResult<SpaceVO> getSpaceVOByID(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         Space Space = spaceService.getById(id);
-        return ResultUtils.success(spaceService.getSpaceVO(Space, request));
+        SpaceVO spaceVO = spaceService.getSpaceVO(Space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(Space, loginUser);
+        spaceVO.setPermissionList(permissionList);
+        return ResultUtils.success(spaceVO);
     }
 
     @PostMapping("/list/page")
@@ -134,6 +137,7 @@ public class SpaceController {
         Page<Space> spacePage = spaceService.page(new Page<>(current, size), spaceService.getQueryWrapper(spaceQueryDto));
         return ResultUtils.success(spaceService.listSpaceVOeByPage(spacePage, request));
     }
+
     /**
      * 获取空间级别
      * @return List<SpaceLevel>

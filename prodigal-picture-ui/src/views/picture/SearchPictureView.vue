@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref} from "vue";
-import {getPictureVoUsingGet, searchImageByBaiduUsingPost} from "@/api/pictureController.js";
+import {getPictureVoByIdUsingGet, searchImageByBaiduUsingPost} from "@/api/pictureController.js";
 import {message} from "ant-design-vue";
 import {useRoute} from "vue-router";
 
@@ -48,7 +48,7 @@ const picture = ref<API.PictureVO>({})
 const getOldPicture = async () => {
   const id = route.query?.pictureId
   try {
-    const res = await getPictureVoUsingGet({id: id})
+    const res = await getPictureVoByIdUsingGet({id: id})
     if (res.data) {
       picture.value = res.data
     } else {

@@ -13,9 +13,9 @@ declare namespace API {
     status?: boolean
   }
 
-  type BaseResultEmail_ = {
+  type BaseResultEmailVO_ = {
     code?: number
-    data?: Email
+    data?: EmailVO
     msg?: string
     status?: boolean
   }
@@ -30,13 +30,6 @@ declare namespace API {
   type BaseResultInt_ = {
     code?: number
     data?: number
-    msg?: string
-    status?: boolean
-  }
-
-  type BaseResultListEmail_ = {
-    code?: number
-    data?: Email[]
     msg?: string
     status?: boolean
   }
@@ -90,9 +83,23 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListSpaceUserVO_ = {
+    code?: number
+    data?: SpaceUserVO[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultLong_ = {
     code?: number
     data?: number
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultPageEmailVO_ = {
+    code?: number
+    data?: PageEmailVO_
     msg?: string
     status?: boolean
   }
@@ -114,6 +121,13 @@ declare namespace API {
   type BaseResultPageSpace_ = {
     code?: number
     data?: PageSpace_
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultPageSpaceUserVO_ = {
+    code?: number
+    data?: PageSpaceUserVO_
     msg?: string
     status?: boolean
   }
@@ -163,6 +177,13 @@ declare namespace API {
   type BaseResultSpaceUsageAnalyzeVO_ = {
     code?: number
     data?: SpaceUsageAnalyzeVO
+    msg?: string
+    status?: boolean
+  }
+
+  type BaseResultSpaceUser_ = {
+    code?: number
+    data?: SpaceUser
     msg?: string
     status?: boolean
   }
@@ -223,23 +244,48 @@ declare namespace API {
     id?: number
   }
 
-  type Email = {
-    attachments?: string
-    createTime?: string
-    createUserId?: number
-    editTime?: string
-    from?: string
+  type EmailDto = {
+    attachments?: string[]
     html?: boolean
     id?: string
-    isDelete?: number
-    receiveDate?: string
     receiveUserId?: number
-    sendTime?: string
     status?: number
     subject?: string
     to?: string
     txt?: string
+    type?: number
+  }
+
+  type EmailQueryDto = {
+    current?: number
+    id?: string
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    status?: number
+    subject?: string
+    to?: string
+    txt?: string
+    type?: number
+  }
+
+  type EmailVO = {
+    attachments?: string
+    createTime?: string
+    createUserId?: number
+    html?: boolean
+    id?: string
+    receiveUserId?: number
+    receiveUserVO?: UserVO
+    sendTime?: string
+    sendUserId?: number
+    status?: number
+    subject?: string
+    to?: string
+    txt?: string
+    type?: number
     updateTime?: string
+    updateUserId?: number
   }
 
   type getEmailByIdUsingGETParams = {
@@ -262,7 +308,7 @@ declare namespace API {
     taskId?: string
   }
 
-  type getPictureVOUsingGETParams = {
+  type getPictureVOByIDUsingGETParams = {
     /** id */
     id?: number
   }
@@ -319,6 +365,14 @@ declare namespace API {
     taskStatus?: string
   }
 
+  type PageEmailVO_ = {
+    current?: number
+    pages?: number
+    records?: EmailVO[]
+    size?: number
+    total?: number
+  }
+
   type PagePicture_ = {
     current?: number
     pages?: number
@@ -339,6 +393,14 @@ declare namespace API {
     current?: number
     pages?: number
     records?: Space[]
+    size?: number
+    total?: number
+  }
+
+  type PageSpaceUserVO_ = {
+    current?: number
+    pages?: number
+    records?: SpaceUserVO[]
     size?: number
     total?: number
   }
@@ -489,6 +551,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    permissionList?: string[]
     picColor?: string
     picFormat?: string
     picHeight?: number
@@ -504,14 +567,6 @@ declare namespace API {
     userId?: number
   }
 
-  type QueryEmailDto = {
-    from?: string
-    id?: string
-    subject?: string
-    to?: string
-    txt?: string
-  }
-
   type RegisterDto = {
     checkPassword?: string
     userAccount?: string
@@ -525,15 +580,6 @@ declare namespace API {
     emailId: string
   }
 
-  type SendEmailDto = {
-    attachments?: string[]
-    html?: boolean
-    id?: string
-    subject?: string
-    to?: string
-    txt?: string
-  }
-
   type Space = {
     createTime?: string
     editTime?: string
@@ -543,6 +589,7 @@ declare namespace API {
     maxSize?: number
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string
@@ -552,6 +599,7 @@ declare namespace API {
   type SpaceAddDto = {
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     userId?: number
   }
 
@@ -587,6 +635,7 @@ declare namespace API {
     sortOrder?: string
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     userId?: number
   }
 
@@ -639,6 +688,22 @@ declare namespace API {
     usedSize?: number
   }
 
+  type SpaceUser = {
+    createTime?: string
+    id?: number
+    spaceId?: number
+    spaceRole?: string
+    updateTime?: string
+    userId?: number
+  }
+
+  type SpaceUserAddDto = {
+    id?: number
+    spaceId?: number
+    spaceRole?: string
+    userId?: number
+  }
+
   type SpaceUserAnalyzeDto = {
     queryAll?: boolean
     queryPublic?: boolean
@@ -652,14 +717,43 @@ declare namespace API {
     timeRange?: string
   }
 
+  type SpaceUserEditDto = {
+    id?: number
+    spaceRole?: string
+  }
+
+  type SpaceUserQueryDto = {
+    current?: number
+    id?: number
+    pageSize?: number
+    sortField?: string
+    sortOrder?: string
+    spaceId?: number
+    spaceRole?: string
+    userId?: number
+  }
+
+  type SpaceUserVO = {
+    createTime?: string
+    id?: number
+    space?: SpaceVO
+    spaceId?: number
+    spaceRole?: string
+    updateTime?: string
+    user?: UserVO
+    userId?: number
+  }
+
   type SpaceVO = {
     createTime?: string
     editTime?: string
     id?: number
     maxCount?: number
     maxSize?: number
+    permissionList?: string[]
     spaceLevel?: number
     spaceName?: string
+    spaceType?: number
     totalCount?: number
     totalSize?: number
     updateTime?: string

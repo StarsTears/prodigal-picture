@@ -1,5 +1,6 @@
 package com.prodigal.system.model.dto.email;
 
+import com.prodigal.system.common.PageRequest;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -10,16 +11,22 @@ import java.io.Serializable;
  * @description:
  **/
 @Data
-public class QueryEmailDto implements Serializable {
+public class EmailQueryDto extends PageRequest implements Serializable {
     private static final long serialVersionUID = -6931914002782338908L;
     /**
      * 邮件ID
      */
     private String id;
+
     /**
-     * 发件人
+     * 邮件类型
      */
-    private String from;
+    private Integer type;
+    /**
+     *  状态：0:自建(草稿) 1:提交 2：已发
+     */
+    private Integer status;
+
     /**
      * 收件人
      */
@@ -32,4 +39,5 @@ public class QueryEmailDto implements Serializable {
      * 内容
      */
     private String txt;
+
 }

@@ -23,6 +23,12 @@ public class SpaceQueryDto extends PageRequest implements Serializable {
     private Long id;
 
     /**
+     * 空间类型：0-私有 1-团队
+     */
+    private Integer spaceType;
+
+
+    /**
      * 空间名称
      */
     private String spaceName;

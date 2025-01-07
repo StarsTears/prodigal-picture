@@ -7,6 +7,11 @@
         <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">
           <a-input v-model:value="formState.userAccount" placeholder="请输入账号"/>
         </a-form-item>
+        <a-form-item name="userEmail"
+                     :rules="[{ required: true, message: '请输入邮箱' },
+                              { type: 'email',validator: checkEmail, message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }]">
+          <a-input v-model:value="formState.userEmail" placeholder="请输入邮箱"/>
+        </a-form-item>
         <a-form-item
           name="userPassword"
           :rules="[
@@ -52,6 +57,18 @@ const formState = reactive<API.RegisterDto>({
 
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
+//-------------------------------------邮箱校验--------------------------------------
+//自定义的邮箱和手机验证规则
+const checkEmail = (rule, value,callback) =>{
+  // const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+  const regEmail = /^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
+  if(value != '' && !regEmail.test(value)) {
+    callback(new Error('请输入有效的邮箱'));
+  }else {
+    callback();
+  }
+};
+
 /**
  * 提交表单
  * @param values

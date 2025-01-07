@@ -161,7 +161,7 @@ const originItems = [
     label: '空间管理',
     title: '空间管理',
   }, {
-    key: '/email/emailManager',
+    key: '/admin/emailManager',
     icon: h(MailOutlined),
     label: '邮件管理',
     title: '邮件管理',

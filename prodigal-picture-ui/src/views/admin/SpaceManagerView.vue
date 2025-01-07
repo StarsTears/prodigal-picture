@@ -11,8 +11,18 @@
   <div style="margin-bottom: 16px"/>
   <a-form layout="inline" :model="searchParams" @finish="doSearch">
     <a-form-item label="空间名称">
-      <a-input v-model:value="searchParams.spaceName" placeholder="输入类型" allow-clear/>
+      <a-input v-model:value="searchParams.spaceName" placeholder="输入空间名称" allow-clear/>
     </a-form-item>
+    <a-form-item label="空间类别" name="spaceType">
+      <a-select
+        v-model:value="searchParams.spaceType"
+        :options="SPACE_TYPE_OPTIONS"
+        placeholder="请输入空间类别"
+        style="min-width: 180px"
+        allow-clear
+      />
+    </a-form-item>
+
     <a-form-item label="空间级别">
       <a-select v-model:value="searchParams.spaceLevel"
                 :options="SPACE_LEVEL_OPTIONS"
@@ -39,8 +49,12 @@
       <template v-if="column.title === '序号'">
         {{ (pagination.current - 1) * pagination.pageSize + parseInt(index) + 1 }}
       </template>
+      <!-- 空间类别 -->
+      <template v-if="column.dataIndex === 'spaceType'">
+        <a-tag>{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
+      </template>
       <template v-if="column.dataIndex ==='spaceLevel'">
-        {{ SPACE_LEVEL_MAP[record.spaceLevel] }}
+        <a-tag>{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
       </template>
       <template v-if="column.dataIndex === 'spaceUseInfo'">
         <div>大小：{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
@@ -55,16 +69,15 @@
       </template>
       <template v-if="column.key === 'action'">
         <a-space wrap>
+          <a-button type="link" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
+            分析
+          </a-button>
           <a-button type="primary"
                     :icon="h(EditOutlined)"
                     :href="`/space/add_space?id=${record.id}`"
                     target="_blank">
             编辑
           </a-button>
-          <a-button type="link" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
-            分析
-          </a-button>
-
           <a-popconfirm okText="确定"
                         cancelText="取消"
                         title="Sure to delete?"
@@ -89,7 +102,7 @@ import {DeleteOutlined, EditOutlined,BarChartOutlined} from '@ant-design/icons-v
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {formatSize} from "@/utils/index";
-import {SPACE_LEVEL_MAP , SPACE_LEVEL_OPTIONS} from "@/constants/space"
+import {SPACE_LEVEL_MAP , SPACE_LEVEL_OPTIONS,SPACE_TYPE_MAP,SPACE_TYPE_OPTIONS} from "@/constants/space"
 import {deleteSpaceUsingPost, listSpaceByPageUsingPost} from "@/api/spaceController";
 
 const columns = [
@@ -102,10 +115,16 @@ const columns = [
     title: 'id',
     dataIndex: 'id',
     width: 80,
+    fixed: 'left'
   },
   {
     title: '空间名称',
     dataIndex: 'spaceName',
+    fixed: 'left'
+  },
+  {
+    title: '空间类别',
+    dataIndex: 'spaceType',
   },
   {
     title: '空间级别',
@@ -131,6 +150,7 @@ const columns = [
   {
     title: '操作',
     key: 'action',
+    fixed: 'right'
   },
 ]
 // 数据

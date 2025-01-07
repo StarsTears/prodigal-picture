@@ -13,6 +13,11 @@ import java.io.Serializable;
 public class SpaceAddDto implements Serializable {
     private static final long serialVersionUID = 9125766214211237093L;
     /**
+     * 空间类型：0-私有 1-团队
+     */
+    private Integer spaceType;
+
+    /**
      * 空间所属人
      */
     private Long userId;

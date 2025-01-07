@@ -32,7 +32,7 @@
 <script lang="ts" setup>
 import {onMounted, ref,reactive} from 'vue';
 import {useLoginUserStore} from "@/stores/loginUserStore";
-import {listEmailUsingPost} from "@/api/emailController";
+import {listEmailByPageUsingPost} from "@/api/emailController";
 import {message} from "ant-design-vue";
 
 const open = ref<boolean>(false);
@@ -51,19 +51,20 @@ defineExpose({
 
 //获取当前登录用户的邮件信息
 const loginUserStore = useLoginUserStore()
-const dataList = ref<API.Email[]>([])
-const emilMessage = reactive<API.QueryEmailDto>({
+const dataList = ref<API.EmailVO[]>([])
+const emilMessage = reactive<API.EmailQueryDto>({
   to: loginUserStore?.loginUser.userEmail,
   subject: '',
 })
 const fetchData = async () => {
-  const res = await listEmailUsingPost({
-    ...emilMessage
+  const res = await listEmailByPageUsingPost({
+    ...emilMessage,
+    status: 2,
   });
   console.log(res)
   if (res.code === 0) {
     console.log(res.data)
-    dataList.value = res.data??[]
+    dataList.value = res.data.records ??[]
   } else {
     message.error('获取信息失败，请重试！,' + res.msg)
   }

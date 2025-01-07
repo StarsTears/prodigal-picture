@@ -27,7 +27,9 @@ const checkMySpace = async () => {
     userId: loginUser.id,
     current: 1,
     pageSize: 1,
+    spaceType:0,
   });
+  console.log("MySpaceView:"+JSON.stringify(res))
   if (res.code === 0) {
     //有空间，则进入第一个空间跳转至详情页
     if (res.data?.records?.length > 0) {

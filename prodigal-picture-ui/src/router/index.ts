@@ -172,7 +172,17 @@ const router = createRouter({
       }],
     },
     {
-      path:'/email/emailManager',
+      path:'/spaceUserManager/:id',
+      name:'空间成员管理',
+      component: BasicLayout,
+      children:[{
+        path: '',
+        component:()=>import('../views/space/SpaceUserManagerView.vue'),
+        props: true
+      }],
+    },
+    {
+      path:'/admin/emailManager',
       name:'邮件管理',
       component: BasicLayout,
       children:[{

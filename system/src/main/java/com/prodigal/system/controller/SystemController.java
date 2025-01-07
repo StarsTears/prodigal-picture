@@ -78,6 +78,9 @@ public class SystemController {
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
         String userEmail = userAddDto.getUserEmail();
+        if (StrUtil.isBlank(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+        }
         if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
@@ -134,6 +137,9 @@ public class SystemController {
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         String userEmail = userUpdateDto.getUserEmail();
+        if (StrUtil.isBlank(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+        }
         if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
@@ -155,6 +161,9 @@ public class SystemController {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
         }
         String userEmail = userUpdateDto.getUserEmail();
+        if (StrUtil.isBlank(userEmail)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+        }
         if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }

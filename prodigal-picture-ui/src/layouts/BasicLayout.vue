@@ -90,11 +90,11 @@ const siderWidth = ref(200);
 #basicLayout .footer {
   background: #efefef;
   padding: 16px;
-  position: fixed;
+  /*position: fixed;*/
   bottom: 0;
   right: 0;
   left: 0;
   text-align: center;
-  z-index: 1000; /* 确保footer在最上层 */
+  /*z-index: 1000; !* 确保footer在最上层 *!*/
 }
 </style>

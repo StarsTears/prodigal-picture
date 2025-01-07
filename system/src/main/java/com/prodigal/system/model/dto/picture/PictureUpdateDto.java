@@ -19,7 +19,10 @@ public class PictureUpdateDto implements Serializable {
      * id
      */
     private Long id;
-
+    /**
+     * spaceID
+     */
+    private Long spaceId;
     /**
      * 图片名称
      */

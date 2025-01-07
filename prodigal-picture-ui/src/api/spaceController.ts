@@ -29,11 +29,8 @@ export async function deleteSpaceUsingPost(
   })
 }
 
-/** editPicture POST /api/space/edit */
-export async function editPictureUsingPost1(
-  body: API.SpaceEditDto,
-  options?: { [key: string]: any }
-) {
+/** editSpace POST /api/space/edit */
+export async function editSpaceUsingPost(body: API.SpaceEditDto, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/space/edit', {
     method: 'POST',
     headers: {

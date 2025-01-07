@@ -56,7 +56,7 @@ import AiOutPainting from "@/components/AiOutPainting.vue";
 import {h,computed, onMounted, reactive, ref} from "vue";
 import {message} from "ant-design-vue";
 import {FullscreenOutlined} from '@ant-design/icons-vue';
-import {editPictureUsingPost, getPictureVoUsingGet, listPictureTagCategoryUsingGet} from "@/api/pictureController";
+import {editPictureUsingPost, getPictureVoByIdUsingGet, listPictureTagCategoryUsingGet} from "@/api/pictureController";
 import {useRoute, useRouter} from "vue-router";
 const route = useRoute();
 const router = useRouter();
@@ -136,7 +136,7 @@ const getOldPicture = async () => {
   //获取id
   let id = route.query?.id;
   if (id) {
-    const res = await getPictureVoUsingGet({id})
+    const res = await getPictureVoByIdUsingGet({id})
     if (res.code === 0 && res.data) {
       const data = res.data
       picture.value = data

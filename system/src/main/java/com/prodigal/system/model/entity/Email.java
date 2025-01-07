@@ -3,20 +3,22 @@ package com.prodigal.system.model.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.prodigal.system.model.enums.EmailTypeEnum;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: prodigal-picture
  * @author: Lang
- * @description: 邮件信息
+ * @description: 邮件信息(公告、告警···)
  **/
 @Data
-@Document(collection = "message")
+@Document(collection = "email")
 public class Email implements Serializable {
     @TableField(exist = false)
     private static final long serialVersionUID = 5595215741557819745L;
@@ -39,41 +41,52 @@ public class Email implements Serializable {
      * 附件
      */
     private String attachments;
-    /**
-     * 发送时间
-     */
-    private Date sendTime;
-    /**
-     * 发送人
-     */
-    private Long createUserId;
+
     /**
      * 从···邮箱发送的信息
+     * 都是从 配置的 系统邮箱 发送
      */
     private String from;
     /**
-     * 接收时间
+     * 邮件类型
      */
-    private Date receiveDate;
+    private Integer type;
+
     /**
      * 接收人
      */
-    private Long receiveUserId;
     private String to;
+    private Long receiveUserId;
 
-    /*状态：0:自建(草稿) 1:已发*/
+    /**
+     * 状态：
+     *  0:自建(草稿) 1:提交 2：已发
+     */
     private Integer status;
 
     /**
-     * 编辑时间
+     * 创建人
+     * 关联 user 表
      */
-    private Date editTime;
-
+    private Long createUserId;
     /**
      * 创建时间
      */
     private Date createTime;
 
+    /**
+     * 发送人
+     */
+    private Long sendUserId;
+
+    /**
+     * 发送时间
+     */
+    private Date sendTime;
+    /**
+     * 修改人
+     */
+    private Long updateUserId;
     /**
      * 更新时间
      */

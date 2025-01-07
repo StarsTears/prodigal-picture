@@ -128,10 +128,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         if (spaceId != null) {
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
-            //判断当前用户有无权限上传图片到该空间
-            if (!space.getUserId().equals(loginUser.getId())) {
-                throw new BusinessException(ErrorCode.USER_NOT_AUTHORIZED, "没有空间权限");
-            }
+//            //判断当前用户有无权限上传图片到该空间
+//            if (!space.getUserId().equals(loginUser.getId())) {
+//                throw new BusinessException(ErrorCode.USER_NOT_AUTHORIZED, "没有空间权限");
+//            }
             //校验额度
             ThrowUtils.throwIf(space.getTotalCount() >= space.getMaxCount(), ErrorCode.OPERATION_ERROR, "空间条数不够");
             ThrowUtils.throwIf(space.getTotalSize() >= space.getMaxSize(), ErrorCode.OPERATION_ERROR, "空间额度不够");
@@ -146,9 +146,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         if (pictureID != null) {
             Picture picture = this.getById(pictureID);
             ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
-            //验权、进本人和管理员可编辑
-            boolean isCan = picture.getUserId().equals(loginUser.getId());
-            ThrowUtils.throwIf(!isCan && !userService.isAdmin(loginUser), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限修改该图片");
+//            //验权、进本人和管理员可编辑
+//            boolean isCan = picture.getUserId().equals(loginUser.getId());
+//            ThrowUtils.throwIf(!isCan && !userService.isAdmin(loginUser), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限修改该图片");
 
             //校验空间是否一致
             if (spaceId == null) {
@@ -205,6 +205,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
         picture.setSpaceId(spaceId);
+        // 设置空间ID;将公共空间的空间ID设置为0
+//        picture.setSpaceId(spaceId !=null ? spaceId : 0L);
         //补充审核参数
         this.fillReviewParams(picture, loginUser);
         //如果pictureID 不为空则进行更新
@@ -381,7 +383,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         //验权
-        checkPicturePermission(loginUser, picture);
+//        checkPicturePermission(loginUser, picture);
         //补充审核参数
         this.fillReviewParams(picture, loginUser);
         boolean result = this.updateById(picture);
@@ -539,7 +541,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         wrapper.eq(true, Picture::getIsDelete, 0)
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getSpaceId()), Picture::getSpaceId, pictureQueryDto.getSpaceId())
-                .isNull(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId)
+                .isNull(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId) //公共图库的空间ID 为 0
+//                .eq(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId,0) //公共图库的空间ID 为 0
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getId()), Picture::getId, pictureQueryDto.getId())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getUserId()), Picture::getUserId, pictureQueryDto.getUserId())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getName()), Picture::getName, pictureQueryDto.getName())
@@ -798,7 +801,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         Picture picture = this.getById(pictureId);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         //验证权限
-        checkPicturePermission(loginUser, picture);
+//        checkPicturePermission(loginUser, picture);
 //        if (!loginUser.getId().equals(picture.getUserId()) && !userService.isAdmin(loginUser)) {
 //            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
 //        }
@@ -875,7 +878,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         Long pictureId = createPictureOutPaintingTaskDto.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
         //2、权限校验
-        this.checkPicturePermission(loginUser, picture);
+//        this.checkPicturePermission(loginUser, picture);
         //3、组装 ai 扩图 请求参数
         CreateOutPaintingTaskDto taskDto = new CreateOutPaintingTaskDto();
         CreateOutPaintingTaskDto.Input input = new CreateOutPaintingTaskDto.Input();

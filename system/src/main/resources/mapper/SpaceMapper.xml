@@ -6,6 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.prodigal.system.model.entity.Space">
             <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="spaceType" column="spaceType" jdbcType="BIGINT"/>
             <result property="spaceName" column="spaceName" jdbcType="VARCHAR"/>
             <result property="spaceLevel" column="spaceLevel" jdbcType="INTEGER"/>
             <result property="maxSize" column="maxSize" jdbcType="BIGINT"/>
@@ -20,7 +21,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,spaceName,spaceLevel,
+        id,spaceType,spaceName,spaceLevel,
         maxSize,maxCount,totalSize,
         totalCount,userId,createTime,
         editTime,updateTime,isDelete

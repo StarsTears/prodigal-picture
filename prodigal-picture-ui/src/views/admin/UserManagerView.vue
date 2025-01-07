@@ -40,7 +40,12 @@
       <template v-if="column.title === '序号'">
         {{ (pagination.current - 1) * pagination.pageSize + parseInt(index) + 1 }}
       </template>
-
+      <template v-else-if="column.dataIndex === 'id'">
+        <a-tooltip placement="topLeft">
+          <template #title>{{ record.id }}</template>
+          {{ record.id }}
+        </a-tooltip>
+      </template>
       <template v-if="column.dataIndex === 'userAvatar'">
         <a-image :src="record.userAvatar" :width="50"/>
       </template>
@@ -129,7 +134,7 @@ const columns: TableColumnsType = [
     title: 'id',
     dataIndex: 'id',
     fixed: 'left',
-    // ellipsis: true, // 宽度不够会自动折行，但是鼠标放上去会显示"ellipsis"
+    ellipsis: true, // 宽度不够会自动折行，但是鼠标放上去会显示"ellipsis"
   },
   {
     title: '账号',
@@ -256,8 +261,6 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
-
-//编辑数据
 
 // const dataSource = ref(dataList);
 const editableData: UnwrapRef<Record<string, dataList.value>> = reactive({});

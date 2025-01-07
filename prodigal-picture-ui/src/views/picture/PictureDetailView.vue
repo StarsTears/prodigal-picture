@@ -69,7 +69,7 @@
             <a-button :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
               免费下载
             </a-button>
-            <a-button v-if="canEdit"
+            <a-button v-if="canEditPicture"
                       :icon="h(EditOutlined)"
                       type="default"
                       @click="doEdit">
@@ -94,7 +94,7 @@
                       @confirm="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
               拒绝
             </a-button>
-            <a-popconfirm v-if="canEdit"
+            <a-popconfirm v-if="canDeletePicture"
                           :icon="h(DeleteOutlined)"
                           okText="确定"
                           cancelText="取消"
@@ -116,7 +116,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref, h} from "vue";
-import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoUsingGet} from "@/api/pictureController";
+import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingGet} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize} from "@/utils";
@@ -126,6 +126,7 @@ import {useRouter} from "vue-router";
 import {PIC_REVIEW_STATUS_ENUM} from "@/constants/picture";
 import {toHexColor} from '@/utils/index'
 import ShareModal from "@/components/ShareModal.vue";
+import {SPACE_PERMISSION_ENUM} from "@/constants/space";
 
 interface Props {
   id: string | number
@@ -136,7 +137,7 @@ const picture = ref<API.PictureVO>({})
 // 获取图片详情
 const fetchPictureDetail = async () => {
   try {
-    const res = await getPictureVoUsingGet({id: props.id})
+    const res = await getPictureVoByIdUsingGet({id: props.id})
     if (res.data) {
       picture.value = res.data
     } else {
@@ -150,6 +151,21 @@ const fetchPictureDetail = async () => {
 onMounted(() => {
   fetchPictureDetail()
 })
+
+//----------------------------------团队空间的权限校验------------------------
+// 通用权限检查函数
+function createPermissionChecker(permission: string) {
+  return computed(() => {
+    return (picture.value.permissionList ?? []).includes(permission)
+  })
+}
+
+// 定义权限检查
+const canManageSpaceUser = createPermissionChecker(SPACE_PERMISSION_ENUM.SPACE_USER_MANAGE)
+const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_UPLOAD)
+const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
+const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
+
 
 /**
  * 下载图片
@@ -166,16 +182,16 @@ const isAdmin = computed(() => {
   return !loginUser && loginUser.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)
 })
 
-const canEdit = computed(() => {
-  let loginUser = loginUserStore.loginUser;
-  //未登录不可编辑
-  if (!loginUser.id) {
-    return false;
-  }
-  //仅限本人与管理员可编辑
-  const user = picture.value.user || {}
-  return loginUser.id === user.id || loginUser.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN);
-})
+// const canEdit = computed(() => {
+//   let loginUser = loginUserStore.loginUser;
+//   //未登录不可编辑
+//   if (!loginUser.id) {
+//     return false;
+//   }
+//   //仅限本人与管理员可编辑
+//   const user = picture.value.user || {}
+//   return loginUser.id === user.id || loginUser.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN);
+// })
 
 const router = useRouter();
 const doEdit = () => {
