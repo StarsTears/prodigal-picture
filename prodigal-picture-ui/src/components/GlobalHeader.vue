@@ -20,7 +20,9 @@
               <BellOutlined @click="doNotice"  style="margin: 25px 10px;color: grey"/>
               <a-dropdown>
                 <a-space>
-                  <a-avatar :src="loginUserStore.loginUser.userAvatar"/>
+                  <!--<a-avatar :src="loginUserStore.loginUser.userAvatar"/>-->
+                  <a-avatar v-if="loginUserStore.loginUser.userAvatar" :src="loginUserStore.loginUser.userAvatar"/>
+                  <a-avatar v-if="!loginUserStore.loginUser.userAvatar" style="color: #f56a00; background-color: #fde3cf">{{loginUserStore.loginUser.userName.charAt(0)}}</a-avatar>
                   {{ loginUserStore.loginUser.userName ?? "无名" }}
                 </a-space>
                 <template #overlay>
@@ -70,18 +72,20 @@
             style="max-width: 600px"
     >
       <a-form-item name="userProfile" label="头像">
-        <a-image :src="userDetail?.userAvatar" :width="50"/>
-        <a-upload v-if="!componentDisabled"
-                  name="file"
-                  list-type="picture"
-                  :custom-request="doUpload"
-                  :before-upload="beforeUpload"
-        >
-          <a-button>
-            <upload-outlined/>
-            Click to Upload
-          </a-button>
-        </a-upload>
+        <a-avatar v-if="loginUserStore.loginUser.userAvatar" :src="loginUserStore.loginUser.userAvatar"/>
+        <a-avatar v-if="!loginUserStore.loginUser.userAvatar" style="color: #f56a00; background-color: #fde3cf">{{loginUserStore.loginUser.userName.charAt(0)}}</a-avatar>
+<!--        <a-image :src="userDetail?.userAvatar" :width="50"/>-->
+<!--        <a-upload v-if="!componentDisabled"-->
+<!--                  name="file"-->
+<!--                  list-type="picture"-->
+<!--                  :custom-request="doUpload"-->
+<!--                  :before-upload="beforeUpload"-->
+<!--        >-->
+<!--          <a-button>-->
+<!--            <upload-outlined/>-->
+<!--            Click to Upload-->
+<!--          </a-button>-->
+<!--        </a-upload>-->
       </a-form-item>
       <a-form-item
         name="userAccount"
@@ -93,8 +97,13 @@
       <a-form-item name="userName" label="昵称">
         <a-input v-model:value="userDetail.userName" placeholder="昵称"/>
       </a-form-item>
+      <a-form-item name="userEmail" label="邮箱"
+                   :rules="[{ required: true, message: '邮箱' },
+                              { type: 'email',validator: checkEmail, message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }]">
+        <a-input v-model:value="userDetail.userEmail" placeholder="邮箱"/>
+      </a-form-item>
       <a-form-item name="userProfile" label="简介">
-        <a-textarea v-model:value="userDetail.userProfile" placeholder="账号"/>
+        <a-textarea v-model:value="userDetail.userProfile" placeholder="简介"/>
       </a-form-item>
 
       <a-form-item name="userRole" label="角色" class="collection-create-form_last-form-item">
@@ -246,6 +255,7 @@ const userDetail = reactive<API.UserVO>({
   userName: '',
   userAvatar: '',
   useAccount: '',
+  userEmail: '',
   userRole: '',
   userProfile: '',
 });
@@ -255,6 +265,7 @@ const doShow = () => {
   userDetail.userName = loginUserStore.loginUser.userName;
   userDetail.userAccount = loginUserStore.loginUser.userAccount;
   userDetail.userAvatar = loginUserStore.loginUser.userAvatar;
+  userDetail.userEmail = loginUserStore.loginUser.userEmail;
   userDetail.userRole = loginUserStore.loginUser.userRole;
   userDetail.userProfile = loginUserStore.loginUser.userProfile;
   open.value = true;
@@ -267,6 +278,17 @@ const doEdit = () => {
   showRole.value = true
 }
 
+//-------------------------------------邮箱校验--------------------------------------
+//自定义的邮箱和手机验证规则
+const checkEmail = (rule, value,callback) =>{
+  // const regEmail = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+  const regEmail = /^[a-zA-Z0-9_+&*-]+(?:\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,7}$/;
+  if(value != '' && !regEmail.test(value)) {
+    callback(new Error('请输入有效的邮箱'));
+  }else {
+    callback();
+  }
+};
 const doSave = async () => {
   const res = await editUserUsingPost(userDetail)
   if (res.code === 0 && res.data) {

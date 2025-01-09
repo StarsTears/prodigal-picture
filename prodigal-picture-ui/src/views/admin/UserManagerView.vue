@@ -47,7 +47,9 @@
         </a-tooltip>
       </template>
       <template v-if="column.dataIndex === 'userAvatar'">
-        <a-image :src="record.userAvatar" :width="50"/>
+        <!-- <a-image :src="record.userAvatar" :width="50"/>-->
+        <a-image v-if="record.userAvatar" :src="record.userAvatar" :width="50"/>
+        <a-avatar v-if="!record.userAvatar" style="color: #f56a00; background-color: #fde3cf">{{record.userName.charAt(0)}}</a-avatar>
       </template>
       <!--可编辑字段-->
       <teleplate v-if="['userProfile', 'userAccount', 'userName'].includes(column.dataIndex)">

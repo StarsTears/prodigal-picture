@@ -119,7 +119,7 @@ import {computed, onMounted, ref, h} from "vue";
 import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
-import {downloadImage, formatSize} from "@/utils";
+import {downloadImage, formatSize} from "@/utils/index";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import ACCESS_ENUM from "@/access/accessEnum";
 import {useRouter} from "vue-router";

@@ -46,7 +46,9 @@
 
         <template v-if="column.dataIndex === 'userInfo'">
           <a-space>
-            <a-avatar :src="record.user?.userAvatar"/>
+<!--            <a-avatar :src="record.user?.userAvatar"/>-->
+            <a-avatar v-if="record.user?.userAvatar" :src="record.user?.userAvatar"/>
+            <a-avatar v-if="!record.user?.userAvatar" style="color: #f56a00; background-color: #fde3cf">{{record.user?.userName.charAt(0)}}</a-avatar>
             {{ record.user?.userName }}
           </a-space>
         </template>

@@ -25,7 +25,7 @@
 import {onMounted, ref, watchEffect} from "vue";
 import {message} from "ant-design-vue";
 import {analyzeSpaceUsageUsingPost} from "@/api/spaceAnalyzeController";
-import {formatSize} from "@/utils";
+import {formatSize} from "@/utils/index";
 
 interface Props {
   queryAll?: boolean
