@@ -13,11 +13,11 @@ import java.util.Objects;
  **/
 @Getter
 public enum PictureEditMessageTypeEnum {
-    INFO("发送通知", "info"),
-    ERROR("发送错误", "error"),
-    ENTER_EDIT("进入编辑状态", "enterEdit"),
-    EXIT_EDIT("退出编辑状态", "exitEdit"),
-    EDIT_ACTION("执行编辑操作", "editAction")
+    INFO("发送通知", "INFO"),
+    ERROR("发送错误", "ERROR"),
+    ENTER_EDIT("进入编辑状态", "ENTER_EDIT"),
+    EXIT_EDIT("退出编辑状态", "EXIT_EDIT"),
+    EDIT_ACTION("执行编辑操作", "EDIT_ACTION")
     ;
     private final String text;
     private final String value;

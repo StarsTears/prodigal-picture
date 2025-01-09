@@ -217,9 +217,19 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             picture.setEditTime(new Date());
         }
         //开启事物
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", pictureID) // 根据主键 id 查询
+                .eq("spaceId", spaceId); // 附加 spaceId 条件
         Long finalSpaceId = spaceId;
+        Long finalPictureID = pictureID;
         transactionTemplate.execute(status -> {
-            boolean result = this.saveOrUpdate(picture);
+            boolean result= true;
+            if (finalPictureID != null){
+                result = this.update(picture,updateWrapper);
+            }else{
+               result = this.save(picture);
+            }
+//            boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
             if (finalSpaceId != null) {
                 boolean update = spaceService.lambdaUpdate()

@@ -20,9 +20,11 @@
     <!-- 图片操作 -->
     <div v-if="picture" class="edit-ber">
       <a-space>
+        <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
         <a-button type="primary" ghost :icon="h(FullscreenOutlined)" @click="doAiOutPainting">AI 扩图</a-button>
       </a-space>
       <AiOutPainting ref="aiOutPaintingModalRef" :picture="picture" :spaceId="spaceId" :onSuccess="onAiOutPaintingSuccess"/>
+      <ImageCropper ref="imageCropperRef" :imageUrl="picture?.url" :picture="picture" :spaceId="spaceId" :space="space" :onSuccess="onCropSuccess"/>
     </div>
 
     <!-- 图片展示组件 -->
@@ -53,15 +55,18 @@
 import PictureUpload from "@/views/picture/PictureUpload.vue";
 import UrlPictureUpload from "@/views/picture/UrlPictureUpload.vue";
 import AiOutPainting from "@/components/AiOutPainting.vue";
-import {h,computed, onMounted, reactive, ref} from "vue";
+import ImageCropper from "@/views/picture/ImageCropperView.vue";
+import {h, computed, onMounted, reactive, ref, watchEffect} from "vue";
 import {message} from "ant-design-vue";
-import {FullscreenOutlined} from '@ant-design/icons-vue';
+import {FullscreenOutlined,EditOutlined} from '@ant-design/icons-vue';
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingPost,
   listPictureTagCategoryUsingGet
 } from "@/api/pictureController";
 import {useRoute, useRouter} from "vue-router";
+import {getSpaceVoByIdUsingGet} from "@/api/spaceController";
+import {formatSize} from "@/utils";
 const route = useRoute();
 const router = useRouter();
 const uploadType = ref<'file' | 'url'>('file')
@@ -159,6 +164,20 @@ const getOldPicture = async () => {
 onMounted(() => {
   getOldPicture()
 })
+
+// --------------------------编辑图片----------------------------------
+// 图片编辑弹窗引用
+const imageCropperRef = ref()
+const doEditPicture = () => {
+  if (imageCropperRef.value) {
+    imageCropperRef.value.openModal()
+  }
+}
+// 编辑成功事件
+const onCropSuccess = (newPicture: API.PictureVO) => {
+  picture.value = newPicture
+}
+
 //---------------------------AI 扩图-------------------------------------
 const aiOutPaintingModalRef = ref()
 const doAiOutPainting = () => {
@@ -167,6 +186,23 @@ const doAiOutPainting = () => {
 const onAiOutPaintingSuccess = (newPicture:API.PictureVO) => {
   picture.value = newPicture
 }
+
+//获取空间信息
+const space = ref<API.SpaceVO>({})
+//获取老数据
+const fetchSpace = async () => {
+  if (spaceId.value) {
+    const res = await getSpaceVoByIdUsingGet({id:spaceId.value})
+    console.log("获取空间信息："+JSON.stringify(res))
+    if (res.code === 0 && res.data) {
+      space.value = res.data
+    }
+  }
+}
+
+watchEffect(()=>{
+  fetchSpace()
+})
 </script>
 
 <style scoped>
