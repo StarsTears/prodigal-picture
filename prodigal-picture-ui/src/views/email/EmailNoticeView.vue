@@ -16,7 +16,7 @@
           <a-comment>
             <template #author>{{ email.subject }}</template>
             <template #avatar>
-              <a-avatar src="https://joeschmoe.io/api/v1/random" alt="Han Solo"/>
+              <a-avatar src="https://zos.alipayobjects.com/rmsportal/ODTLcjxAfvqbxHnVXCYX.png" alt="Prodigal"/>
             </template>
             <template #content>
               {{ email.txt }}
@@ -136,7 +136,6 @@ const doTableChange = (page: any) => {
 onMounted(() => {
   fetchData()
 })
-
 
 </script>
 

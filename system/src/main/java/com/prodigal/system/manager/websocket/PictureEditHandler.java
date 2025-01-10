@@ -5,12 +5,14 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import com.prodigal.system.manager.websocket.disruptor.PictureEditEventProducer;
 import com.prodigal.system.manager.websocket.model.PictureEditActionEnum;
 import com.prodigal.system.manager.websocket.model.PictureEditMessageTypeEnum;
 import com.prodigal.system.manager.websocket.model.PictureEditRequestMessage;
 import com.prodigal.system.manager.websocket.model.PictureEditResponseMessage;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.service.UserService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -32,6 +34,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PictureEditHandler extends TextWebSocketHandler {
     @Resource
     private UserService userService;
+    @Resource
+    @Lazy
+    private PictureEditEventProducer pictureEditEventProducer;
+
     //使用 ConcurrentHashMap 保证线程安全
     //每张图片的编辑状态 key: pictureId  value: 当前正在编辑的userId
     private static final Map<Long, Long> pictureEditingUsers = new ConcurrentHashMap<>();
@@ -105,24 +111,26 @@ public class PictureEditHandler extends TextWebSocketHandler {
         Map<String, Object> attributes = session.getAttributes();
         Long pictureId = (Long) attributes.get("pictureId");
         User user = (User) attributes.get("user");
-        //执行相应的操作
-        switch (pictureEditMessageTypeEnum) {
-            case ENTER_EDIT:
-                handleEnterEditMessage(session, pictureEditRequestMessage, user, pictureId);
-                break;
-            case EDIT_ACTION:
-                handleEditActionMessage(session, pictureEditRequestMessage, user, pictureId);
-                break;
-            case EXIT_EDIT:
-                handleExitEditMessage(session, pictureEditRequestMessage, user, pictureId);
-                break;
-            default:
-                PictureEditResponseMessage pictureEditResponseMessage = new PictureEditResponseMessage();
-                pictureEditResponseMessage.setType(PictureEditMessageTypeEnum.ERROR.getValue());
-                pictureEditResponseMessage.setMessage("未知的消息类型");
-                pictureEditResponseMessage.setUser(userService.getUserVO(user));
-                session.sendMessage(new TextMessage(JSONUtil.toJsonStr(pictureEditResponseMessage)));
-        }
+        //以下方法可改为使用 disruptor 优化
+        pictureEditEventProducer.publishEvent(session, pictureEditRequestMessage, user, pictureId);
+//        //执行相应的操作
+//        switch (pictureEditMessageTypeEnum) {
+//            case ENTER_EDIT:
+//                handleEnterEditMessage(session, pictureEditRequestMessage, user, pictureId);
+//                break;
+//            case EDIT_ACTION:
+//                handleEditActionMessage(session, pictureEditRequestMessage, user, pictureId);
+//                break;
+//            case EXIT_EDIT:
+//                handleExitEditMessage(session, pictureEditRequestMessage, user, pictureId);
+//                break;
+//            default:
+//                PictureEditResponseMessage pictureEditResponseMessage = new PictureEditResponseMessage();
+//                pictureEditResponseMessage.setType(PictureEditMessageTypeEnum.ERROR.getValue());
+//                pictureEditResponseMessage.setMessage("未知的消息类型");
+//                pictureEditResponseMessage.setUser(userService.getUserVO(user));
+//                session.sendMessage(new TextMessage(JSONUtil.toJsonStr(pictureEditResponseMessage)));
+//        }
     }
 
     public void handleEnterEditMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, Long pictureId) throws Exception {

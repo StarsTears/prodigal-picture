@@ -19,6 +19,7 @@
         <mybatis-plus.version>3.5.9</mybatis-plus.version>
         <apache-shardingspahere.version>5.2.0</apache-shardingspahere.version>
         <sa-token.version>1.39.0</sa-token.version>
+        <disruptor.version>3.4.2</disruptor.version>
         <caffeine.version>3.1.8</caffeine.version>
         <jedis.version>3.7.0</jedis.version>
         <commons-pool2.version>2.11.1</commons-pool2.version>
@@ -80,6 +81,13 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-pool2</artifactId>
                 <version>${commons-pool2.version}</version>
+            </dependency>
+
+            <!-- 高性能无锁队列 -->
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>${disruptor.version}</version>
             </dependency>
 
             <!-- 本地缓存 Caffeine -->
