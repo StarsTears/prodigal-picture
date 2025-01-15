@@ -42,6 +42,7 @@ import com.prodigal.system.utils.ColorSimilarUtils;
 import com.prodigal.system.utils.CustomThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -77,6 +78,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     private FileManager fileManager;
     @Resource
     private UserService userService;
+    @Resource
+    private PictureMapper pictureMapper;
     @Resource
     private FilePictureUpload filePictureUpload;
     @Resource
@@ -231,7 +234,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             }
 //            boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
-            if (finalSpaceId != null) {
+            if (finalSpaceId != null && finalSpaceId != 0) {
                 boolean update = spaceService.lambdaUpdate()
                         .eq(Space::getId, finalSpaceId)
                         .setSql("totalSize = totalSize +" + picture.getPicSize())
@@ -864,8 +867,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             return true;
         });
 
-        //异步清理文件
-        this.clearPictureFile(picture);
+//        //异步清理文件
+//        this.clearPictureFile(picture);
     }
 
     @Async //异步执行
@@ -891,6 +894,52 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
 
         cosManager.deleteObjects(keys);
+    }
+
+    /**
+     * 查询数据表中 已删除且最后修改时间是 7 天前的数据
+     * @param date
+     * @return
+     */
+    @Override
+    public List<Picture> selectDeletedPictures(Date date){
+        //获spaceId
+        LambdaQueryWrapper<Space> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Space::getIsDelete, 0);
+        List<Space> spaceList = spaceService.list(wrapper);
+        List<Long> spaceIds = spaceList.stream()
+                                        .map(Space::getId)
+                                        .collect(Collectors.toList());
+        spaceIds.add(0L);
+        if (date == null){
+            date = DateUtils.addWeeks(new Date(), -1);
+        }
+        return pictureMapper.selectDeletedPictures(date,spaceIds);
+    }
+
+    /**
+     * 根据图片id和spaceId删除图片
+     * @param pictureIds
+     * @param spaceId
+     * @return
+     */
+    @Override
+    public int deletePicturesByPictureIdsAndSpaceId(List<Long> pictureIds, Long spaceId){
+        return pictureMapper.deletePicturesByPictureIdsAndSpaceId(pictureIds,spaceId);
+    }
+
+    /**
+     * 删除数据表中 已删除且最后修改时间是 7 天前的数据
+     * @param date
+     * @param spaceIds
+     * @return
+     */
+    @Override
+    public int deleteDeletedPictures(Date date, List<Long> spaceIds){
+        if (date == null){
+            date = DateUtils.addWeeks(new Date(), -1);
+        }
+        return pictureMapper.deleteDeletedPictures(date,spaceIds);
     }
 
     @Override

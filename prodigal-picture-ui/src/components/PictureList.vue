@@ -148,7 +148,7 @@ const doDelete = async (picture, e) => {
     id:id,
     spaceId: picture.spaceId,
   })
-  if (res.data.code === 0) {
+  if (res.code === 0) {
     message.success('删除成功')
     // 让外层刷新
     props?.onReload()

@@ -11,6 +11,7 @@ import com.prodigal.system.model.vo.PictureVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,6 +48,12 @@ public interface PictureService extends IService<Picture> {
     void deletePicture(long pictureId,long spaceId, User loginUser);
 
     void clearPictureFile(Picture oldPicture);
+
+    List<Picture> selectDeletedPictures(Date date);
+
+    int deletePicturesByPictureIdsAndSpaceId(List<Long> pictureIds, Long spaceId);
+
+    int deleteDeletedPictures(Date date, List<Long> spaceIds);
 
     void checkPicturePermission(User loginUser, Picture picture);
 

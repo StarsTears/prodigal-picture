@@ -5,31 +5,31 @@
 <mapper namespace="com.prodigal.system.mapper.PictureMapper">
 
     <resultMap id="BaseResultMap" type="com.prodigal.system.model.entity.Picture">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="originUrl" column="originUrl" jdbcType="VARCHAR"/>
-            <result property="url" column="url" jdbcType="VARCHAR"/>
-            <result property="thumbnailUrl" column="thumbnailUrl" jdbcType="VARCHAR"/>
-            <result property="sourceUrl" column="sourceUrl" jdbcType="VARCHAR"/>
-            <result property="spaceId" column="spaceId" jdbcType="BIGINT"/>
-            <result property="name" column="name" jdbcType="VARCHAR"/>
-            <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
-            <result property="category" column="category" jdbcType="VARCHAR"/>
-            <result property="tags" column="tags" jdbcType="VARCHAR"/>
-            <result property="picColor" column="picColor" jdbcType="VARCHAR"/>
-            <result property="picSize" column="picSize" jdbcType="BIGINT"/>
-            <result property="picWidth" column="picWidth" jdbcType="INTEGER"/>
-            <result property="picHeight" column="picHeight" jdbcType="INTEGER"/>
-            <result property="picScale" column="picScale" jdbcType="DOUBLE"/>
-            <result property="picFormat" column="picFormat" jdbcType="VARCHAR"/>
-            <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
-            <result property="reviewStatus" column="reviewStatus" jdbcType="INTEGER"/>
-            <result property="reviewMessage" column="reviewMessage" jdbcType="VARCHAR"/>
-            <result property="reviewerId" column="reviewerId" jdbcType="BIGINT"/>
-            <result property="reviewTime" column="reviewTime" jdbcType="TIMESTAMP"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="originUrl" column="originUrl" jdbcType="VARCHAR"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="thumbnailUrl" column="thumbnailUrl" jdbcType="VARCHAR"/>
+        <result property="sourceUrl" column="sourceUrl" jdbcType="VARCHAR"/>
+        <result property="spaceId" column="spaceId" jdbcType="BIGINT"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="introduction" column="introduction" jdbcType="VARCHAR"/>
+        <result property="category" column="category" jdbcType="VARCHAR"/>
+        <result property="tags" column="tags" jdbcType="VARCHAR"/>
+        <result property="picColor" column="picColor" jdbcType="VARCHAR"/>
+        <result property="picSize" column="picSize" jdbcType="BIGINT"/>
+        <result property="picWidth" column="picWidth" jdbcType="INTEGER"/>
+        <result property="picHeight" column="picHeight" jdbcType="INTEGER"/>
+        <result property="picScale" column="picScale" jdbcType="DOUBLE"/>
+        <result property="picFormat" column="picFormat" jdbcType="VARCHAR"/>
+        <result property="userId" column="userId" jdbcType="BIGINT"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+        <result property="reviewStatus" column="reviewStatus" jdbcType="INTEGER"/>
+        <result property="reviewMessage" column="reviewMessage" jdbcType="VARCHAR"/>
+        <result property="reviewerId" column="reviewerId" jdbcType="BIGINT"/>
+        <result property="reviewTime" column="reviewTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
@@ -42,4 +42,33 @@
         isDelete,reviewStatus,reviewMessage,
         reviewerId,reviewTime
     </sql>
+
+    <!--查询已删除且修改时间在指定时间之前的图片-->
+    <select id="selectDeletedPictures" resultMap="BaseResultMap">
+        select
+            <include refid="Base_Column_List" />
+        from picture where isDelete = 1 and spaceId in
+        <foreach collection="spaceIds" item="spaceId" open="(" separator="," close=")">
+            #{spaceId}
+        </foreach>
+        and editTime <![CDATA[<]]> #{date}
+    </select>
+
+    <!-- 根据pictureIds 和 spaceIds 删除图片 -->
+    <delete id="deletePicturesByPictureIdsAndSpaceId">
+        delete from picture where id in
+        <foreach collection="pictureIds" item="pictureId" open="(" separator="," close=")">
+            #{pictureId}
+        </foreach>
+        and spaceId =  #{spaceId}
+    </delete>
+
+    <!-- 删除已删除且修改时间在指定时间之前的图片-->
+    <delete id="deleteDeletedPictures">
+        delete from picture where isDelete = 1 and spaceId in
+        <foreach collection="spaceIds" item="spaceId" open="(" separator="," close=")">
+            #{spaceId}
+        </foreach>
+        and editTime <![CDATA[<]]> #{date}
+    </delete>
 </mapper>
