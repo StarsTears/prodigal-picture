@@ -10,7 +10,6 @@ import EmailNoticeView from '../views/email/EmailNoticeView.vue'
 import EmailManageView from '../views/admin/EmailManageView.vue'
 import ACCESS_ENUM from "@/access/accessEnum";
 import FullScreenLayout from "@/layouts/FullScreenLayout.vue";
-import BasicLayout from '@/layouts/BasicLayout.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,7 +17,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:HomeView
@@ -27,7 +26,7 @@ const router = createRouter({
     {
       path: '/about',
       name: '关于',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/AboutView.vue')
@@ -54,7 +53,7 @@ const router = createRouter({
     {
       path:'/admin/userManager',
       name:'用户管理',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       meta:{
         access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
       },
@@ -66,7 +65,7 @@ const router = createRouter({
     {
       path:'/user/userdetail',
       name:'个人中心',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:UserDetailView,
@@ -75,7 +74,7 @@ const router = createRouter({
     {
       path:'/admin/pictureManager',
       name:'图片管理',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/admin/PictureManagerView.vue'),
@@ -87,7 +86,7 @@ const router = createRouter({
     {
       path:'/admin/spaceManager',
       name:'空间管理',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/admin/SpaceManagerView.vue'),
@@ -99,7 +98,7 @@ const router = createRouter({
     {
       path:'/picture/add_picture',
       name:'创建图片',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/picture/AddPictureView.vue')
@@ -108,7 +107,7 @@ const router = createRouter({
     {
       path:'/picture/add_picture/batch',
       name:'批量创建图片',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/picture/AddPictureBatchView.vue')
@@ -117,7 +116,7 @@ const router = createRouter({
     {
       path:'/picture/:spaceId/:id',
       name:'图片详情',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: PictureDetailView,
@@ -127,7 +126,7 @@ const router = createRouter({
     {
       path:'/picture/search_picture',
       name:'图片搜索',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/picture/SearchPictureView.vue')
@@ -136,7 +135,7 @@ const router = createRouter({
     {
       path:'/space/add_space',
       name:'创建空间',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: AddSpaceView
@@ -145,7 +144,7 @@ const router = createRouter({
     {
       path:'/space/my_space',
       name:'我的空间',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: MySpaceView
@@ -154,7 +153,7 @@ const router = createRouter({
     {
       path:'/space/:id',
       name:'空间详情',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: SpaceDetailView,
@@ -164,7 +163,7 @@ const router = createRouter({
     {
       path:'/space/analyze',
       name:'空间图库分析',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/analyze/SpaceAnalyzeView.vue'),
@@ -174,7 +173,7 @@ const router = createRouter({
     {
       path:'/spaceUserManager/:id',
       name:'空间成员管理',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component:()=>import('../views/space/SpaceUserManagerView.vue'),
@@ -184,7 +183,7 @@ const router = createRouter({
     {
       path:'/admin/emailManager',
       name:'邮件管理',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: EmailManageView,
@@ -192,7 +191,7 @@ const router = createRouter({
     },{
       path:'/email/notice',
       name:'公告',
-      component: BasicLayout,
+      component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
         path: '',
         component: EmailNoticeView,

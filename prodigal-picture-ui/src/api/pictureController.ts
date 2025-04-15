@@ -190,6 +190,14 @@ export async function listPictureTagCategoryUsingGet(options?: { [key: string]: 
   })
 }
 
+/** testSharding POST /api/picture/test/sharding */
+export async function testShardingUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResultListPicture_>('/api/picture/test/sharding', {
+    method: 'POST',
+    ...(options || {}),
+  })
+}
+
 /** updatePicture POST /api/picture/update */
 export async function updatePictureUsingPost(
   body: API.PictureUpdateDto,

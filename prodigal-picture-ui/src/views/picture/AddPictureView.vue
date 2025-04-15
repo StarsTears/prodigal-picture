@@ -90,7 +90,7 @@ const onSuccess = (newPicture: API.PictureVO) => {
  */
 // 空间 id
 const spaceId = computed(() => {
-  return route.query?.spaceId
+  return route.query?.spaceId === undefined ? 0 : route.query?.spaceId
 })
 
 const handleSubmit = async (values: any) => {

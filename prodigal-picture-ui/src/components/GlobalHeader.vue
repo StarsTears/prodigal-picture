@@ -47,7 +47,7 @@
             </a-flex>
           </div>
           <div v-else>
-            <a-button type="primary" href="/login">登录</a-button>
+            <a-button type="primary"  herf="/login">登录</a-button>
           </div>
         </div>
       </a-col>
@@ -69,6 +69,7 @@
             :disabled="componentDisabled"
             :label-col="labelCol"
             :wrapper-col="wrapperCol"
+            ref="formRef"
             style="max-width: 600px"
     >
       <a-form-item name="userProfile" label="头像">
@@ -225,6 +226,9 @@ router.afterEach((to, from, next) => {
 const doMenuClick = ({key}) => {
   router.push({path: key})
 }
+const doLogin = () => {
+  useLoginUserStore().checkLogin()
+}
 /**
  * 退出登录
  */
@@ -235,7 +239,7 @@ const doLogout = async () => {
       userName: "未登录"
     })
     message.success('退出成功')
-    await router.push('/login')
+    await router.push('/')
   } else {
     message.error('退出失败，' + res.msg)
   }
@@ -250,6 +254,7 @@ const componentDisabled = ref<boolean>(true);
 const confirmLoading = ref<boolean>(false);
 const labelCol = {style: {width: '150px'}};
 const wrapperCol = {span: 14};
+const formRef = ref<FormInstance>();
 const userDetail = reactive<API.UserVO>({
   id: '',
   userName: '',
@@ -307,6 +312,8 @@ const doSave = async () => {
 };
 const doCancel = () => {
   componentDisabled.value = true
+  formRef.value?.resetFields();
+  open.value = false
 }
 
 /**
@@ -355,9 +362,10 @@ const doNotice = (e: Event) => {
 }
 
 #globalHeader .title {
-  color: black;
+  color: purple;
   font-size: 18px;
   font-weight: bold;
+  font-family: "Segoe UI Historic";
   margin-left: 10px;
 }
 

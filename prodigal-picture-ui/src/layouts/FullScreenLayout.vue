@@ -16,12 +16,11 @@
   </div>
 </template>
 
-<script>
-import GlobalHeader from "@/components/GlobalHeader.vue";
+<script lang="ts">
 import {GithubOutlined} from '@ant-design/icons-vue';
 export default {
   name: "FullScreenLayout",
-  components: {GlobalHeader}
+  components: {GithubOutlined}
 }
 </script>
 

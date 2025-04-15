@@ -95,18 +95,28 @@ const handleSubmit = async (values: any) => {
 
 <style scoped>
 .registerBg {
-  background-image: url("../assets/img.png");
+  /*background-image: url("../assets/img.png");*/
   height: 100vh;
   background-size: cover; /* 背景图片覆盖整个容器 */
-  background-position: center; /* 背景居中 */
+  /*background-position: center; !* 背景居中 *!*/
   display: flex;
   justify-content: center;
   align-items: center;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0; /* 撑满整个视口 */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 #registerView {
   max-width: 360px;
   margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  animation: fadeIn 0.5s ease;
 }
 
 .title {

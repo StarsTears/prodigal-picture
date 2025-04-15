@@ -1,9 +1,9 @@
 <template>
   <div class="homeView">
     <!--搜索框-->
-    <div :class="['sticky-header', { sticky: isSticky }]">
+    <div :class="['sticky-header', { sticky: isSticky }]" >
       <div class="search-with-logo">
-        <img src="@/assets/logo.jpg" alt="logo" class="search-logo" />
+<!--        <img src="@/assets/logo.jpg" alt="logo" class="search-logo" />-->
         <a-input-search
           v-model:value="searchParams.searchText"
           placeholder="input search text"
@@ -35,7 +35,6 @@
         </a-space>
       </div>
     </div>
-
     <!-- 占位元素 -->
     <div v-if="isSticky" class="sticky-placeholder" />
     <!--图片列表-->
@@ -51,22 +50,23 @@
         :showShare="true"
         :showSearch="true"
       />
-      <PictureList
-        :pictureList="dataList"
-        :loading="homeLoading"
-        :showView="true"
-        :showLike="true"
-        :showCollect="true"
-        :showShare="true"
-        :showSearch="true"
-      />
+<!--      <PictureList-->
+<!--        :dataList="dataList"-->
+<!--        :loading="homeLoading"-->
+<!--        :showView="true"-->
+<!--        :showLike="true"-->
+<!--        :showCollect="true"-->
+<!--        :showShare="true"-->
+<!--        :showSearch="true"-->
+<!--      />-->
 
       <!-- 加载信息 -->
       <div class="loadingInfo">
         <a-spin v-if="homeLoading" size="large" />
         <div v-if="showBottomLine">
           <a-divider v-if="dataList.length > 0" style="color: #666666">
-            🦖🦖🦖 这是我的底线~
+<!--            🦖🦖🦖 这是我的底线~-->
+            🍃🍃🍃这是我的底线~
           </a-divider>
           <a-empty v-else :image="Empty.PRESENTED_IMAGE_SIMPLE" />
         </div>
@@ -85,6 +85,16 @@ import { Empty, message } from 'ant-design-vue'
 import PictureList from '@/components/PictureList.vue'
 import HomePictureList from '@/components/HomePictureList.vue'
 
+// 接收 BasicLayout 的 siderWidth
+const props = defineProps<{
+  siderWidth: number
+}>()
+
+// 计算搜索框的宽度
+const searchWidth = computed(() => {
+  return `calc( ${props.siderWidth+28}px)` // siderWidth + logo宽度 + 间距 + padding
+})
+
 /**
  * 加载变量状态
  */
@@ -100,7 +110,6 @@ const showBottomLine = ref(false)
 
 // 新增吸顶状态
 const isSticky = ref(false)
-
 // 滚动监听
 const checkSticky = () => {
   isSticky.value = window.scrollY > 100
@@ -134,7 +143,7 @@ const loadingLock = ref(false)
 const searchParams = reactive<API.PictureQueryDto>({
   current: 1,
   pageSize: 20,
-  sortField: 'createTime',
+  sortField: 'viewQuantity',
   sortOrder: 'descend',
 })
 
@@ -241,17 +250,16 @@ const handleScroll = () => {
   const scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)
   const scrollTop =
     window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+    // window.scrollY || document.documentElement.scrollTop || document.body.scrollTop
   const clientHeight =
     window.innerHeight ||
     Math.min(document.documentElement.clientHeight, document.body.clientHeight)
-
   // 增加更严格的判断条件
   if (scrollHeight - (clientHeight + scrollTop) < 500) {
     searchParams.current++
     fetchData()
   }
 }
-
 /**
  * 防抖函数
  */
@@ -273,20 +281,26 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   background: white;
   transition: all 0.3s ease;
   padding: 0 20px;
+  /*优化搜索框容器*/
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* 吸顶状态 */
 .sticky-header.sticky {
   position: fixed;
   top: 60px;
-  left: 230px;
+  left: v-bind(searchWidth);
   right: 0;
   z-index: 1000;
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(5px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  max-width: 100% !important;
+  /*优化搜索栏与页面大小不一致*/
+  /*max-width: 100% !important;*/
+  width: 100%;
 }
 
 /* 带logo的搜索容器 */
@@ -294,16 +308,18 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   display: flex;
   align-items: center;
   max-width: 800px;
-  margin: 20px auto 10px;
+  padding-top: 10px;
+  margin: 10px auto 10px;
   gap: 12px;
 }
 
 
 /* logo样式 */
 .search-logo {
-  height: 70px;
+  height: 50px;
   width: auto;
   object-fit: contain;
+  max-width: 200px;
 }
 
 /* 调整后的搜索框 */

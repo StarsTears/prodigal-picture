@@ -31,15 +31,14 @@
         <template  #actions>
           <div v-if="showView">
             <EyeOutlined />
-            <!--              {{ formatNumber(item.viewQuantity) }}-->
+            {{ formatNumber(item.viewQuantity) }}
           </div>
-          <div v-if="showSearch">
-            <search-outlined @click="(e) => doSearch(item, e)"/>
-          </div>
-
           <div v-if="showShare" @click="(e) => doShare(item, e)">
             <share-alt-outlined />
 <!--            {{ formatNumber(item.shareQuantity) }}-->
+          </div>
+          <div v-if="showSearch">
+            <search-outlined @click="(e) => doSearch(item, e)"/>
           </div>
           <!--            <FullscreenOutlined @click="(e) => doAiOutPainting(item, e)"/>-->
           <!--            <edit-outlined v-if="canEdit" @click="(e) => doEdit(item, e)"/>-->
@@ -49,7 +48,7 @@
     </template>
   </Waterfall>
   <!-- 分享弹框组件 -->
-  <ShareModal ref="shareModalRef" :link="shareLink"/>
+  <ShareModal ref="shareModalRef" :link="shareLink" :name="picName"/>
 </template>
 <script setup lang="ts">
 import { LazyImg, Waterfall } from 'vue-waterfall-plugin-next'
@@ -59,6 +58,7 @@ import {ref} from "vue";
 import {formatNumber, handleDragStart} from "@/utils";
 import {EyeOutlined,UserOutlined,DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined,FullscreenOutlined} from '@ant-design/icons-vue';
 import ShareModal from "@/components/ShareModal.vue";
+import {useLoginUserStore} from "@/stores/loginUserStore.ts";
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -113,13 +113,27 @@ const doClickPicture = (picture) => {
   router.push(`/picture/${picture.spaceId}/${picture.id}/`)
 }
 
+/**
+ * 分享状态
+ */
+const isShare = ref<boolean>(true)
 // 分享弹窗引用
 const shareModalRef = ref(false)
 // 分享链接
 const shareLink = ref<string>()
+/**
+ * 图片名称
+ */
+const picName = ref<string>()
 // 分享
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
+  useLoginUserStore().checkLogin()
+  if (!isShare.value) {
+    message.warn('已分享！')
+    return
+  }
+  picName.value=picture.name
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()

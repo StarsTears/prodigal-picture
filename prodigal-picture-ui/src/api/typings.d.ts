@@ -41,6 +41,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListPicture_ = {
+    code?: number
+    data?: Picture[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultListSpace_ = {
     code?: number
     data?: Space[]
@@ -325,6 +332,7 @@ declare namespace API {
 
   type ImageSearchDto = {
     pictureId?: number
+    spaceId?: number
   }
 
   type ImageSearchResult = {
@@ -444,6 +452,7 @@ declare namespace API {
     reviewStatus?: number
     reviewTime?: string
     reviewerId?: number
+    shareQuantity?: number
     sourceUrl?: string
     spaceId?: number
     tags?: string
@@ -451,6 +460,7 @@ declare namespace API {
     updateTime?: string
     url?: string
     userId?: number
+    viewQuantity?: number
   }
 
   type PictureDeleteDto = {
@@ -560,6 +570,7 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    shareQuantity?: number
     spaceId?: number
     tags?: string[]
     thumbnailUrl?: string
@@ -567,6 +578,7 @@ declare namespace API {
     url?: string
     user?: UserVO
     userId?: number
+    viewQuantity?: number
   }
 
   type RegisterDto = {

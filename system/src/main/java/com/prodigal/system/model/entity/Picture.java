@@ -134,6 +134,16 @@ public class Picture implements Serializable {
     private Long spaceId;
 
     /**
+     *  查看次数
+     */
+    private Long viewQuantity;
+
+    /**
+     *  分享次数
+     */
+    private Long shareQuantity;
+
+    /**
      * 是否删除
      */
     @TableLogic

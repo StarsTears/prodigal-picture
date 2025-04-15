@@ -6,7 +6,10 @@
       <!-- 图片预览 -->
       <a-col :sm="24" :md="16" :xl="18">
         <a-card title="图片预览">
-          <a-image :src="picture.url" style="max-height: 600px;object-fit: contain"/>
+          <div class="imgView" @dragstart="handleDragStart">
+            <a-image :src="picture.url"/>
+          </div>
+
         </a-card>
       </a-col>
       <!-- 图片区域 -->
@@ -26,7 +29,7 @@
               {{ picture.introduction ?? '-' }}
             </a-descriptions-item>
             <a-descriptions-item v-if="picture.spaceId" label="所属空间">
-              {{ picture.spaceId }}
+              {{ picture.spaceId==0 ? '公共图库' :picture.spaceId }}
             </a-descriptions-item>
             <a-descriptions-item label="分类">
               {{ picture.category ?? '默认' }}
@@ -66,32 +69,23 @@
 
           </a-descriptions>
           <a-space wrap>
-            <a-button :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
+            <a-button v-if="isLogin" :icon="h(DownloadOutlined)" type="primary" @click="doDownload">
               免费下载
             </a-button>
-            <a-button v-if="canEditPicture"
-                      :icon="h(EditOutlined)"
-                      type="default"
-                      @click="doEdit">
+            <a-button v-if="canEditPicture" :icon="h(EditOutlined)" type="default" @click="doEdit">
               编辑
             </a-button>
-            <a-button type="primary" ghost @click="(e)=>doShare(picture, e)">
+            <a-button v-if="isLogin" type="primary" ghost @click="(e)=>doShare(picture, e)">
               分享
               <template #icon>
                 <share-alt-outlined />
               </template>
             </a-button>
 
-            <a-button v-if="isAdmin"
-                      :icon="h(CheckOutlined)"
-                      type="primary"
-                      @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
+            <a-button v-if="isAdmin" :icon="h(CheckOutlined)" type="primary" @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
               审核
             </a-button>
-            <a-button v-if="isAdmin"
-                      :icon="h(SmileOutlined)"
-                      type="default"
-                      @confirm="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
+            <a-button v-if="isAdmin" :icon="h(SmileOutlined)" type="default" @confirm="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
               拒绝
             </a-button>
             <a-popconfirm v-if="canDeletePicture"
@@ -119,7 +113,7 @@ import {computed, onMounted, ref, h} from "vue";
 import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
-import {downloadImage, formatSize} from "@/utils/index";
+import {downloadImage, formatSize, handleDragStart} from "@/utils/index";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import ACCESS_ENUM from "@/access/accessEnum";
 import {useRouter} from "vue-router";
@@ -170,7 +164,6 @@ const canUploadPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_U
 const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDIT)
 const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
-
 /**
  * 下载图片
  */
@@ -181,6 +174,12 @@ const doDownload = () => {
  * 判断当前用户是否具有编辑与删除权限
  */
 const loginUserStore = useLoginUserStore()
+//判断是否登录
+const isLogin = computed(() => {
+  let loginUser = loginUserStore.loginUser;
+  return loginUser && loginUser.id
+})
+
 const isAdmin = computed(() => {
   let loginUser = loginUserStore.loginUser;
   return !loginUser && loginUser.userRole.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)
@@ -228,7 +227,7 @@ const handleReview = async (reviewStatus: number) => {
   if (res.code === 0) {
     message.success("审核操作成功")
     // 刷新数据
-    fetchData()
+    fetchPictureDetail()
   } else {
     message.error("审核操作失败")
   }
@@ -256,6 +255,35 @@ const doDelete = async () => {
 
 <style scoped>
 #pictureDetailView {
-  margin-bottom: 16px;
+  width: 80%;
+  margin: 0 auto 40px;
+}
+
+#pictureDetailView .imgView{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100px; /* 最小高度 */
+  max-height: 80vh; /* 最大高度为视口的80% */
+  overflow: hidden; /* 确保不会溢出 */
+}
+
+/* 图片样式：完全自适应 */
+.imgView :deep(.ant-image) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.imgView :deep(.ant-image .ant-image-img) {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 70vh; /* 与容器一致 */
+  object-fit: scale-down; /* 关键修改：使用scale-down */
+  margin: 0 auto;
+  transition: transform 0.3s ease;
 }
 </style>

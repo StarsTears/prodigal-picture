@@ -299,11 +299,26 @@ public class PictureController {
             space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         }
-        User loginUser = userService.getLoginUser(request);
-        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        //变更如下：将必须登录才可查看详情，改为无需登录也可查看；
         PictureVO pictureVO = pictureService.getPictureVO(picture, request);
-        pictureVO.setPermissionList(permissionList);
-
+        try {
+            User loginUser = userService.getLoginUser(request);
+            List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+            pictureVO.setPermissionList(permissionList);
+            //查看次数 +1
+            picture.setViewQuantity(picture.getViewQuantity() + 1);
+            UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("id", id)         // 根据主键 id 查询
+                    .eq("spaceId", spaceId); // 附加 spaceId 条件
+            // 执行更新
+            boolean result = pictureService.update(picture, updateWrapper);
+        }catch (BusinessException e){
+            if (e.getCode() == ErrorCode.USER_NOT_LOGIN.getCode()){
+                return ResultUtils.success(pictureVO);
+            }else {
+                throw e;
+            }
+        }
         return ResultUtils.success(pictureVO);
     }
 
@@ -462,7 +477,6 @@ public class PictureController {
         GetOutPaintingTaskVO outPaintingTask = aliYunAiApi.getOutPaintingTask(taskId);
         return ResultUtils.success(outPaintingTask);
     }
-
 
     @PostMapping("/test/sharding")
     public BaseResult<List<Picture>> testSharding() {

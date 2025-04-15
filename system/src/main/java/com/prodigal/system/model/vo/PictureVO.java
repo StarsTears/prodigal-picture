@@ -120,6 +120,16 @@ public class PictureVO implements Serializable {
     private List<String> permissionList = new ArrayList<>();
 
     /**
+     *  查看次数
+     */
+    private Long viewQuantity;
+
+    /**
+     *  分享次数
+     */
+    private Long shareQuantity;
+
+    /**
      * 封装类转对象
      * @param pictureVO 封装类
      */

@@ -49,7 +49,7 @@
         </a-list-item>
       </template>
     </a-list>
-    <ShareModal ref="shareModalRef" :link="shareLink"/>
+    <ShareModal ref="shareModalRef" :link="shareLink" :name="picName"/>
     <AiOutPainting ref="aiOutPaintingModalRef" :picture="AiPicture" :spaceId="AiPicture?.spaceId" :onSuccess="onAiOutPaintingSuccess"/>
   </div>
 
@@ -63,6 +63,7 @@ import {deletePictureUsingPost} from "@/api/pictureController";
 import {message} from "ant-design-vue";
 import ShareModal from "@/components/ShareModal.vue";
 import AiOutPainting from "@/components/AiOutPainting.vue";
+import {useLoginUserStore} from "@/stores/loginUserStore.ts";
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -98,15 +99,27 @@ const doSearch = (picture, e) => {
   e.stopPropagation()
   window.open(`/picture/search_picture?spaceId=${picture.spaceId}&pictureId=${picture.id}`)
 }
-
+/**
+ * 分享状态
+ */
+const isShare = ref<boolean>(true)
 // 分享弹窗引用
 const shareModalRef = ref(false)
 // 分享链接
 const shareLink = ref<string>()
-
+/**
+ * 图片名称
+ */
+const picName = ref<string>()
 // 分享
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
+  useLoginUserStore().checkLogin()
+  if (!isShare.value) {
+    message.warn('已分享！')
+    return
+  }
+  picName.value=picture.name
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()

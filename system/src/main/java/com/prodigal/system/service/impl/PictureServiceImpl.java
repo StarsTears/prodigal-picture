@@ -620,6 +620,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             case "editTime":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getEditTime);
                 break;
+            case "viewQuantity":
+                wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getViewQuantity);
+                break;
             default:
                 break;
         }
