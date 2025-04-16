@@ -278,7 +278,7 @@ public class PictureController {
      * @param request       浏览器请求
      */
     @PostMapping("/get/vo")
-    public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDto pictureGetDto, HttpServletRequest request) {
+    public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDto pictureGetDto,Boolean isView, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
 
         Long id = pictureGetDto.getId();
@@ -305,13 +305,15 @@ public class PictureController {
             User loginUser = userService.getLoginUser(request);
             List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
             pictureVO.setPermissionList(permissionList);
-            //查看次数 +1
-            picture.setViewQuantity(picture.getViewQuantity() + 1);
-            UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("id", id)         // 根据主键 id 查询
-                    .eq("spaceId", spaceId); // 附加 spaceId 条件
-            // 执行更新
-            boolean result = pictureService.update(picture, updateWrapper);
+            //是否为查看-查看次数 +1
+            if (isView) {
+                picture.setViewQuantity(picture.getViewQuantity() + 1);
+                UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("id", id)         // 根据主键 id 查询
+                        .eq("spaceId", spaceId); // 附加 spaceId 条件
+                // 执行更新
+                boolean result = pictureService.update(picture, updateWrapper);
+            }
         }catch (BusinessException e){
             if (e.getCode() == ErrorCode.USER_NOT_LOGIN.getCode()){
                 return ResultUtils.success(pictureVO);

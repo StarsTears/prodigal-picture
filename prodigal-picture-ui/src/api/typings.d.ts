@@ -310,6 +310,11 @@ declare namespace API {
     taskId?: string
   }
 
+  type getPictureVOByIDUsingPOSTParams = {
+    /** isView */
+    isView?: boolean
+  }
+
   type getSpaceByIDUsingGETParams = {
     /** id */
     id?: number

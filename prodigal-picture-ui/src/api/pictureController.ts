@@ -64,6 +64,8 @@ export async function getPictureByIdUsingPost(
 
 /** getPictureVOByID POST /api/picture/get/vo */
 export async function getPictureVoByIdUsingPost(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getPictureVOByIDUsingPOSTParams,
   body: API.PictureGetDto,
   options?: { [key: string]: any }
 ) {
@@ -71,6 +73,9 @@ export async function getPictureVoByIdUsingPost(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+    },
+    params: {
+      ...params,
     },
     data: body,
     ...(options || {}),

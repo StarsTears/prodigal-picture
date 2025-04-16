@@ -4,13 +4,11 @@
     <h3 style="margin: 16px 0 ">原图</h3>
     <!-- 单张图片-->
     <a-card hoverable style="width: 240px">
-      <template #cover>
-        <img :alt="picture.name"
-             :src="picture.thumbnailUrl ?? picture.url"
-             style="height: 180px;object-fit: cover"/>
-      </template>
+      <div>
+        <a-image :src="picture.url"/>
+      </div>
     </a-card>
-      <h3 style="margin: 16px 0">识图结果</h3>
+      <h3 style="margin: 16px 0;">识图结果</h3>
       <!--图片列表-->
       <a-list :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
               :data-source="dataList"
@@ -20,10 +18,9 @@
             <!-- 单张图片-->
             <a href="item.fromUrl" target="_blank"/>
             <a-card hoverable>
-              <template #cover>
-                <img :src="item.thumbUrl "
-                     style="height: 180px;object-fit: cover"/>
-              </template>
+              <div calss="searchImg" style="height: 200px; object-fit: cover">
+                <a-image :src="item.thumbUrl" />
+              </div>
             </a-card>
           </a-list-item>
         </template>
@@ -39,6 +36,7 @@ import {
 } from "@/api/pictureController.js";
 import {message} from "ant-design-vue";
 import {useRoute} from "vue-router";
+import {handleDragStart} from "@/utils";
 
 const route = useRoute()
 
@@ -50,13 +48,16 @@ const spaceId = computed(() => {
   return route.query?.spaceId
 })
 //获取原图数据
-const picture = ref<API.PictureVO>({})
+const picture = ref<API.Picture>({})
 const getOldPicture = async () => {
   try {
     const res = await getPictureVoByIdUsingPost({
-      id: pictureId.value,
-      spaceId: spaceId.value
-    })
+      isView:false
+    },{
+        id: pictureId.value,
+        spaceId: spaceId.value,
+      })
+    console.log(JSON.toString(res.data))
     if (res.data) {
       picture.value = res.data
     } else {
@@ -66,9 +67,7 @@ const getOldPicture = async () => {
     message.error('获取图片详情数据失败，' + error.msg)
   }
 }
-onMounted(() => {
-  getOldPicture()
-})
+
 //搜索结果
 const dataList = ref<API.ImageSearchResult[]>([])
 const fetchSearchResult = async () => {
@@ -87,10 +86,24 @@ const fetchSearchResult = async () => {
   }
 }
 onMounted(()=>{
+  getOldPicture()
   fetchSearchResult()
 })
 </script>
 
 <style scoped>
-
+/*.search_picture .searchImg{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100px; !* 最小高度 *!
+  max-height: 80vh; !* 最大高度为视口的80% *!
+  overflow: hidden; !* 确保不会溢出 *!
+}
+.searchImg :deep(.ant-image) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}*/
 </style>

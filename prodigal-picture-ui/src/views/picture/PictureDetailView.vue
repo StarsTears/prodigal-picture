@@ -133,6 +133,8 @@ const picture = ref<API.PictureVO>({})
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingPost({
+      isView:true
+    },{
       id: props.id,
       spaceId: props.spaceId
     })

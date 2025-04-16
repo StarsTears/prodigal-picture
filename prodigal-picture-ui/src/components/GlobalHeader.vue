@@ -47,7 +47,7 @@
             </a-flex>
           </div>
           <div v-else>
-            <a-button type="primary"  herf="/login">登录</a-button>
+            <a-button type="primary"  href="/login">登录</a-button>
           </div>
         </div>
       </a-col>
@@ -239,6 +239,7 @@ const doLogout = async () => {
       userName: "未登录"
     })
     message.success('退出成功')
+    useLoginUserStore().clearRedirectPath();//清空重定向路径
     await router.push('/')
   } else {
     message.error('退出失败，' + res.msg)

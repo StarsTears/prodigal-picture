@@ -24,8 +24,8 @@ instance.interceptors.response.use(function (response) {
   //未登录
   if (data.code === 40100 || data.code === 40200){
     if (!response.request.responseURL.includes('/sys/getLoginUser')&&!window.location.pathname.includes('/sys/login')){
-      message.warning('请先登录')
       window.location.href = `/login?redicect=${window.location.href}`
+      message.warning('请先登录')
     }
   }
   // 2xx 范围内的状态码都会触发该函数。
