@@ -124,7 +124,7 @@ onMounted(() => {
   max-width: 800px;
   padding-top: -10px;
   padding-bottom: 20px;
-  margin-left: 30%;
+  margin-left: 28%;
 }
 
 .timeline-header {
