@@ -4,8 +4,14 @@
     <h2>空间管理</h2>
     <a-space>
       <a-button type="primary" href="/space/add_space" target="_blank">+ 创建空间</a-button>
-      <a-button type="primary" ghost href="/space/analyze?queryPublic=1">分析公共图库</a-button>
-      <a-button type="primary" ghost href="/space/analyze?queryAll=1">分析全空间</a-button>
+<!--      <a-button type="primary" ghost href="/space/analyze?queryPublic=1">分析公共图库</a-button>-->
+<!--      <a-button type="primary" ghost href="/space/analyze?queryAll=1">分析全空间</a-button>-->
+      <router-link to="/space/analyze?queryPublic=1" class="space-analyze-btn">
+        <a-button type="primary" ghost>分析公共图库</a-button>
+      </router-link>
+      <router-link to="/space/analyze?queryAll=1" class="space-analyze-btn">
+        <a-button type="primary" ghost>分析全空间</a-button>
+      </router-link>
     </a-space>
   </a-flex>
   <div style="margin-bottom: 16px"/>
@@ -154,7 +160,7 @@ const columns = [
   },
 ]
 // 数据
-const dataList = ref<API.Space>([])
+const dataList = ref<API.Space[]>([])
 const total = ref(0)
 // 搜索条件
 const searchParams = reactive<API.SpaceQueryDto>({
@@ -228,5 +234,7 @@ const doDelete = async (id: number) => {
 </script>
 
 <style scoped>
-
+.space-analyze-btn {
+  text-decoration: none;
+}
 </style>

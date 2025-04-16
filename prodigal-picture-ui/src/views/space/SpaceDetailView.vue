@@ -4,10 +4,22 @@
   <a-flex justify="space-between">
     <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
     <a-space size="middle">
-      <a-button type="primary" v-if="canUploadPicture" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>
-      <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(TeamOutlined)" :href="`/spaceUserManager/${id}`" target="_blank">成员管理</a-button>
-      <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${id}`">空间分析 </a-button>
-      <a-button danger v-if="canEditPicture" :icon="h(EditOutlined)" :href="`/space/add_space?id=${space.id}`"> 编辑空间信息</a-button>
+      <router-link :to="`/picture/add_picture?spaceId=${id}`" class="space-manager-link">
+        <a-button type="primary" v-if="canManageSpaceUser" :icon="h(TeamOutlined)">+ 创建图片</a-button>
+      </router-link>
+      <router-link :to="`/spaceUserManager/${id}`" class="space-manager-link">
+        <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(TeamOutlined)">成员管理</a-button>
+      </router-link>
+      <router-link :to="`/space/analyze?spaceId=${id}`" class="space-analyze-link">
+        <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(BarChartOutlined)">空间分析</a-button>
+      </router-link>
+      <router-link :to="`/space/add_space?id=${space.id}`" class="space-analyze-link">
+        <a-button type="primary" v-if="canEditPicture" danger :icon="h(EditOutlined)">编辑空间信息</a-button>
+      </router-link>
+<!--      <a-button type="primary" v-if="canUploadPicture" :href="`/picture/add_picture?spaceId=${id}`" target="_blank">+ 创建图片</a-button>-->
+<!--      <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(TeamOutlined)" :href="`/spaceUserManager/${id}`" target="_blank">成员管理</a-button>-->
+<!--      <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${id}`">空间分析 </a-button>-->
+<!--      <a-button danger v-if="canEditPicture" :icon="h(EditOutlined)" :href="`/space/add_space?id=${space.id}`"> 编辑空间信息</a-button>-->
       <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
       <a-tooltip
         :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
@@ -170,5 +182,13 @@ const doBatchEdit = () => {
 </script>
 
 <style scoped>
+.space-manager-link,
+.space-analyze-link {
+  text-decoration: none;
+}
 
+.space-manager-link :deep(.ant-btn),
+.space-analyze-link :deep(.ant-btn) {
+  border: none;
+}
 </style>
