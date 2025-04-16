@@ -5,6 +5,7 @@
 import * as cacheController from './cacheController'
 import * as emailController from './emailController'
 import * as fileController from './fileController'
+import * as gitHubController from './gitHubController'
 import * as pictureController from './pictureController'
 import * as spaceController from './spaceController'
 import * as spaceAnalyzeController from './spaceAnalyzeController'
@@ -14,6 +15,7 @@ export default {
   cacheController,
   emailController,
   fileController,
+  gitHubController,
   pictureController,
   spaceController,
   spaceAnalyzeController,

@@ -280,7 +280,7 @@ public class PictureController {
     @PostMapping("/get/vo")
     public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDto pictureGetDto,Boolean isView, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
-
+        isView = isView==null?false:isView;
         Long id = pictureGetDto.getId();
         Long spaceId = pictureGetDto.getSpaceId() == null ? 0L : pictureGetDto.getSpaceId();
         // 构造 QueryWrapper

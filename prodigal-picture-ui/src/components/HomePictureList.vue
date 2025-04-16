@@ -33,9 +33,9 @@
             <EyeOutlined />
             {{ formatNumber(item.viewQuantity) }}
           </div>
-          <div v-if="showShare" @click="(e) => doShare(item, e)">
-            <share-alt-outlined />
-<!--            {{ formatNumber(item.shareQuantity) }}-->
+          <div v-if="showShare">
+            <share-alt-outlined @click="(e) => doShare(item, e)"/>
+            {{ formatNumber(item.shareQuantity) }}
           </div>
           <div v-if="showSearch">
             <search-outlined @click="(e) => doSearch(item, e)"/>
@@ -59,6 +59,7 @@ import {formatNumber, handleDragStart} from "@/utils";
 import {EyeOutlined,UserOutlined,DeleteOutlined, EditOutlined, SearchOutlined, ShareAltOutlined,FullscreenOutlined} from '@ant-design/icons-vue';
 import ShareModal from "@/components/ShareModal.vue";
 import {useLoginUserStore} from "@/stores/loginUserStore.ts";
+import {message} from "ant-design-vue";
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -141,9 +142,9 @@ const doShare = (picture: API.PictureVO, e: Event) => {
 }
 
 //搜索
-const doSearch = (picture, e) => {
+const doSearch = (picture: API.PictureVO, e: Event) => {
   //阻止事件传播
   e.stopPropagation()
-  window.open(`/picture/search_picture?spaceId=${picture.spaceId}&pictureId=${picture.id}`)
+  router.push(`/picture/search_picture?spaceId=${picture.spaceId}&pictureId=${picture.id}`)
 }
 </script>

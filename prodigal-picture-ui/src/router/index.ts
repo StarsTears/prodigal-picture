@@ -196,6 +196,14 @@ const router = createRouter({
         path: '',
         component: EmailNoticeView,
       }],
+    },{
+      path:'/github',
+      name:'GitHub',
+      component: () => import('@/layouts/BasicLayout.vue'),
+      children:[{
+        path: '',
+        component: ()=>import('../views/git/GitHubView.vue'),
+      }],
     },
   ],
 })

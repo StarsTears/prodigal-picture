@@ -34,6 +34,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListGitHubCommitInfo_ = {
+    code?: number
+    data?: GitHubCommitInfo[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultListImageSearchResult_ = {
     code?: number
     data?: ImageSearchResult[]
@@ -333,6 +340,15 @@ declare namespace API {
   type getUserVOByIDUsingGETParams = {
     /** id */
     id?: number
+  }
+
+  type GitHubCommitInfo = {
+    authorEmail?: string
+    authorName?: string
+    date?: string
+    message?: string
+    sha?: string
+    url?: string
   }
 
   type ImageSearchDto = {

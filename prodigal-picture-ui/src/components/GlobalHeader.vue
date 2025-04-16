@@ -140,7 +140,7 @@ import {
   EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
   BellOutlined,MailOutlined
 } from '@ant-design/icons-vue';
-import {MenuProps, message, UploadProps} from 'ant-design-vue';
+import {type FormInstance, MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {editUserUsingPost, helloUsingGet, logoutUsingPost, updateUserUsingPost} from "@/api/systemController";
@@ -185,17 +185,18 @@ const originItems = [
     icon: h(SoundOutlined),
     label: '公告',
     title: '公告',
-  }, {
+  },{
+    key: '/gitHub',
+    icon: h(GithubOutlined),
+    title: 'GitHub Commit History',
+    label: 'GitHub Commit History',
+    // label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
+  },{
     key: "/about",
     icon: h(GlobalOutlined),
     label: '关于',
     title: '关于',
   },
-  // {
-  //   key: '/gitHub',
-  //   icon: h(GithubOutlined),
-  //   label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
-  // }
 ];
 
 /**

@@ -26,6 +26,7 @@
         <knife4j-openapi2.version>4.4.0</knife4j-openapi2.version>
         <cos.version>5.6.227</cos.version>
         <dashscope-sdk-java.version>2.16.10</dashscope-sdk-java.version>
+        <git.version>6.5.0.202303070854-r</git.version>
         <gson.version>2.11.0</gson.version>
         <hutool.version>5.8.26</hutool.version>
         <jsoup.servsion>1.15.3</jsoup.servsion>
@@ -129,7 +130,12 @@
                 <artifactId>dashscope-sdk-java</artifactId>
                 <version>${dashscope-sdk-java.version}</version>
             </dependency>
-
+            <!-- Git -->
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>${git.version}</version>
+            </dependency>
 
             <!--knife4： https://doc.xiaominfo.com/docs/quick-start#spring-boot-2-->
             <dependency>
