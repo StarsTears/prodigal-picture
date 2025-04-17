@@ -130,7 +130,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
         //校验空间ID是否存在；存在→私有空间；不存在→公开空间
         Long spaceId = pictureUploadDto.getSpaceId();
-        if (spaceId != null) {
+        if (spaceId != null && spaceId !=0) {
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
 //            //判断当前用户有无权限上传图片到该空间
