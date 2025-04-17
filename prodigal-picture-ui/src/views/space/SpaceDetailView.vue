@@ -7,7 +7,7 @@
       <router-link :to="`/picture/add_picture?spaceId=${id}`" class="space-manager-link">
         <a-button type="primary" v-if="canManageSpaceUser" :icon="h(TeamOutlined)">+ 创建图片</a-button>
       </router-link>
-      <router-link :to="`/spaceUserManager/${id}`" class="space-manager-link">
+      <router-link :to="`/spaceUserManager/${id}/${space.userId}`" class="space-manager-link" v-if="space.spaceType!=0">
         <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(TeamOutlined)">成员管理</a-button>
       </router-link>
       <router-link :to="`/space/analyze?spaceId=${id}`" class="space-analyze-link">

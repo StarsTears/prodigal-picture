@@ -171,7 +171,7 @@ const router = createRouter({
       }],
     },
     {
-      path:'/spaceUserManager/:id',
+      path:'/spaceUserManager/:id/:userId',
       name:'空间成员管理',
       component: () => import('@/layouts/BasicLayout.vue'),
       children:[{

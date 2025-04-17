@@ -54,9 +54,20 @@
         </template>
 
         <template v-if="column.dataIndex === 'spaceRole'">
-          <a-select v-model:value="record.spaceRole"
-                    :options="SPACE_ROLE_OPTIONS"
-                    @change="(value)=>editSpaceRole(value,record)"/>
+          <template v-if="record.userId === props.userId">
+            <span style="color: #1890ff; font-weight: bold">{{ SPACE_ROLE_MAP[record.spaceRole] }}</span>
+            <a-tooltip title="空间创建人，角色不可修改">
+              <LockOutlined style="color: #1890ff; margin-left: 4px" />
+            </a-tooltip>
+          </template>
+          <template v-else>
+            <a-select v-model:value="record.spaceRole"
+                      :options="SPACE_ROLE_OPTIONS"
+                      @change="(value)=>editSpaceRole(value,record)"/>
+          </template>
+<!--          <a-select v-model:value="record.spaceRole"-->
+<!--                    :options="SPACE_ROLE_OPTIONS"-->
+<!--                    @change="(value)=>editSpaceRole(value,record)"/>-->
         </template>
         <template v-if="column.dataIndex === 'createTime'">
           {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -83,10 +94,10 @@
 
 <script setup lang="ts">
 import {h, computed, onMounted, reactive, ref} from "vue";
-import {DeleteOutlined, EditOutlined, BarChartOutlined} from '@ant-design/icons-vue';
+import {DeleteOutlined,LockOutlined, EditOutlined, BarChartOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
-import {SPACE_ROLE_OPTIONS, SPACE_LEVEL_OPTIONS} from "@/constants/space"
+import {SPACE_ROLE_OPTIONS, SPACE_LEVEL_OPTIONS, SPACE_ROLE_MAP} from "@/constants/space"
 import {
   addSpaceUserUsingPost,
   deleteSpaceUserUsingPost,
@@ -125,7 +136,8 @@ const columns = [
 ]
 
 interface Props {
-  id: string
+  id: string,
+  userId: string,
 }
 
 const props = defineProps<Props>()
