@@ -166,8 +166,8 @@ const fetchData = async () => {
       params.tags.push(tagList.value[index])
     }
   })
-  // const res = await listPictureVoByPageCacheUsingPost( params)
-  const res = await listPictureVoByPageUsingPost(params)
+  const res = await listPictureVoByPageCacheUsingPost( params)
+  // const res = await listPictureVoByPageUsingPost(params) //使用这个方法需将后端的 listPictureVoByPage() 方法上的权限校验去除。不然在未登录情况下拿去不到数据
   if (res.data) {
     const newRecords = res.data.records || []
     dataList.value = [...dataList.value, ...newRecords]

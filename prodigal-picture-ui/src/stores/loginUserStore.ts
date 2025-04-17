@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getLoginUserUsingGet } from '@/api/systemController'
 import router from "@/router";
@@ -41,14 +41,14 @@ export const useLoginUserStore = defineStore('loginUser', () => {
     const res = await getLoginUserUsingGet()
     if (res.code === 0 && res.data) {
       loginUser.value = res.data
-      // 登录成功后如果有重定向路径，则跳转到该路径
-      const path = redirectPath.value
-      if (path) {
-        router.push(path)
-        clearRedirectPath()
-      } else {
-        router.push('/')
-      }
+      // // 登录成功后如果有重定向路径，则跳转到该路径
+      // const path = redirectPath.value
+      // if (path) {
+      //   router.push(path)
+      //   clearRedirectPath()
+      // } else {
+      //   router.push('/')
+      // }
     }
   }
 

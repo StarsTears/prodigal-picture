@@ -140,8 +140,7 @@ onMounted(() => {
 }
 
 .date-label {
-/*  text-align: center;
-  margin-left: 0;*/
+/*  text-align: center;*/
   margin-bottom: 12px;
   color: #666;
   font-size: 14px;
