@@ -18,6 +18,7 @@ import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,7 +71,17 @@ public class SystemController {
             ThrowUtils.throwIf(!valid, ErrorCode.PARAMS_ERROR, "验证码错误或已过期");
             // 校验用户是否存在
             User user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
-            ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
+            //用户不存在就创建一个；
+            if (ObjectUtils.isEmpty(user)){
+//                ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
+                UserAddDto userAddDto = new UserAddDto();
+                userAddDto.setUserEmail(loginDto.getEmail());
+                userAddDto.setUserAccount(loginDto.getEmail());
+                userAddDto.setUserName(loginDto.getEmail());
+
+                BaseResult<Long> longBaseResult = this.addUser(userAddDto);
+                user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
+            }
             // 写入登录态
             request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
             // Sa-token登录

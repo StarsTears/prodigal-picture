@@ -55,10 +55,10 @@ public class EmailController {
      */
     @PostMapping("/send/captcha")
     public BaseResult<String> sendVerificationCode(@Valid @RequestBody EmailRequest request) {
-        String captcha = redisTemplate.opsForValue().get("verification:code:" + request.getEmail());
-        if (StrUtil.isNotBlank(captcha)) {
-            return BaseResult.error().msg("验证码已发送，请勿重复发送");
-        }
+//        String captcha = redisTemplate.opsForValue().get("verification:code:" + request.getEmail());
+//        if (StrUtil.isNotBlank(captcha)) {
+//            return BaseResult.error().msg("验证码已发送，请勿重复发送");
+//        }
         String verificationCode = emailService.generateVerificationCode();
         emailService.sendVerificationEmail(request.getEmail(), verificationCode);
         // 实际项目中应该将验证码存储到缓存或数据库，并设置过期时间

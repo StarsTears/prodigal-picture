@@ -35,7 +35,7 @@
             <a-form-item name="captcha" :rules="[{ required: true, message: '请输入验证码' }]">
               <a-input-group compact>
                 <a-input v-model:value="emailFormState.captcha" style="width: 60%" placeholder="请输入验证码" />
-                <a-button style="width: 38%" :disabled="countdown > 0 || !emailFormState.email || sendingCaptcha" @click="onSendCaptcha">
+                <a-button class="captcha-btn" style="width: 38%" :disabled="countdown > 0 || !emailFormState.email || sendingCaptcha" @click="onSendCaptcha">
                   <span v-if="countdown === 0">获取验证码</span>
                   <span v-else>{{ countdown }} 秒后重试</span>
                 </a-button>
@@ -123,7 +123,12 @@ const onSendCaptcha = async () => {
 };
 
 const handleSubmitAccount = async (values: any) => {
-  const res = await loginUsingPost(values);
+  const params = {
+    loginType: 'ACCOUNT',
+    userAccount: values.userAccount,
+    userPassword: values.userPassword
+  };
+  const res = await loginUsingPost(params);
   if (res.code === 0 && res.data) {
     await loginUserStore.fetchLoginUser();
     loginUserStore.setLoginUser(res.data);
@@ -205,4 +210,9 @@ const handleSubmitEmail = async (values: any) => {
   text-align: right;
 }
 
+.captcha-btn {
+  background-color: #1677ff !important;
+  color: #fff !important;
+  border-color: #1677ff !important;
+}
 </style>
