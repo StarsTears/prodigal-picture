@@ -128,7 +128,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
         return this.getUserVO(user);
     }
-
     /**
      * 获取登录用户信息
      *

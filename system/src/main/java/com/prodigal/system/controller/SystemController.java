@@ -7,6 +7,7 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
+import com.prodigal.system.constant.LoginConstant;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
@@ -14,6 +15,7 @@ import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.user.*;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.UserVO;
+import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +35,8 @@ import java.util.List;
 public class SystemController {
     @Resource
     private UserService userService;
+    @Resource
+    private EmailService emailService;
 
     @GetMapping("/hello")
     public BaseResult<String> hello() {
@@ -55,8 +59,26 @@ public class SystemController {
     @PostMapping("/login")
     public BaseResult<UserVO> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
         ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);
-        UserVO userVO = userService.login(loginDto, request);
-        return ResultUtils.success(userVO);
+        ThrowUtils.throwIf(loginDto.getLoginType() == null, ErrorCode.PARAMS_ERROR);
+        if (loginDto.getLoginType().equals(LoginConstant.USER_LOGIN_TYPE)) {
+            UserVO userVO = userService.login(loginDto, request);
+            return ResultUtils.success(userVO);
+        }
+        if (loginDto.getLoginType().equals(LoginConstant.EMAIL_LOGIN_TYPE)) {
+            // 校验验证码
+            boolean valid = emailService.verifyCode(loginDto.getEmail(), loginDto.getCaptcha());
+            ThrowUtils.throwIf(!valid, ErrorCode.PARAMS_ERROR, "验证码错误或已过期");
+            // 校验用户是否存在
+            User user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
+            ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
+            // 写入登录态
+            request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
+            // Sa-token登录
+            com.prodigal.system.manager.auth.StpKit.SPACE.login(user.getId());
+            com.prodigal.system.manager.auth.StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
+            return ResultUtils.success(userService.getUserVO(user));
+        }
+        throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的登录类型");
     }
 
     @PostMapping("/logout")
@@ -72,16 +94,16 @@ public class SystemController {
     }
 
     @PostMapping("/addUser")
-    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Long> addUser(@RequestBody UserAddDto userAddDto) {
         ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
         String userEmail = userAddDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)){
+        if (StrUtil.isBlank(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
         }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         //初始密码 123456
@@ -97,11 +119,12 @@ public class SystemController {
 
     /**
      * 根据ID获取用户（管理员）
+     *
      * @param id 用户ID
      * @return 用户信息（脱敏）
      */
     @GetMapping("/get")
-    @PermissionCheck(mustRole ={UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<User> getUserByID(long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         User user = userService.getById(id);
@@ -110,7 +133,7 @@ public class SystemController {
     }
 
     @GetMapping("/get/vo")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE,UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
     public BaseResult<UserVO> getUserVOByID(long id) {
         BaseResult<User> res = getUserByID(id);
         User user = res.getData();
@@ -132,15 +155,15 @@ public class SystemController {
      * 更新用户信息(管理员和本人)
      */
     @PostMapping("/update")
-    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto){
+    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto) {
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         String userEmail = userUpdateDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)){
+        if (StrUtil.isBlank(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
         }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         BeanUtils.copyProperties(userUpdateDto, user);
@@ -153,18 +176,18 @@ public class SystemController {
      * 更新用户信息(管理员和本人)
      */
     @PostMapping("/edit")
-    public BaseResult<Boolean> editUser(@RequestBody UserUpdateDto userUpdateDto,HttpServletRequest request){
-        ThrowUtils.throwIf(userUpdateDto == null|| userUpdateDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<Boolean> editUser(@RequestBody UserUpdateDto userUpdateDto, HttpServletRequest request) {
+        ThrowUtils.throwIf(userUpdateDto == null || userUpdateDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
         //应只能管理员/本人删除
         User loginUser = userService.getLoginUser(request);
         if (!loginUser.getId().equals(userUpdateDto.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
         }
         String userEmail = userUpdateDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)){
+        if (StrUtil.isBlank(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
         }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         User user = new User();
@@ -173,14 +196,15 @@ public class SystemController {
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(update);
     }
+
     @PostMapping("/list/page/vo")
-    @PermissionCheck(mustRole ={UserConstant.ADMIN_ROLE,UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
     public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDto userQueryDto) {
         ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR);
         long current = userQueryDto.getCurrent();
         long pageSize = userQueryDto.getPageSize();
         Page<User> page = userService.page(new Page<>(current, pageSize),
-                                            userService.getQueryWrapper(userQueryDto));
+                userService.getQueryWrapper(userQueryDto));
         Page<UserVO> userVOPage = new Page<>(current, pageSize, page.getTotal());
         List<UserVO> userVOList = userService.getUserVOList(page.getRecords());
         userVOPage.setRecords(userVOList);

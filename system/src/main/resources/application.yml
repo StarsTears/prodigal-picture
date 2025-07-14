@@ -8,9 +8,9 @@ server:
 spring:
   application:
     name: prodigal-system
-#  profiles:
-#    # 本地环境配置
-#    active: local
+  profiles:
+    # 本地环境配置
+    active: local
   #开放更大的上传文件大小
   servlet:
     multipart:
@@ -96,7 +96,13 @@ cos:
     bucket: XXX
 # 阿里云 AI 配置
 aliYunAi:
+  workSpaceId: xxxx
   apiKey: xxxx
+
+#github
+github:
+  owner:  Lang
+  repo:  prodigal-picture
 
 # 接口文档配置
 knife4j:

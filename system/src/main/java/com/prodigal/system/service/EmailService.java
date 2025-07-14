@@ -17,7 +17,11 @@ import javax.servlet.http.HttpServletRequest;
  * @description:
  **/
 public interface EmailService {
-    String addEmail(EmailDto emailDto, User loginUser,boolean isAdd);
+    String generateVerificationCode();
+
+    void sendVerificationEmail(String toEmail, String code);
+
+    String addEmail(EmailDto emailDto, User loginUser, boolean isAdd);
     @Transactional(rollbackFor = Exception.class)
     void sendEmailBySimpleMessage(EmailDto emailDto, User loginUser);
 
@@ -34,4 +38,9 @@ public interface EmailService {
     void fillEmailParams(Email email, EmailDto emailDto);
 
     Page<Email> listEmail(EmailQueryDto queryEmailDto, User loginUser);
+
+    /**
+     * 校验邮箱验证码
+     */
+    boolean verifyCode(String email, String code);
 }

@@ -7,7 +7,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mongodb.client.result.DeleteResult;
 import com.prodigal.system.config.MailConfig;
@@ -17,11 +16,9 @@ import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.email.EmailQueryDto;
 import com.prodigal.system.model.dto.email.EmailDto;
 import com.prodigal.system.model.entity.Email;
-import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.EmailTypeEnum;
 import com.prodigal.system.model.vo.EmailVO;
-import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
@@ -34,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -47,6 +45,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -68,13 +67,65 @@ public class EmailServiceImpl implements EmailService {
     @Resource
     private UserService userService;
     private final JavaMailSender emailSender;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
     private static final String personal = "Prodigal Pictutre-云图库";
 
     @Autowired
     public EmailServiceImpl(JavaMailSender emailSender) {
         this.emailSender = emailSender;
     }
-    
+
+    private static final String VERIFICATION_CODE_PREFIX = "verification:code:";
+    private static final long CODE_EXPIRE_MINUTES = 5;
+    @Override
+    public String generateVerificationCode() {
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+        return String.valueOf(code);
+    }
+    @Override
+    public void sendVerificationEmail(String toEmail, String code) {
+
+        MimeMessage message = emailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        try {
+            helper.setFrom(mailConfig.getUsername(), personal); // 设置发件人名称
+            helper.setTo(toEmail);
+            helper.setSubject("\t\t验证码");
+            helper.setText("您的验证码是: " + code);
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setFrom(mailConfig.getUsername());
+//
+//        message.setTo(toEmail);
+//        message.setSubject("\t\t\t验证码");
+//        message.setText("您的验证码是: " + code + "\n\n该验证码5分钟内有效。");
+
+        emailSender.send(message);
+
+        // 存储验证码到Redis，设置5分钟过期
+        redisTemplate.opsForValue().set(
+                VERIFICATION_CODE_PREFIX + toEmail,
+                code,
+                CODE_EXPIRE_MINUTES,
+                TimeUnit.MINUTES
+        );
+    }
+    @Override
+    public boolean verifyCode(String email, String code) {
+        String storedCode = redisTemplate.opsForValue().get(VERIFICATION_CODE_PREFIX + email);
+        return code.equals(storedCode);
+    }
+
+
+
     @Override
     public String addEmail(EmailDto emailDto, User loginUser,boolean isAdd) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);

@@ -283,6 +283,10 @@ declare namespace API {
     type?: number
   }
 
+  type EmailRequest = {
+    email?: string
+  }
+
   type EmailVO = {
     attachments?: string
     createTime?: string
@@ -363,6 +367,9 @@ declare namespace API {
   }
 
   type LoginDto = {
+    captcha?: string
+    email?: string
+    loginType?: string
     userAccount?: string
     userPassword?: string
   }

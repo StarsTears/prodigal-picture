@@ -11,18 +11,24 @@ import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.email.EmailQueryDto;
 import com.prodigal.system.model.dto.email.EmailDto;
+import com.prodigal.system.model.dto.email.EmailRequest;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.EmailVO;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: prodigal-picture
@@ -32,13 +38,33 @@ import java.util.List;
 @RestController
 @RequestMapping("/email")
 public class EmailController {
+    @Lazy
     @Resource
     private UserService userService;
     @Resource
     private EmailService emailService;
     @Resource
     private MongoTemplate mongoTemplate;
-
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    /**
+     * 发送验证码
+     *
+     * @param request
+     * @return
+     */
+    @PostMapping("/send/captcha")
+    public BaseResult<String> sendVerificationCode(@Valid @RequestBody EmailRequest request) {
+        String captcha = redisTemplate.opsForValue().get("verification:code:" + request.getEmail());
+        if (StrUtil.isNotBlank(captcha)) {
+            return BaseResult.error().msg("验证码已发送，请勿重复发送");
+        }
+        String verificationCode = emailService.generateVerificationCode();
+        emailService.sendVerificationEmail(request.getEmail(), verificationCode);
+        // 实际项目中应该将验证码存储到缓存或数据库，并设置过期时间
+        // 这里只是示例，实际应用中需要处理验证码的存储和验证
+        return BaseResult.success().msg("验证码已发送").data(verificationCode);
+    }
     /**
      * 新增邮件草稿
      *
@@ -58,7 +84,7 @@ public class EmailController {
     /**
      * 编辑邮件信息
      *
-     * @param sendEmailDto
+     * @param emailDto
      * @param request
      * @return
      */

@@ -299,7 +299,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     public void fillSpaceBySpaceLevel(Space space) {
         //根据空间级别，自动填充限额
         SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(space.getSpaceLevel());
-        if (spaceLevelEnum == null) {
+        if (spaceLevelEnum != null) {
             long maxSize = spaceLevelEnum.getMaxSize();
             if (space.getMaxSize() == null)
                 space.setMaxSize(maxSize);

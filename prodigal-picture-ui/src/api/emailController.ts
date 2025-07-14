@@ -83,6 +83,21 @@ export async function sendEmailByIdUsingPost(
   })
 }
 
+/** sendVerificationCode POST /api/email/send/captcha */
+export async function sendVerificationCodeUsingPost(
+  body: API.EmailRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultString_>('/api/email/send/captcha', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** updateEmail POST /api/email/update */
 export async function updateEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/update', {
