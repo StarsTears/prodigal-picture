@@ -47,17 +47,16 @@
 ~~~
 ## 依赖
 1. Spring Boot 2.7.6
-2. Spring Cloud 2021.0.3
-3. MySQL 8.0+
-4. MyBatis Plus 3.5.9
-5. Mybatis-plus-bom  3.5.9
-6. 腾讯云对象存储COS
-7. Knife4j-openapi2  4.4.0
-8. Hutool 工具类  5.8.26
-9. jsoup  1.15.3
-10. Lombok 1.18.32
-11. Sa-Token 1.39.0
-12. ShardingSphere 5.2.0
+2. MySQL 8.0+
+3. MyBatis Plus 3.5.9
+4. Mybatis-plus-bom  3.5.9
+5. 腾讯云对象存储COS
+6. Knife4j-openapi2  4.4.0
+7. Hutool 工具类  5.8.26
+8. jsoup  1.15.3 
+9. Lombok 1.18.32
+10. Sa-Token 1.39.0
+11. ShardingSphere 5.2.0
 
 
 ## 功能
@@ -82,12 +81,19 @@
 18. 权限管理:基于 Sa-Token 的 Kit 模式实现了多账号体系的 **RBAC 权限控制**，通过从请求上下文中获取参数实现了统的权限校验逻辑，并运用注解合并简化了鉴权注解的使用，轻松实现方法级别的权限校验。
 19. 数据分表:使用 shardingSphere 自定义分表算法实现了团队空间图片的 动态分表，提高了查询效率。并且为了通过 
 20. 框架内置的校验规则，手动维护可用分表节点。协作编辑:基于 WebSocket+ **事件驱动设计** 实现多人协作编辑图片功能，自定义握手拦截器确保权限校验通过后才能连接，并通过“编辑锁”机制，避免编辑冲突。
-21. 协作优化:基于 Disruptor **无锁队列** 实现了 WebSocket消息的异步化处理，显著提升系统吞吐量;并结合 @PreDestroy 注解实现优雅停机，防止编辑操作丢失。 
-22. 架构升级:随着项目代码量增大，引入领域驱动设计 DDD，将业务逻辑按子域拆分，优化了代码结构与可扩展性
+
 ## 在线体验
 
 - test/123456
-
+## 效果展示
+![img.png](project_img/首页.png)
+![img.png](project_img/图片管理.png)
+![img.png](project_img/图片详情.png)
+![img.png](project_img/用户管理.png)
+![img.png](project_img/空间管理.png)
+![img.png](project_img/空间图库分析.png)
+![img.png](project_img/公共图库分析.png)
+![img.png](project_img/全空间分析.png)
 ### Reference Documentation
 For further reference, please consider the following sections:
 
