@@ -147,8 +147,10 @@ const getOldPicture = async () => {
   let spaceId = route.query?.spaceId;
   if (id) {
     const res = await getPictureVoByIdUsingPost({
+      isView:false
+    },{
       id:id,
-      spaceId:spaceId
+      spaceId:spaceId,
     })
     if (res.code === 0 && res.data) {
       const data = res.data

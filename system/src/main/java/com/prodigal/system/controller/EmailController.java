@@ -63,7 +63,7 @@ public class EmailController {
         emailService.sendVerificationEmail(request.getEmail(), verificationCode);
         // 实际项目中应该将验证码存储到缓存或数据库，并设置过期时间
         // 这里只是示例，实际应用中需要处理验证码的存储和验证
-        return BaseResult.success().msg("验证码已发送").data(verificationCode);
+        return BaseResult.success().msg("验证码已发送");
     }
     /**
      * 新增邮件草稿

@@ -175,7 +175,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             用户上传的到公有
          */
         String uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_PUBLIC_PREFIX, loginUser.getId());
-        if (spaceId != null) {
+        if (spaceId != null && spaceId !=0) {
             uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_SPACE_PREFIX, loginUser.getId());
         }
 

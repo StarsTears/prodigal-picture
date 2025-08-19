@@ -25,6 +25,7 @@
             <a-form-item>
               <a-button type="primary" html-type="submit" style="width: 100%">登录</a-button>
             </a-form-item>
+            <div class="test-account-tip">测试账号：test、密码：123456</div>
           </a-form>
         </a-tab-pane>
         <a-tab-pane key="email" tab="邮箱登录">
@@ -214,5 +215,12 @@ const handleSubmitEmail = async (values: any) => {
   background-color: #1677ff !important;
   color: #fff !important;
   border-color: #1677ff !important;
+}
+
+.test-account-tip {
+  color: #888;
+  font-size: 13px;
+  text-align: right;
+  margin-bottom: 8px;
 }
 </style>
