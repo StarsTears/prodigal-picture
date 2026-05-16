@@ -4,7 +4,7 @@
       <a-col flex="200px">
         <RouterLink to="/">
           <div class="title-bar">
-            <img src="../assets/logo.jpg" alt="logo" class="logo">
+            <img src="../assets/logo.svg" alt="Prodigal Picture" class="logo">
             <div class="title">Prodigal Picture</div>
           </div>
         </RouterLink>
@@ -361,6 +361,8 @@ const doNotice = (e: Event) => {
 
 #globalHeader .logo {
   height: 48px;
+  width: 48px;
+  border-radius: 12px;
 }
 
 #globalHeader .title {

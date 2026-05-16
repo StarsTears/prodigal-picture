@@ -25,7 +25,7 @@
             <a-form-item>
               <a-button type="primary" html-type="submit" style="width: 100%">登录</a-button>
             </a-form-item>
-            <div class="test-account-tip">测试账号：test、密码：123456</div>
+            <div class="test-account-tip">测试账号：test 密码：123456</div>
           </a-form>
         </a-tab-pane>
         <a-tab-pane key="email" tab="邮箱登录">
@@ -164,7 +164,7 @@ const handleSubmitEmail = async (values: any) => {
 
 <style scoped >
 .loginBg {
-  /*background-image: url("../assets/img.png");*/
+  /*background-image: url("../assets/首页.png");*/
   background-size: cover; /* 背景图片覆盖整个容器 */
  /* background-position: center;*/ /* 背景居中 */
   display: flex;

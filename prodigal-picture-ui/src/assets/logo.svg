@@ -1,1 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 261.76 226.69"><path d="M161.096.001l-30.225 52.351L100.647.001H-.005l130.877 226.688L261.749.001z" fill="#41b883"/><path d="M161.096.001l-30.225 52.351L100.647.001H52.346l78.526 136.01L209.398.001z" fill="#34495e"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Prodigal Picture">
+  <defs>
+    <linearGradient id="brand" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="55%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#1677ff"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="15" fill="url(#brand)"/>
+  <rect width="64" height="32" rx="15" fill="url(#shine)"/>
+
+  <!-- back card -->
+  <g transform="rotate(-10 30 30)">
+    <rect x="11" y="17" width="30" height="24" rx="4" fill="#fff" opacity="0.28"/>
+  </g>
+
+  <!-- front card -->
+  <rect x="19" y="15" width="32" height="26" rx="4" fill="#fff"/>
+  <rect x="19" y="15" width="32" height="7" rx="4" fill="#ede9fe"/>
+  <rect x="19" y="18" width="32" height="4" fill="#ede9fe"/>
+
+  <!-- gallery glyph -->
+  <path d="M24 36 L30 27 L36 36 Z" fill="#7c3aed"/>
+  <circle cx="40" cy="25" r="2.8" fill="#1677ff"/>
+
+  <!-- geek pixel -->
+  <g fill="#fff" opacity="0.85">
+    <rect x="44" y="44" width="3.5" height="3.5" rx="0.6"/>
+    <rect x="49.5" y="44" width="3.5" height="3.5" rx="0.6" opacity="0.55"/>
+    <rect x="44" y="49.5" width="3.5" height="3.5" rx="0.6" opacity="0.55"/>
+    <rect x="49.5" y="49.5" width="3.5" height="3.5" rx="0.6" opacity="0.3"/>
+  </g>
+</svg>

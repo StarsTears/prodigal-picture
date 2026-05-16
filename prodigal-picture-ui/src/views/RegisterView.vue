@@ -95,7 +95,7 @@ const handleSubmit = async (values: any) => {
 
 <style scoped>
 .registerBg {
-  /*background-image: url("../assets/img.png");*/
+  /*background-image: url("../assets/首页.png");*/
   height: 100vh;
   background-size: cover; /* 背景图片覆盖整个容器 */
   /*background-position: center; !* 背景居中 *!*/
