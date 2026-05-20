@@ -1,0 +1,21 @@
+name: "dev"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened]
+
+jobs:
+  dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dependency
+        run: |
+          sudo apt-get update
+ 

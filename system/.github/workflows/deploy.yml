@@ -1,0 +1,85 @@
+name: "Deploy"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start service  # 一个常用的SSH 连接 Action
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script_stop: true
+          script: |
+            # ===== 配置区域 =====
+            # 你可以根据需要修改这个路径
+            PROJECT_DIR="/opt/project/prodigal-picture"  # 自定义路径
+            # 或者使用用户目录
+            # PROJECT_DIR="/home/${{ secrets.SSH_USER }}/apps/prodigal"
+            # 或者使用绝对路径
+            # PROJECT_DIR="/opt/prodigal-travel"
+            
+            echo "📁 Project directory: $PROJECT_DIR"
+            
+            # 创建目录
+            mkdir -p $PROJECT_DIR
+            
+            # 克隆或更新代码
+            cd $PROJECT_DIR
+            if [ ! -d ".git" ]; then
+              echo "🔄 First deployment - cloning repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "🔄 Pulling latest changes..."
+              git pull origin main
+            fi
+            
+            # 创建 .env 文件
+            cat > .env << EOF
+            TZ=Asia/Shanghai
+            SPRING_PROFILES_ACTIVE=prod
+            DB_PORT=3306
+            DB_HOST=127.0.0.1
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+            RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+            RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+            RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+            ALIYUNAI_WORKSPACEID=${{ secrets.ALIYUN_AI_WORKSPACE_ID }}
+            ALIYUNAI_APIKEY= ${{ secrets.ALIYUN_AI_API_KEY }}
+            EOF
+            
+            # 构建和部署
+            echo "🐳 Building and starting containers..."
+            docker-compose down
+            docker-compose up -d --build
+            
+            # 清理
+            docker system prune -f
+            
+            # 健康检查
+            echo "🏥 Performing health check..."
+            sleep 15
+            if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
+              echo "✅ Deployment successful!"
+              echo "📍 Project location: $PROJECT_DIR"
+            else
+              echo "❌ Health check failed!"
+              docker-compose logs --tail=50
+              exit 1
+            fi
