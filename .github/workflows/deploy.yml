@@ -10,8 +10,7 @@ on:
       - 'docker-compose.yml'  # 编排文件变更
       - 'system/Dockerfile*'         # Dockerfile 变更
       - 'prodigal-picture-ui/Dockerfile'
-    # 允许手动触发
-    workflow_dispatch:
+  workflow_dispatch: # 允许手动触发
 
 jobs:
   deploy:
@@ -19,11 +18,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-#      - name: Setup JDK
-#        uses: actions/setup-java@v4
-#        with:
-#          java-version: '17'
-#          distribution: 'temurin'
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
       - name: Start service  # 一个常用的SSH 连接 Action
         uses: appleboy/ssh-action@v1.2.0
         with:
