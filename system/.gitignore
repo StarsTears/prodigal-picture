@@ -1,6 +1,5 @@
 ## Local ##
 application-local.yml
-application-prod.yml
 
 HELP.md
 target/
