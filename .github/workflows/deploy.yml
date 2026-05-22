@@ -19,9 +19,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
+#      - name: Setup JDK
+#        uses: actions/setup-java@v4
+#        with:
+#          java-version: '17'
+#          distribution: 'temurin'
       - name: Start service  # 一个常用的SSH 连接 Action
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
