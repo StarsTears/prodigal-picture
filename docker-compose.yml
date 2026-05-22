@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  system:
+    build:
+      context: .
+      dockerfile: system/Dockerfile
+    container_name: prodigal-picture-system
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
+    env_file:
+      - .env
+    networks:
+      - prodigal-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
+      - TZ=Asia/Shanghai
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9999/api/health/check" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ui:
+    build:
+      context: ./prodigal-picture-ui
+      dockerfile: Dockerfile
+    container_name: prodigal-picture-ui
+    restart: unless-stopped
+    ports:
+      - "81:81"
+    depends_on:
+      - system
+    networks:
+      - prodigal-network
+
+networks:
+  prodigal-network:
+    driver: bridge
