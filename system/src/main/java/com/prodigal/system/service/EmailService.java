@@ -17,9 +17,15 @@ import javax.servlet.http.HttpServletRequest;
  * @description:
  **/
 public interface EmailService {
-    String generateVerificationCode();
+    /**
+     * 生成验证码、写入 Redis，并通过 RabbitMQ 异步投递发送任务
+     */
+    void sendVerificationCodeAsync(String email);
 
-    void sendVerificationEmail(String toEmail, String code);
+    /**
+     * 实际发送验证码邮件（由 MQ 消费者调用）
+     */
+//    void deliverVerificationEmail(String toEmail, String code);
 
     String addEmail(EmailDto emailDto, User loginUser, boolean isAdd);
     @Transactional(rollbackFor = Exception.class)

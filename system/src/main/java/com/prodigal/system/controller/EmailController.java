@@ -1,6 +1,5 @@
 package com.prodigal.system.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
@@ -15,20 +14,15 @@ import com.prodigal.system.model.dto.email.EmailRequest;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.EmailVO;
-import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @program: prodigal-picture
@@ -45,25 +39,14 @@ public class EmailController {
     private EmailService emailService;
     @Resource
     private MongoTemplate mongoTemplate;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+
     /**
-     * 发送验证码
-     *
-     * @param request
-     * @return
+     * 发送登录验证码：验证码写入 Redis，邮件经 RabbitMQ 异步发送
      */
     @PostMapping("/send/captcha")
-    public BaseResult<String> sendVerificationCode(@Valid @RequestBody EmailRequest request) {
-//        String captcha = redisTemplate.opsForValue().get("verification:code:" + request.getEmail());
-//        if (StrUtil.isNotBlank(captcha)) {
-//            return BaseResult.error().msg("验证码已发送，请勿重复发送");
-//        }
-        String verificationCode = emailService.generateVerificationCode();
-        emailService.sendVerificationEmail(request.getEmail(), verificationCode);
-        // 实际项目中应该将验证码存储到缓存或数据库，并设置过期时间
-        // 这里只是示例，实际应用中需要处理验证码的存储和验证
-        return BaseResult.success().msg("验证码已发送");
+    public BaseResult sendVerificationCode(@Valid @RequestBody EmailRequest request) {
+        emailService.sendVerificationCodeAsync(request.getEmail());
+        return BaseResult.success().msg("验证码已发送，请查收邮箱!");
     }
     /**
      * 新增邮件草稿
@@ -105,9 +88,6 @@ public class EmailController {
         emailService.deleteEmail(emailId, loginUser);
         return ResultUtils.success(true);
     }
-
-
-
 
     /**
      * 读取邮件（管理员或者邮件接收人是当前登录用户）

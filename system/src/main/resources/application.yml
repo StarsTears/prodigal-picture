@@ -21,6 +21,11 @@ spring:
     url: jdbc:mysql://localhost:3306/prodigal-picture
     username: root
     password: root
+  # elasticsearch
+  elasticsearch:
+    uris: http://localhost:9200
+    password:
+    username:
   #空间图片分表
   shardingsphere:
     datasource:
@@ -50,7 +55,7 @@ spring:
       sql-show: true
   #redis 配置
   redis:
-    database: 0
+    database: 1
     host: 127.0.0.1
     port: 6379
     timeout: 5000
@@ -61,6 +66,19 @@ spring:
       port: 27017
       database: prodigal-picture
       auto-index-creation: true
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /picture
+    listener:
+      simple:
+        acknowledge-mode: auto
+        retry:
+          enabled: true
+          max-attempts: 3
+          initial-interval: 2000ms
   mail:
     host: smtp.qq.com
     username: XXX

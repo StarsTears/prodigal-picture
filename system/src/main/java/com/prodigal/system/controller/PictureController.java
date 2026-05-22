@@ -411,7 +411,6 @@ public class PictureController {
      */
     @PostMapping("/list/page/vo/cache")
     public BaseResult<Page<PictureVO>> listPictureVOByPageCache(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
-        long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫

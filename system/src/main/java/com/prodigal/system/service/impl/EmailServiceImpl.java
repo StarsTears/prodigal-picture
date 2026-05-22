@@ -10,7 +10,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mongodb.client.result.DeleteResult;
 import com.prodigal.system.config.MailConfig;
+import com.prodigal.system.constant.CacheConstant;
+import com.prodigal.system.constant.GlobalConstant;
 import com.prodigal.system.exception.BusinessException;
+import com.prodigal.system.model.message.EmailCaptchaMessage;
+import com.prodigal.system.mq.producer.EmailCaptchaProducer;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.email.EmailQueryDto;
@@ -57,8 +61,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class EmailServiceImpl implements EmailService {
-//    @Value("${spring.mail.username}")
-//    private String fromEmail;
 
     @Resource
     private MailConfig mailConfig;
@@ -69,58 +71,46 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender emailSender;
     @Autowired
     private StringRedisTemplate redisTemplate;
-    private static final String personal = "Prodigal Pictutre-云图库";
+    @Resource
+    private EmailCaptchaProducer emailCaptchaProducer;
 
     @Autowired
     public EmailServiceImpl(JavaMailSender emailSender) {
         this.emailSender = emailSender;
     }
-
-    private static final String VERIFICATION_CODE_PREFIX = "verification:code:";
-    private static final long CODE_EXPIRE_MINUTES = 5;
     @Override
-    public String generateVerificationCode() {
-        Random random = new Random();
-        int code = 100000 + random.nextInt(900000);
-        return String.valueOf(code);
-    }
-    @Override
-    public void sendVerificationEmail(String toEmail, String code) {
-
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
-
-        try {
-            helper.setFrom(mailConfig.getUsername(), personal); // 设置发件人名称
-            helper.setTo(toEmail);
-            helper.setSubject("\t\t验证码");
-            helper.setText("您的验证码是: " + code);
-        } catch (MessagingException e) {
-            throw new RuntimeException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+    public void sendVerificationCodeAsync(String email) {
+        String sendLockKey = CacheConstant.SEND_LOCK_PREFIX + email;
+        Boolean locked = redisTemplate.opsForValue()
+                .setIfAbsent(sendLockKey, "1", CacheConstant.SEND_LOCK_SECONDS, TimeUnit.SECONDS);
+        if (Boolean.FALSE.equals(locked)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码已发送，请稍后再试");
         }
 
-//        SimpleMailMessage message = new SimpleMailMessage();
-//        message.setFrom(mailConfig.getUsername());
-//
-//        message.setTo(toEmail);
-//        message.setSubject("\t\t\t验证码");
-//        message.setText("您的验证码是: " + code + "\n\n该验证码5分钟内有效。");
-
-        emailSender.send(message);
-
-        // 存储验证码到Redis，设置5分钟过期
-        redisTemplate.opsForValue().set(
-                VERIFICATION_CODE_PREFIX + toEmail,
-                code,
-                CODE_EXPIRE_MINUTES,
-                TimeUnit.MINUTES
-        );
+        String code = generateVerificationCode();
+        String codeKey = CacheConstant.CODE_PREFIX + email;
+        try {
+            redisTemplate.opsForValue().set(
+                    codeKey,
+                    code,
+                    CacheConstant.CODE_EXPIRE_MINUTES,
+                    TimeUnit.MINUTES
+            );
+            emailCaptchaProducer.send(new EmailCaptchaMessage(email, code));
+        } catch (Exception e) {
+            redisTemplate.delete(codeKey);
+            redisTemplate.delete(sendLockKey);
+            log.error("验证码投递 MQ 失败, email={}", email, e);
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码发送失败，请稍后重试");
+        }
     }
+
     @Override
     public boolean verifyCode(String email, String code) {
-        String storedCode = redisTemplate.opsForValue().get(VERIFICATION_CODE_PREFIX + email);
+        if (StrUtil.isBlank(email) || StrUtil.isBlank(code)) {
+            return false;
+        }
+        String storedCode = redisTemplate.opsForValue().get(CacheConstant.CODE_PREFIX + email);
         return code.equals(storedCode);
     }
 
@@ -200,7 +190,6 @@ public class EmailServiceImpl implements EmailService {
 
     /**
      * 使用MimeMessageHelper 发送邮件（可发送HTML、附件）
-     *
      * @param emailDto
      * @param loginUser
      */
@@ -212,7 +201,7 @@ public class EmailServiceImpl implements EmailService {
 
         try {
             EmailTypeEnum emailTypeEnum = EmailTypeEnum.getEnumByValue(emailDto.getType());
-            helper.setFrom(mailConfig.getUsername(), personal);
+            helper.setFrom(mailConfig.getUsername(), GlobalConstant.PERSONAL);
             if (EmailTypeEnum.NOTICE.equals(emailTypeEnum)){
                 List<String> emailList = userService.getBaseMapper()
                                                     .selectObjs(
@@ -432,6 +421,16 @@ public class EmailServiceImpl implements EmailService {
                 }
             }
         }
+    }
+
+    /**
+     * 验证码生成
+     * @return code
+     */
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+        return String.valueOf(code);
     }
 
     /**

@@ -70,7 +70,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(StrUtil.isNotBlank(userEmail),User::getUserEmail, registerDto.getUserEmail());
         Long count = this.baseMapper.selectCount(wrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户已存在!");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户/邮箱已存在!");
         }
         //密码加密存储
         String encryptPassword = getEncryptPassword(registerDto.getUserPassword());
