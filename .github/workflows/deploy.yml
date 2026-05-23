@@ -81,10 +81,7 @@ jobs:
             COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
             COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
             EOF
-#            # 使用 sg docker 执行部署
-#            sg docker -c "
-#            echo '=== Inside sg docker ==='
-#            groups
+
             echo "🐳 Building and starting containers..."
             sudo docker compose down
             sudo docker compose up -d --build
