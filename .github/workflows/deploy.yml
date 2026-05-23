@@ -62,6 +62,24 @@ jobs:
                git clone https://github.com/${{ github.repository }}.git .
             fi
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
+            # 先从 GitHub Secrets 获取值并赋给普通变量
+            DB_NAME="${{ secrets.DB_NAME }}"
+            DB_USERNAME="${{ secrets.DB_USERNAME }}"
+            DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            REDIS_PASSWORD="${{ secrets.REDIS_PASSWORD }}"
+            MAIL_USERNAME="${{ secrets.MAIL_USERNAME }}"
+            MAIL_PASSWORD="${{ secrets.MAIL_PASSWORD }}"
+            RABBITMQ_HOST="${{ secrets.RABBITMQ_HOST }}"
+            RABBITMQ_VIRTUAL_HOST="${{ secrets.RABBITMQ_VIRTUAL_HOST }}"
+            RABBITMQ_USERNAME="${{ secrets.RABBITMQ_USERNAME }}"
+            RABBITMQ_PASSWORD="${{ secrets.RABBITMQ_PASSWORD }}"
+            ALIYUNAI_WORKSPACEID="${{ secrets.ALIYUNAI_WORKSPACEID }}"
+            ALIYUNAI_APIKEY="${{ secrets.ALIYUNAI_APIKEY }}"
+            COS_CLIENT_HOST="${{ secrets.COS_CLIENT_HOST }}"
+            COS_CLIENT_SECRETID="${{ secrets.COS_CLIENT_SECRETID }}"
+            COS_CLIENT_SECRETKEY="${{ secrets.COS_CLIENT_SECRETKEY }}"
+            COS_CLIENT_BUCKET="${{ secrets.COS_CLIENT_BUCKET }}"
+            COS_CLIENT_REGION="${{ secrets.COS_CLIENT_REGION }}"
             
             # 创建 .env 文件
             cat > .env << EOF
@@ -69,23 +87,23 @@ jobs:
             SPRING_PROFILES_ACTIVE=prod
             DB_PORT=3306
             DB_HOST=127.0.0.1
-            DB_NAME=${{ secrets.DB_NAME }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-            RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
-            RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}
-            RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
-            RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-            ALIYUNAI_WORKSPACEID=${{ secrets.ALIYUN_AI_WORKSPACE_ID }}
-            ALIYUNAI_APIKEY=${{ secrets.ALIYUN_AI_API_KEY }}
-            COS_CLIENT_HOST=${{ secrets.COS_CLIENT_HOST }}
-            COS_CLIENT_SECRETID=${{ secrets.COS_CLIENT_SECRETID }}
-            COS_CLIENT_SECRETKEY=${{ secrets.COS_CLIENT_SECRETKEY }}
-            COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
-            COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
+            DB_NAME=${DB_NAME}
+            DB_USERNAME=${DB_USERNAME}
+            DB_PASSWORD=${DB_PASSWORD}
+            REDIS_PASSWORD=${REDIS_PASSWORD}
+            MAIL_USERNAME=${MAIL_USERNAME}
+            MAIL_PASSWORD=${MAIL_PASSWORD}
+            RABBITMQ_HOST=${RABBITMQ_HOST}
+            RABBITMQ_VIRTUAL_HOST=${RABBITMQ_VIRTUAL_HOST}
+            RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+            RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+            ALIYUNAI_WORKSPACEID=${ALIYUNAI_WORKSPACEID}
+            ALIYUNAI_APIKEY=${ALIYUNAI_APIKEY}
+            COS_CLIENT_HOST=${COS_CLIENT_HOST}
+            COS_CLIENT_SECRETID=${COS_CLIENT_SECRETID}
+            COS_CLIENT_SECRETKEY=${COS_CLIENT_SECRETKEY}
+            COS_CLIENT_BUCKET=${COS_CLIENT_BUCKET}
+            COS_CLIENT_REGION=${COS_CLIENT_REGION}
             EOF
 
             echo "🐳 Building and starting containers..."
