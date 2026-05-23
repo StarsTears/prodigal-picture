@@ -6,15 +6,16 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  server:{
-    // proxy:{
-    //   '/api': {
-    //     target: 'http://localhost:9999',
-    //     changeOrigin: true,
-    //     rewrite: (path) => path.replace(/^\/api/, '')
-    //   }
-    // }
-  },
+  //本地测试开启这个！服务器上使用nginx配置反向代理
+  // server:{
+  //   proxy:{
+  //     '/api': {
+  //       target: 'http://localhost:9999',
+  //       changeOrigin: true,
+  //       // rewrite: (path) => path.replace(/^\/api/, '')
+  //     }
+  //   }
+  // },
   plugins: [
     vue(),
     vueDevTools(),
