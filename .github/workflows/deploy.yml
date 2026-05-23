@@ -38,19 +38,21 @@ jobs:
             echo "=== Testing connection ==="
             whoami
             groups
-            
+
+            # 先定义变量（在 sg 外部）
+            PROJECT_DIR="/opt/project/prodigal-picture"
+
             # 使用 sg docker 执行部署
             sg docker -c "
               echo '=== Inside sg docker ==='
               groups
-              
-              PROJECT_DIR=\"/opt/project/prodigal-picture\"
+
               echo \"📁 Project directory: $PROJECT_DIR\"
-              
+
               mkdir -p $PROJECT_DIR
               cd $PROJECT_DIR
               echo \"Current directory: $(pwd)\"
-              
+
               if [ ! -d \".git\" ]; then
                 echo \"🔄 First deployment - cloning repository...\"
                 git clone https://github.com/${{ github.repository }}.git .
@@ -59,9 +61,9 @@ jobs:
                 git fetch origin main
                 git reset --hard origin/main
               fi
-              
+
               echo \"📌 Current commit: $(git rev-parse --short HEAD)\"
-              
+
               # 创建 .env 文件
               cat > .env << 'EOF'
               TZ=Asia/Shanghai
@@ -86,7 +88,7 @@ jobs:
               COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
               COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
               EOF
-              
+
               echo \"🐳 Building and starting containers...\"
               docker compose down
               docker compose up -d --build
