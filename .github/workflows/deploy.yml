@@ -85,18 +85,18 @@ jobs:
 #            sg docker -c "
 #            echo '=== Inside sg docker ==='
 #            groups
-            echo \"🐳 Building and starting containers...\"
+            echo "🐳 Building and starting containers..."
             sudo docker compose down
             sudo docker compose up -d --build
             
             sudo docker image prune -f || true
             
-            echo \"🏥 Performing health check...\"
+            echo "🏥 Performing health check..."
             sleep 15
             if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
-              echo \"✅ Deployment successful!\"
+              echo "✅ Deployment successful!"
             else
-              echo \"❌ Health check failed!\"
+              echo "❌ Health check failed!"
               sudo docker compose logs --tail=50
               exit 1
             fi
