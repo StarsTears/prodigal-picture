@@ -33,6 +33,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22}}
           script_stop: true
+          command_timeout: 30m  # 关键：增加超时时间
           script: |
             # 先测试基本命令
             echo "=== Testing connection ==="
@@ -41,54 +42,49 @@ jobs:
 
             # 先定义变量（在 sg 外部）
             PROJECT_DIR="/opt/project/prodigal-picture"
+            echo "📁 Project directory: $PROJECT_DIR"
+            mkdir -p $PROJECT_DIR
+            cd $PROJECT_DIR
+            echo "Current directory: $(pwd)"
 
+            if [ ! -d ".git" ]; then
+              echo "🔄 First deployment - cloning repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo "🔄 Pulling latest changes..."
+              git fetch origin main
+              git reset --hard origin/main
+            fi
+            echo "📌 Current commit: $(git rev-parse --short HEAD)"
+            
+            # 创建 .env 文件
+            cat > .env << 'EOF'
+            TZ=Asia/Shanghai
+            SPRING_PROFILES_ACTIVE=prod
+            DB_PORT=3306
+            DB_HOST=127.0.0.1
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+            MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
+            MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
+            RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
+            RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}
+            RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
+            RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
+            ALIYUNAI_WORKSPACEID=${{ secrets.ALIYUN_AI_WORKSPACE_ID }}
+            ALIYUNAI_APIKEY=${{ secrets.ALIYUN_AI_API_KEY }}
+            COS_CLIENT_HOST=${{ secrets.COS_CLIENT_HOST }}
+            COS_CLIENT_SECRETID=${{ secrets.COS_CLIENT_SECRETID }}
+            COS_CLIENT_SECRETKEY=${{ secrets.COS_CLIENT_SECRETKEY }}
+            COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
+            COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
+            EOF
             # 使用 sg docker 执行部署
             sg docker -c "
               echo '=== Inside sg docker ==='
               groups
-
-              echo \"📁 Project directory: $PROJECT_DIR\"
-
-              mkdir -p $PROJECT_DIR
-              cd $PROJECT_DIR
-              echo \"Current directory: $(pwd)\"
-
-              if [ ! -d \".git\" ]; then
-                echo \"🔄 First deployment - cloning repository...\"
-                git clone https://github.com/${{ github.repository }}.git .
-              else
-                echo \"🔄 Pulling latest changes...\"
-                git fetch origin main
-                git reset --hard origin/main
-              fi
-
-              echo \"📌 Current commit: $(git rev-parse --short HEAD)\"
-
-              # 创建 .env 文件
-              cat > .env << 'EOF'
-              TZ=Asia/Shanghai
-              SPRING_PROFILES_ACTIVE=prod
-              DB_PORT=3306
-              DB_HOST=127.0.0.1
-              DB_NAME=${{ secrets.DB_NAME }}
-              DB_USERNAME=${{ secrets.DB_USERNAME }}
-              DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-              REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-              MAIL_USERNAME=${{ secrets.MAIL_USERNAME }}
-              MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }}
-              RABBITMQ_HOST=${{ secrets.RABBITMQ_HOST }}
-              RABBITMQ_VIRTUAL_HOST=${{ secrets.RABBITMQ_VIRTUAL_HOST }}
-              RABBITMQ_USERNAME=${{ secrets.RABBITMQ_USERNAME }}
-              RABBITMQ_PASSWORD=${{ secrets.RABBITMQ_PASSWORD }}
-              ALIYUNAI_WORKSPACEID=${{ secrets.ALIYUN_AI_WORKSPACE_ID }}
-              ALIYUNAI_APIKEY=${{ secrets.ALIYUN_AI_API_KEY }}
-              COS_CLIENT_HOST=${{ secrets.COS_CLIENT_HOST }}
-              COS_CLIENT_SECRETID=${{ secrets.COS_CLIENT_SECRETID }}
-              COS_CLIENT_SECRETKEY=${{ secrets.COS_CLIENT_SECRETKEY }}
-              COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
-              COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
-              EOF
-
               echo \"🐳 Building and starting containers...\"
               docker compose down
               docker compose up -d --build
