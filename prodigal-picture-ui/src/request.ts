@@ -3,7 +3,7 @@ import {message} from "ant-design-vue";
 
 //创建axios 实例
 const instance = axios.create({
-  baseURL: 'http://localhost:9999/',
+  baseURL: '/api/',
   timeout: 60000,
   // headers: {'X-Custom-Header': 'foobar'},
   withCredentials: true,
