@@ -41,7 +41,7 @@ jobs:
             groups
 
             # 先定义变量（在 sg 外部）
-            PROJECT_DIR="/opt/project/prodigal-picture"
+            PROJECT_DIR="/opt/project"
             echo "📁 Project directory: $PROJECT_DIR"
             mkdir -p $PROJECT_DIR
             cd $PROJECT_DIR
