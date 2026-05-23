@@ -47,7 +47,7 @@ jobs:
             cd $PROJECT_DIR
             echo "Current directory: $(pwd)"
 
-            if [ ! -d ".git" ]; then
+            if [ -d ".git" ]; then
               echo "🔄 Repository exists, pulling latest changes..."
               git fetch origin main
               git reset --hard origin/main
@@ -58,6 +58,7 @@ jobs:
                   echo "Directory not empty, cleaning..."
                   sudo rm -rf *
                fi
+               echo "=== Debug: Before git clone ==="
                git clone https://github.com/${{ github.repository }}.git .
             fi
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
