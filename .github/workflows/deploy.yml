@@ -81,23 +81,22 @@ jobs:
             COS_CLIENT_BUCKET=${{ secrets.COS_CLIENT_BUCKET }}
             COS_CLIENT_REGION=${{ secrets.COS_CLIENT_REGION }}
             EOF
-            # 使用 sg docker 执行部署
-            sg docker -c "
-              echo '=== Inside sg docker ==='
-              groups
-              echo \"🐳 Building and starting containers...\"
-              docker compose down
-              docker compose up -d --build
-              
-              docker image prune -f || true
-              
-              echo \"🏥 Performing health check...\"
-              sleep 15
-              if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
-                echo \"✅ Deployment successful!\"
-              else
-                echo \"❌ Health check failed!\"
-                docker compose logs --tail=50
-                exit 1
-              fi
-            "
+#            # 使用 sg docker 执行部署
+#            sg docker -c "
+#            echo '=== Inside sg docker ==='
+#            groups
+            echo \"🐳 Building and starting containers...\"
+            sudo docker compose down
+            sudo docker compose up -d --build
+            
+            sudo docker image prune -f || true
+            
+            echo \"🏥 Performing health check...\"
+            sleep 15
+            if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
+              echo \"✅ Deployment successful!\"
+            else
+              echo \"❌ Health check failed!\"
+              sudo docker compose logs --tail=50
+              exit 1
+            fi
