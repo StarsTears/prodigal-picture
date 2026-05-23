@@ -62,7 +62,7 @@ spring:
   data:
     #mongoDB
     mongodb:
-      host: 127.0.0.1
+      host: ${MONGO_HOST:127.0.0.1}
       port: 27017
       database: prodigal-picture
       auto-index-creation: true
