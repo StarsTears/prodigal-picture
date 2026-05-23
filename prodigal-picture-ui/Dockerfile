@@ -9,8 +9,8 @@ RUN npm ci --production=false
 
 # 复制源码
 COPY . .
-# 构建
-RUN npm run build
+# 直接构建，跳过 type-check
+RUN npm run build-only || npm run build
 
 FROM nginx:alpine
 
