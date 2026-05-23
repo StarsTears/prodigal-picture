@@ -48,12 +48,17 @@ jobs:
             echo "Current directory: $(pwd)"
 
             if [ ! -d ".git" ]; then
-              echo "🔄 First deployment - cloning repository..."
-              git clone https://github.com/${{ github.repository }}.git .
-            else
-              echo "🔄 Pulling latest changes..."
+              echo "🔄 Repository exists, pulling latest changes..."
               git fetch origin main
               git reset --hard origin/main
+            else
+               echo "🔄 First deployment, cloning repository..."
+               # 如果目录不为空，先清理
+               if [ "$(ls -A)" ]; then
+                  echo "Directory not empty, cleaning..."
+                  sudo rm -rf *
+               fi
+               git clone https://github.com/${{ github.repository }}.git .
             fi
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
             
