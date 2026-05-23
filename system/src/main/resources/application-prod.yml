@@ -47,7 +47,7 @@ spring:
             type: CLASS_BASED
             props:
               strategy: standard
-              algorithm-class-name: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
+              algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
     props:
       sql-show: true
   #redis 配置
