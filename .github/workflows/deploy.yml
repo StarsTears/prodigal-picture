@@ -58,7 +58,7 @@ jobs:
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
             
             # 创建 .env 文件
-            cat > .env << 'EOF'
+            cat > .env << EOF
             TZ=Asia/Shanghai
             SPRING_PROFILES_ACTIVE=prod
             DB_PORT=3306
