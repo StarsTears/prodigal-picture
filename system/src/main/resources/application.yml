@@ -44,9 +44,9 @@ spring:
             table-strategy:
               standard:
                 sharding-column: spaceId
-                sharding-algorithm-name: picture_sharding_algorithm # 分表算法 自定义分片算法
+                sharding-algorithm-name: picture-sharding-algorithm # 分表算法 自定义分片算法
         sharding-algorithms:
-          picture_sharding_algorithm:
+          picture-sharding-algorithm:
             type: CLASS_BASED
             props:
               strategy: standard
