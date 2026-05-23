@@ -3,10 +3,9 @@ FROM node:18-alpine AS builder
 WORKDIR /build
 
 COPY package*.json ./
+# 2. 安装依赖
 RUN npm ci --production=false
 
-# 使用 ci 安装（更干净，更快）
-RUN npm run build
 
 # 复制源码
 COPY . .
@@ -14,6 +13,10 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
+
+# 安装 curl 用于健康检查
+RUN apk add --no-cache curl
+
 # 复制构建产物
 COPY --from=builder /build/dist /usr/share/nginx/html
 
