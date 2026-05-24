@@ -10,7 +10,7 @@
         <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
           <GithubOutlined/>
         </a>
-        Prodigal Picture | Copyright © prodigal 20001-2024  All Rights Reserved.
+        Prodigal Picture | Copyright © prodigal 20001-2026  All Rights Reserved.
       </a-layout-footer>
     </a-layout>
   </div>
