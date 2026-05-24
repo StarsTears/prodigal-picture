@@ -43,6 +43,10 @@ services:
       - system
     networks:
       - prodigal-network
+    environment:
+      - TZ=Asia/Shanghai
+      - COS_CLIENT_BUCKET=${COS_CLIENT_BUCKET}
+      - COS_CLIENT_REGION=${COS_CLIENT_REGION}
 
 networks:
   prodigal-network:
