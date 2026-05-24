@@ -117,7 +117,7 @@ jobs:
             sudo docker image prune -f || true
             
             echo "🏥 Performing health check..."
-            sleep 15
+            sleep 40
             if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
               echo "✅ Deployment successful!"
             else
