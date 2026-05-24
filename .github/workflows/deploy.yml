@@ -110,6 +110,12 @@ jobs:
             COS_CLIENT_REGION=${COS_CLIENT_REGION}
             EOF
 
+
+            # 复制模板并替换变量
+            cp prodigal-picture-ui/nginx.conf.template prodigal-picture-ui/nginx.conf
+            sed -i "s|{{COS_CLIENT_BUCKET}}|${COS_CLIENT_BUCKET}|g" prodigal-picture-ui/nginx.conf
+            sed -i "s|{{COS_CLIENT_REGION}}|${COS_CLIENT_REGION}|g" prodigal-picture-ui/nginx.conf
+            
             echo "🐳 Building and starting containers..."
             sudo docker compose down
             sudo docker compose up -d --build
