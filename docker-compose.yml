@@ -14,6 +14,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
       - TZ=Asia/Shanghai
+      - COS_CLIENT_BUCKET=${COS_CLIENT_BUCKET}
+      - COS_CLIENT_REGION=${COS_CLIENT_REGION}
     deploy:
       resources:
         limits:
