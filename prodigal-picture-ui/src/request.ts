@@ -3,6 +3,7 @@ import {message} from "ant-design-vue";
 
 //创建axios 实例
 const instance = axios.create({
+  //这个按理来说该写后端的context-path,但该项目已经在接口中写入了故这个为空或者注释即可;
   baseURL: '',
   timeout: 60000,
   // headers: {'X-Custom-Header': 'foobar'},
