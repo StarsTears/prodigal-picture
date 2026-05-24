@@ -19,8 +19,8 @@ server {
     }
 
     location /picture/ {
-        proxy_pass https://${COS_CLIENT_BUCKET}.cos.${COS_CLIENT_REGION}.myqcloud.com;
-        proxy_set_header Host ${COS_CLIENT_BUCKET}.cos.${COS_CLIENT_REGION}.myqcloud.com;
+        proxy_pass https://{{COS_CLIENT_BUCKET}}.cos.{{COS_CLIENT_REGION}}.myqcloud.com;
+        proxy_set_header Host {{COS_CLIENT_BUCKET}}.cos.{{COS_CLIENT_REGION}}.myqcloud.com;
 
         # 缓存
         proxy_cache_valid 200 302 7d;
