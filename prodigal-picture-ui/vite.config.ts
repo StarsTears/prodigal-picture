@@ -13,7 +13,13 @@ export default defineConfig({
   //       target: 'http://localhost:9999',
   //       changeOrigin: true,
   //       // rewrite: (path) => path.replace(/^\/api/, '')
-  //     }
+  //     },
+  //     //后端返回不包含buket等相关信息，则是用代理
+  //     '/picture': {
+  //       target: 'https://XXXXXX.myqcloud.com',
+  //       changeOrigin: true,
+  //       rewrite: (path) => path,
+  //     },
   //   }
   // },
   plugins: [
