@@ -107,8 +107,8 @@ cos:
     host: ${COS_CLIENT_HOST}
     secretId: ${COS_CLIENT_SECRETID}
     secretKey: ${COS_CLIENT_SECRETKEY}
-    region: ${COS_CLIENT_BUCKET}
-    bucket: ${COS_CLIENT_REGION}
+    region: ${COS_CLIENT_REGION}
+    bucket: ${COS_CLIENT_BUCKET}
 # 阿里云 AI 配置
 aliYunAi:
   workSpaceId: ${ALIYUNAI_WORKSPACEID}
