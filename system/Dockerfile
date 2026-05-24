@@ -40,7 +40,7 @@ ENV TZ=Asia/Shanghai \
 
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -sf -X POST http://localhost:9999/api/health/check | grep -q OK || exit 1
+    CMD curl -f http://localhost:9999/api/health/check || exit 1
 
 # 启动应用
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
