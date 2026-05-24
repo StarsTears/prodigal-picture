@@ -63,6 +63,7 @@ jobs:
             fi
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
             # 先从 GitHub Secrets 获取值并赋给普通变量
+            DB_HOST="${{ secrets.DB_HOST }}"
             DB_NAME="${{ secrets.DB_NAME }}"
             DB_USERNAME="${{ secrets.DB_USERNAME }}"
             DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
@@ -88,7 +89,7 @@ jobs:
             TZ=Asia/Shanghai
             SPRING_PROFILES_ACTIVE=prod
             DB_PORT=3306
-            DB_HOST=127.0.0.1
+            DB_HOST=${DB_HOST}
             DB_NAME=${DB_NAME}
             DB_USERNAME=${DB_USERNAME}
             DB_PASSWORD=${DB_PASSWORD}
