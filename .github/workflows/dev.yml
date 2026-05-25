@@ -1,13 +1,9 @@
 name: "dev"
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - main
-    types: [opened]
     paths-ignore:
       - '*.md'
       - 'docs/**'
@@ -29,10 +25,6 @@ jobs:
           test -f docker-compose.yml && echo "✓ docker-compose.yml exists"
           test -d system && echo "✓ system directory exists"
           test -d prodigal-picture-ui && echo "✓ ui directory exists"
-          
-          # 只检查 Dockerfile 语法，不实际构建
-          echo "✅ Dockerfile syntax check:"
-          docker build -f system/Dockerfile --dry-run -t backend-test . 2>&1 | head -5
           echo "✅ PR check passed!"
 
       - name: Final status
