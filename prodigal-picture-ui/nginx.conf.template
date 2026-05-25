@@ -18,13 +18,14 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /picture/ {
+    location ^~ /picture/ {
         proxy_pass https://{{COS_CLIENT_BUCKET}}.cos.{{COS_CLIENT_REGION}}.myqcloud.com;
         proxy_set_header Host {{COS_CLIENT_BUCKET}}.cos.{{COS_CLIENT_REGION}}.myqcloud.com;
 
-        # 缓存
-        proxy_cache_valid 200 302 7d;
-        expires 7d;
+        # 隐藏上游 COS 返回的 CORS 头，避免与下方 add_header 重复
+        proxy_hide_header Access-Control-Allow-Origin;
+        proxy_hide_header Access-Control-Allow-Methods;
+        proxy_hide_header Access-Control-Allow-Headers;
 
         # CORS 头
         add_header Access-Control-Allow-Origin '*' always;
