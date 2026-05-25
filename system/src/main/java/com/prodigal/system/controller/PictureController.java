@@ -94,6 +94,19 @@ public class PictureController {
     }
 
     /**
+     * 获取图片临时下载地址
+     * @param pictureGetDto
+     * @return
+     */
+    @PostMapping("/get/download/url")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
+    public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDto pictureGetDto) {
+        //todo:待完善
+        String tempUrl = "";
+        return ResultUtils.success(tempUrl);
+    }
+
+    /**
      * 抓取图片
      *
      * @param pictureUploadByBatchDto 接收请求参数

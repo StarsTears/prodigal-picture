@@ -108,7 +108,7 @@ public abstract class PictureUploadTemplate {
 
     /**
      * 封装返回结果
-     *
+     * 调整url: 不拼接 前缀 host: XXX.com;前台直接通过代理转发获取
      * @param originalFilename 文件名
      * @param compressedObject 图片处理返回结果
      * @param thumbnailObject 图片缩略后的返回结果
@@ -123,11 +123,11 @@ public abstract class PictureUploadTemplate {
         //封装返回结果
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         //未压缩的原图地址
-        uploadPictureResult.setOriginUrl(cosClientConfig.getHost() + "/" +uploadPath);
+        uploadPictureResult.setOriginUrl( "/" +uploadPath);
         //格式转换后的图片地址
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + compressedObject.getKey());
+        uploadPictureResult.setUrl("/" + compressedObject.getKey());
         //缩略图地址
-        uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailObject.getKey());
+        uploadPictureResult.setThumbnailUrl( "/" + thumbnailObject.getKey());
         //通过url 上传的url路径
         uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
         uploadPictureResult.setPicHeight(picHeight);
@@ -140,6 +140,7 @@ public abstract class PictureUploadTemplate {
     }
     /**
      * 封装返回结果
+     * 调整url: 不拼接 前缀 host: XXX.com;前台直接通过代理转发获取
      * @param imageInfo 图片信息对象
      * @param file  文件
      * @param originalFilename  文件名
@@ -152,7 +153,7 @@ public abstract class PictureUploadTemplate {
         double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
         //封装返回结果
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
-        uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);
+        uploadPictureResult.setUrl( "/" + uploadPath);
         uploadPictureResult.setPicName(FileUtil.mainName(originalFilename));
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicWidth(picWidth);
