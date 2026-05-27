@@ -1,9 +1,12 @@
 package com.prodigal.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.UserConstant;
+import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
@@ -93,5 +96,18 @@ public class FileController {
                 cosObjectInput.close();
             }
         }
+    }
+
+    /**
+     * 测试获取文件临时下载地址
+     * @param filepath 图片路径
+     * @return 临时下载地址
+     */
+    @GetMapping("/test/get/temp/url")
+    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    public BaseResult<String> testGetTempURL(String filepath) {
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+        String tempUrl = cosManager.generateTempUrl(filepath);
+        return ResultUtils.success(tempUrl);
     }
 }

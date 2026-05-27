@@ -1,9 +1,10 @@
 package com.prodigal.system.manager;
 
 import com.prodigal.system.constant.CacheConstant;
-import com.prodigal.system.manager.strategy.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.prodigal.system.manager.strategy.CacheContext;
+import com.prodigal.system.manager.strategy.CacheStrategy;
+import com.prodigal.system.manager.strategy.CaffeineCacheStrategy;
+import com.prodigal.system.manager.strategy.RedisCacheStrategy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -15,8 +16,6 @@ import javax.annotation.Resource;
  **/
 @Component
 public class CacheManager {
-    @Autowired
-    private RedisTemplate redisTemplate;
     @Resource
     private RedisCacheStrategy redisCacheStrategy;
     @Resource
