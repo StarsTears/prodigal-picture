@@ -378,6 +378,21 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         return uploadCount;
     }
 
+
+    @Override
+    public String getTempDownloadUrl(Long id, Long spaceId){
+       spaceId = spaceId == null ? 0L : spaceId;
+        // 校验图片存在
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", id).eq("spaceId", spaceId);
+        Picture picture = this.getOne(queryWrapper);
+        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        // 返回服务端代理下载 URL，用户无法看到 COS bucket/region 信息
+//        String downloadUrl = "/api/file/download?pictureId=" + id + "&spaceId=" + spaceId;
+       String url = cosManager.generateTempUrl(picture.getOriginUrl());
+       return url;
+   }
+
     @Override
     public void editPicture(PictureEditDto pictureEditDto, User loginUser) {
         Picture picture = new Picture();

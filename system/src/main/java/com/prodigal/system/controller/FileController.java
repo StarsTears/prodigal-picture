@@ -1,6 +1,7 @@
 package com.prodigal.system.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
@@ -8,9 +9,9 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
-import com.qcloud.cos.model.COSObject;
-import com.qcloud.cos.model.COSObjectInputStream;
-import com.qcloud.cos.utils.IOUtils;
+import com.prodigal.system.model.entity.Picture;
+import com.prodigal.system.service.PictureService;
+import com.qcloud.cos.model.ObjectMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 /**
  * @program: prodigal-picture
@@ -31,6 +33,8 @@ import java.io.IOException;
 public class FileController {
     @Resource
     private CosManager cosManager;
+    @Resource
+    private PictureService pictureService;
 
     /**
      * 测试文件上传
@@ -67,34 +71,55 @@ public class FileController {
     }
 
     /**
-     * 测试下载文件
+     * 测试下载文件（服务端流式代理，不加载整个文件到内存）
      * @param filepath 文件路径
      * @param response 响应对象
      */
     @GetMapping("/test/download")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
-        COSObjectInputStream cosObjectInput = null;
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+        streamFileToResponse(filepath, filepath.substring(filepath.lastIndexOf('/') + 1), response);
+    }
+
+    /**
+     * 图片文件下载（通过 pictureId 查找 COS key，服务端流式代理下载）
+     * @param pictureId 图片ID
+     * @param spaceId 空间ID
+     * @param response 响应对象
+     */
+    @GetMapping("/download")
+    public void downloadFile(Long pictureId, Long spaceId, HttpServletResponse response) throws IOException {
+        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Long sid = spaceId == null ? 0L : spaceId;
+        QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("id", pictureId).eq("spaceId", sid);
+        Picture picture = pictureService.getOne(queryWrapper);
+        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+
+        String urlKey = StrUtil.isNotBlank(picture.getOriginUrl()) ? picture.getOriginUrl() : picture.getUrl();
+        ThrowUtils.throwIf(StrUtil.isBlank(urlKey), ErrorCode.NOT_FOUND_ERROR, "图片路径为空");
+
+        String fileName = StrUtil.isNotBlank(picture.getName()) ? picture.getName()
+                : urlKey.substring(urlKey.lastIndexOf('/') + 1);
+        streamFileToResponse(urlKey, fileName, response);
+    }
+
+    private void streamFileToResponse(String cosKey, String fileName, HttpServletResponse response) throws IOException {
         try {
-            COSObject cosObject = cosManager.getObject(filepath);
-            cosObjectInput = cosObject.getObjectContent();
-            //处理下载到的流
-            byte[] bytes = IOUtils.toByteArray(cosObjectInput);
-            //设置响应头
-            response.setContentType("application/octet-stream;charset=UTF-8");
-            response.setHeader("Content-Disposition", "attachment;filename=" + filepath);
-            //写入响应
-            response.getOutputStream().write(bytes);
-            //刷新输出流
-            response.getOutputStream().flush();
-        } catch (IOException e) {
-            log.error("file download error,filepath:{}={}", filepath, e);
-            throw new RuntimeException(e);
-        }finally {
-            //释放输出流
-            if (null != cosObjectInput) {
-                cosObjectInput.close();
+            ObjectMetadata metadata = cosManager.getObjectMetadata(cosKey);
+            String contentType = metadata.getContentType();
+            if (StrUtil.isBlank(contentType)) {
+                contentType = "application/octet-stream";
             }
+            response.setContentType(contentType);
+            response.setContentLengthLong(metadata.getContentLength());
+            response.setHeader("Content-Disposition",
+                    "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8").replace("+", "%20"));
+            cosManager.streamToOutput(cosKey, response.getOutputStream());
+        } catch (IOException e) {
+            log.error("file download error, key:{}={}", cosKey, e);
+            throw new RuntimeException(e);
         }
     }
 

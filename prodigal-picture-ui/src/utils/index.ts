@@ -16,11 +16,47 @@ export const formatSize = (size?: number) => {
  * @param fileName 要保存为的文件名
  */
 import {saveAs} from "file-saver";
-export function downloadImage(url?: string, fileName?: string) {
+export async function downloadImage(url?: string, fileName?: string) {
   if (!url) {
     return
   }
-  saveAs(url, fileName)
+  //图片url 做了代理，且下载的文件地址是预签名
+  // 故不使用 url 去 head 请求图片数据再保存
+  // saveAs(url, fileName)
+  try {
+    // 1. 发起 GET 请求获取文件
+    const response = await fetch(url);
+    const contentType = response.headers.get('content-type');
+    // 2. 检查请求是否成功
+    if (!response.ok) {
+      // 如果响应是 XML，说明是 COS 返回的错误信息
+      if (contentType?.includes('xml')) {
+        const errorText = await response.text();
+        console.error('COS 错误响应:', errorText);
+        // 可以解析 XML 获取具体错误码
+        throw new Error(`COS 返回错误: ${response.status}`);
+      }
+      throw new Error(`下载失败: ${response.status}`);
+    }
+
+    // 检查是否真的是图片
+    if (!contentType?.startsWith('image/')) {
+      console.warn('返回的不是图片，Content-Type:', contentType);
+      // 可能是 XML 或其他格式
+      if (contentType?.includes('xml')) {
+        const errorText = await response.text();
+        console.error('实际返回内容:', errorText);
+        throw new Error('预签名 URL 无效');
+      }
+    }
+    // 3. 获取文件 Blob 数据
+    const blob = await response.blob();
+
+    // 4. 使用 saveAs 保存（传入 Blob 而非 URL）
+    saveAs(blob, fileName || 'download');
+  } catch (error) {
+    console.error('下载失败:', error);
+  }
 }
 
 /**

@@ -5,7 +5,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.prodigal.system.config.CosClientConfig;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.manager.CosManager;
@@ -29,8 +28,6 @@ import java.util.List;
  **/
 @Slf4j
 public abstract class PictureUploadTemplate {
-    @Resource
-    private CosClientConfig cosClientConfig;
 
     @Resource
     private CosManager cosManager;

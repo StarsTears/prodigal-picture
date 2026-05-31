@@ -94,16 +94,16 @@ public class PictureController {
     }
 
     /**
-     * 获取图片临时下载地址
-     * @param pictureGetDto
-     * @return
+     * 获取图片临时下载地址（返回服务端代理下载 URL，不暴露 COS bucket/region）
+     * @param pictureGetDto 图片查询参数
+     * @return 下载 URL
      */
     @PostMapping("/get/download/url")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
     public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDto pictureGetDto) {
-        //todo:待完善
-        String tempUrl = "";
-        return ResultUtils.success(tempUrl);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        String tempDownloadUrl = pictureService.getTempDownloadUrl(pictureGetDto.getId(), pictureGetDto.getSpaceId());
+        return ResultUtils.success(tempDownloadUrl);
     }
 
     /**

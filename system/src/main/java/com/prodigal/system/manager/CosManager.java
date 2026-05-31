@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,12 +47,32 @@ public class CosManager {
     }
 
     /**
-     * 下载对象
+     * 下载对象（附带元数据，用于获取 Content-Length 和 Content-Type）
      * @param key 唯一键
      */
-    public COSObject getObject(String key) {
-        GetObjectRequest getObjectRequest = new GetObjectRequest(cosClientConfig.getBucket(), key);
-        return cosClient.getObject(getObjectRequest);
+    public ObjectMetadata getObjectMetadata(String key) {
+        String cosKey = key.startsWith("/") ? key.substring(1) : key;
+        GetObjectRequest getObjectRequest = new GetObjectRequest(cosClientConfig.getBucket(), cosKey);
+        return cosClient.getObject(getObjectRequest).getObjectMetadata();
+    }
+
+    /**
+     * 流式下载对象到指定输出流（不加载整个文件到内存）
+     * @param key COS key（可带前导 /）
+     * @param out 目标输出流
+     */
+    public void streamToOutput(String key, OutputStream out) throws IOException {
+        String cosKey = key.startsWith("/") ? key.substring(1) : key;
+        GetObjectRequest request = new GetObjectRequest(cosClientConfig.getBucket(), cosKey);
+        COSObject cosObject = cosClient.getObject(request);
+        try (COSObjectInputStream in = cosObject.getObjectContent()) {
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
+        }
     }
 
     /**
@@ -117,40 +139,21 @@ public class CosManager {
     }
 
     /**
-     * 获取临时下载地址
-     * https://cloud.tencent.com/document/product/436/35217
-     * @param key 图片在数据库中存储的路径，以 /picture 开头的路径
-     * @return 临时URL
+     * 获取临时下载地址（预签名 URL，不暴露 bucket/region 信息）
+     * @param key 图片在数据库中存储的路径，以 / 开头的相对路径
+     * @return 临时预签名下载 URL
      */
     public String generateTempUrl(String key){
-
-        try {
-            // 存储桶的命名格式为 BucketName-APPID，此处填写的存储桶名称必须为此格式
-            String bucketName = cosClientConfig.getBucket();
-            // 对象键(Key)是对象在存储桶中的唯一标识。详情请参见 [对象键](https://cloud.tencent.com/document/product/436/13324)
-            String cosKey = cosClientConfig.getHost() + "/" + key;
-            // 设置签名过期时间(可选), 若未进行设置则默认使用 ClientConfig 中的签名过期时间(1小时)
-            // 这里设置签名在半个小时后过期
-            Date expirationDate = new Date(System.currentTimeMillis() + 30 * 60 * 1000);
-            // 填写本次请求的参数，需与实际请求相同，能够防止用户篡改此签名的 HTTP 请求的参数
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("param1", "value1");
-
-            // 填写本次请求的头部，需与实际请求相同，能够防止用户篡改此签名的 HTTP 请求的头部
-            Map<String, String> headers = new HashMap<String, String>();
-            headers.put("Content-Type", "application/json");
-            // 请求的 HTTP 方法，上传请求用 PUT，下载请求用 GET，删除请求用 DELETE
-            HttpMethodName method = HttpMethodName.GET;
-            URL url = cosClient.generatePresignedUrl(bucketName, key, expirationDate, method, headers, params);
-            log.info("图片:{} 临时下载地址：{}",key,url.toString());
-            return url.toString();
-        } catch (CosClientException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        } finally {
-            // 7. 关闭客户端，释放资源
-            cosClient.shutdown();
-        }
+        // DB 中存储的路径以 / 开头，COS 实际 key 不含前导 /
+        String cosKey = key.startsWith("/") ? key.substring(1) : key;
+        String bucketName = cosClientConfig.getBucket();
+        Date expirationDate = new Date(System.currentTimeMillis() + 30 * 60 * 1000);
+        Map<String, String> params = new HashMap<>();
+        Map<String, String> headers = new HashMap<>();
+        HttpMethodName method = HttpMethodName.GET;
+        URL url = cosClient.generatePresignedUrl(bucketName, cosKey, expirationDate, method, headers, params);
+        log.info("图片:{} 临时下载地址：{}", key, url.toString());
+        return url.toString();
     }
 
 }
