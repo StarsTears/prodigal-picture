@@ -180,17 +180,19 @@ const originItems = [
     icon: h(UserOutlined),
     label: '用户管理',
     title: '用户管理',
-  },{
+  },
+  // {
+  //   key: '/admin/gitHub',
+  //   icon: h(GithubOutlined),
+  //   title: 'GitHub Commit History',
+  //   label: 'GitHub Commit History',
+  //   // label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
+  // },
+  {
     key: "/email/notice",
     icon: h(SoundOutlined),
     label: '公告',
     title: '公告',
-  },{
-    key: '/gitHub',
-    icon: h(GithubOutlined),
-    title: 'GitHub Commit History',
-    label: 'GitHub Commit History',
-    // label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
   },{
     key: "/about",
     icon: h(GlobalOutlined),

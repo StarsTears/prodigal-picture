@@ -197,7 +197,7 @@ const router = createRouter({
         component: EmailNoticeView,
       }],
     },{
-      path:'/github',
+      path:'/admin/github',
       name:'GitHub',
       component: () => import('@/layouts/BasicLayout.vue'),
       children:[{
