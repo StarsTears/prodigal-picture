@@ -82,6 +82,21 @@ export async function getPictureVoByIdUsingPost(
   })
 }
 
+/** getTempDownloadUrl POST /api/picture/get/download/url */
+export async function getTempDownloadUrlUsingPost(
+  body: API.PictureGetDto,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultString_>('/api/picture/get/download/url', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** listPictureByPage POST /api/picture/list/page */
 export async function listPictureByPageUsingPost(
   body: API.PictureQueryDto,

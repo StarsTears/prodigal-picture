@@ -110,7 +110,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref, h} from "vue";
-import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost} from "@/api/pictureController";
+import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost, getTempDownloadUrlUsingPost} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize, handleDragStart} from "@/utils/index";
@@ -167,10 +167,22 @@ const canEditPicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_EDI
 const canDeletePicture = createPermissionChecker(SPACE_PERMISSION_ENUM.PICTURE_DELETE)
 
 /**
- * 下载图片
+ * 下载图片（通过服务端代理，不暴露 COS bucket/region）
  */
-const doDownload = () => {
-  downloadImage(picture.value.url, picture.value.name)
+const doDownload = async () => {
+  try {
+    const res = await getTempDownloadUrlUsingPost({
+      id: picture.value.id,
+      spaceId: picture.value.spaceId
+    })
+    if (res.code === 0 && res.data) {
+      downloadImage(res.data, picture.value.name)
+    } else {
+      message.error('获取下载地址失败')
+    }
+  } catch (error) {
+    message.error('获取下载地址失败')
+  }
 }
 /**
  * 判断当前用户是否具有编辑与删除权限

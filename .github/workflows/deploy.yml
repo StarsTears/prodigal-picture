@@ -53,13 +53,15 @@ jobs:
               git reset --hard origin/main
             else
                echo "🔄 First deployment, cloning repository..."
-               # 如果目录不为空，先清理
+               # 如果目录不为空，先清理（包含隐藏文件）
                if [ "$(ls -A)" ]; then
                   echo "Directory not empty, cleaning..."
-                  sudo rm -rf *
+                  find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
                fi
                echo "=== Debug: Before git clone ==="
                git clone https://github.com/${{ github.repository }}.git .
+               # 确保检出 main 分支（避免默认分支不是 main 导致代码不一致）
+               git checkout main
             fi
             echo "📌 Current commit: $(git rev-parse --short HEAD)"
             # 先从 GitHub Secrets 获取值并赋给普通变量
@@ -95,6 +97,7 @@ jobs:
             DB_PASSWORD=${DB_PASSWORD}
             REDIS_HOST=${REDIS_HOST}
             REDIS_PASSWORD=${REDIS_PASSWORD}
+            MONGO_HOST=${MONGO_HOST}
             MAIL_USERNAME=${MAIL_USERNAME}
             MAIL_PASSWORD=${MAIL_PASSWORD}
             RABBITMQ_HOST=${RABBITMQ_HOST}
@@ -124,7 +127,7 @@ jobs:
             
             echo "🏥 Performing health check..."
             sleep 40
-            if curl -sf -X POST http://127.0.0.1:9999/api/health/check | grep -q OK; then
+            if curl -sf http://127.0.0.1:9999/api/health/check | grep -q OK; then
               echo "✅ Deployment successful!"
             else
               echo "❌ Health check failed!"

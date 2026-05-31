@@ -25,6 +25,8 @@ public interface PictureService extends IService<Picture> {
 
     int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser);
 
+    String getTempDownloadUrl(Long id, Long spaceId);
+
     void editPicture(PictureEditDto pictureEditDto, User loginUser);
 
     void editPictureByBatch(PictureEditByBatchDto pictureEditByBatchDto, User loginUser);

@@ -86,9 +86,9 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
     message.error('You can only upload JPG file!');
   }
   //校验图片大小
-  const isLt2M = file.size / 1024 / 1024 < 2;
+  const isLt2M = file.size / 1024 / 1024 < 5;
   if (!isLt2M) {
-    message.error('Image must smaller than 2MB!');
+    message.error('Image must smaller than 5MB!');
   }
   return isJpgOrPng && isLt2M;
 };

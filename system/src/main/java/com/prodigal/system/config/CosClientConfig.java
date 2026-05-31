@@ -43,6 +43,7 @@ public class CosClientConfig {
 
     @Bean
     public COSClient cosClient() {
+        // 设置用户身份信息
         COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
         // 2 设置 bucket 的地域
         // clientConfig 中包含了设置 region, https(默认 http), 超时, 代理等 set 方法, 使用可参见源码或者常见问题 Java SDK 部分
