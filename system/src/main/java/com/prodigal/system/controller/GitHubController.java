@@ -17,6 +17,7 @@ import java.util.List;
  * @date 2025/4/16 10:29
  * @description: GitHub-REST控制器
  */
+@Deprecated
 @RestController
 @RequestMapping("/git")
 public class GitHubController {

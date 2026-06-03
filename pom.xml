@@ -16,6 +16,7 @@
         <prodigal-version>1.0.0</prodigal-version>
         <spring-boot.version>2.7.6</spring-boot.version>
         <mysql.version>8.2.0</mysql.version>
+        <flywaydb.version>8.5.13</flywaydb.version>
         <mybatis-plus.version>3.5.9</mybatis-plus.version>
         <apache-shardingspahere.version>5.2.0</apache-shardingspahere.version>
         <sa-token.version>1.39.0</sa-token.version>
@@ -51,6 +52,18 @@
                 <artifactId>mysql-connector-j</artifactId>
                 <version>${mysql.version}</version>
             </dependency>
+            <!-- Flyway 数据库迁移 -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flywaydb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-mysql</artifactId>
+                <version>${flywaydb.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>

@@ -21,6 +21,7 @@ import java.util.List;
  * @date 2025/4/16 9:47
  * @description: GitHub API服务类
  */
+@Deprecated
 @Service
 public class GitHubService {
     private static final String GITHUB_API_URL = "https://api.github.com";
