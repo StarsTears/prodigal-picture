@@ -68,12 +68,11 @@ public class SystemController {
         if (loginDto.getLoginType().equals(LoginConstant.EMAIL_LOGIN_TYPE)) {
             // 校验验证码
             boolean valid = emailService.verifyCode(loginDto.getEmail(), loginDto.getCaptcha());
-            ThrowUtils.throwIf(!valid, ErrorCode.PARAMS_ERROR, "验证码错误或已过期");
+            ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);
             // 校验用户是否存在
             User user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
             //用户不存在就创建一个；
             if (ObjectUtils.isEmpty(user)){
-//                ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
                 UserAddDto userAddDto = new UserAddDto();
                 userAddDto.setUserEmail(loginDto.getEmail());
                 userAddDto.setUserAccount(loginDto.getEmail());
@@ -220,6 +219,18 @@ public class SystemController {
         List<UserVO> userVOList = userService.getUserVOList(page.getRecords());
         userVOPage.setRecords(userVOList);
         return ResultUtils.success(userVOPage);
+    }
+
+    /**
+     * 忘记密码 - 重置密码
+     */
+    @PostMapping("/reset-password")
+    public BaseResult<Boolean> resetPassword(@RequestBody ResetPasswordDto dto) {
+        ThrowUtils.throwIf(dto == null, ErrorCode.PARAMS_ERROR);
+        boolean valid = emailService.verifyCode(dto.getUserEmail(), dto.getCaptcha());
+        ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);
+        userService.resetPassword(dto);
+        return ResultUtils.success(true);
     }
 }
 

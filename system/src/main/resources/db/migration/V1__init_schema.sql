@@ -24,6 +24,10 @@ CREATE TABLE IF NOT EXISTS `user`
     INDEX `idx_vipNumber` (`vipNumber`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT ='用户';
 
+-- 初始化超级管理员（账号: admin, 密码: administrator）
+INSERT INTO `user` (`id`, `userAccount`, `userPassword`, `userEmail`, `userName`, `userRole`, `vipNumber`, `shareCode`)
+VALUES (1, 'admin', 'a8e43a560b3b73db965c699ccf5e7c3c', 'admin@prodigal.com', '超级管理员', 'administrator', 1, 'ADMIN001');
+
 CREATE TABLE IF NOT EXISTS `space`
 (
     `id`         bigint                               NOT NULL AUTO_INCREMENT COMMENT 'id',

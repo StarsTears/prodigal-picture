@@ -7,10 +7,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.StpKit;
 import com.prodigal.system.mapper.UserMapper;
 import com.prodigal.system.model.dto.user.LoginDto;
 import com.prodigal.system.model.dto.user.RegisterDto;
+import com.prodigal.system.model.dto.user.ResetPasswordDto;
 import com.prodigal.system.model.dto.user.UserQueryDto;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
@@ -27,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -61,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短!");
         }
         if (!registerDto.getUserPassword().equals(registerDto.getCheckPassword())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次密码不一致!");
+            throw new BusinessException(ErrorCode.PASSWORD_NOT_MATCH);
         }
         //查询账户是否重复
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
@@ -256,6 +259,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean isAdmin(User user) {
         return user != null && (user.getUserRole().contains(UserConstant.ADMIN_ROLE) || user.getUserRole().contains(UserConstant.SUPER_ADMIN_ROLE));
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDto dto) {
+        String userAccount = dto.getUserAccount();
+        String userEmail = dto.getUserEmail();
+        String newPassword = dto.getNewPassword();
+        String checkPassword = dto.getCheckPassword();
+
+        ThrowUtils.throwIf(!newPassword.equals(checkPassword), ErrorCode.PASSWORD_NOT_MATCH);
+
+        User user = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
+        if (user == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户不存在");
+        }
+        if (!userEmail.equals(user.getUserEmail())) {
+            throw new BusinessException(ErrorCode.EMAIL_NOT_MATCH);
+        }
+        String encryptPassword = getEncryptPassword(newPassword);
+        user.setUserPassword(encryptPassword);
+        boolean updated = this.updateById(user);
+        if (!updated) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码重置失败");
+        }
     }
 
 }

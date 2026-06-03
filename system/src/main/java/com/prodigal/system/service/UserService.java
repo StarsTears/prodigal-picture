@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.dto.user.LoginDto;
 import com.prodigal.system.model.dto.user.RegisterDto;
+import com.prodigal.system.model.dto.user.ResetPasswordDto;
 import com.prodigal.system.model.dto.user.UserQueryDto;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.UserVO;
@@ -34,4 +35,6 @@ public interface UserService extends IService<User> {
     List<UserVO> getUserVOList(List<User> userList);
 
     boolean isAdmin(User user);
+
+    void resetPassword(ResetPasswordDto dto);
 }
