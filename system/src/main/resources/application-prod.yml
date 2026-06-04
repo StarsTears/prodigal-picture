@@ -145,3 +145,13 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.prodigal.system.controller
+
+# Actuator 监控（生产仅暴露健康检查和 Prometheus）
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized

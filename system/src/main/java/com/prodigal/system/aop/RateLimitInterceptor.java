@@ -37,8 +37,25 @@ public class RateLimitInterceptor {
             redisTemplate.expire(key, rateLimit.window(), rateLimit.timeUnit());
         }
         if (count > rateLimit.maxRequests()) {
-            throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS);
+            Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+            String waitTime = formatWaitTime(ttl != null && ttl > 0 ? ttl : 0);
+            throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS, "请求过于频繁，请在 " + waitTime + " 后重试");
         }
         return joinPoint.proceed();
+    }
+
+    private String formatWaitTime(long seconds) {
+        if (seconds <= 1) {
+            return "1 秒";
+        }
+        long minutes = seconds / 60;
+        long secs = seconds % 60;
+        if (minutes > 0 && secs > 0) {
+            return minutes + " 分 " + secs + " 秒";
+        }
+        if (minutes > 0) {
+            return minutes + " 分";
+        }
+        return seconds + " 秒";
     }
 }

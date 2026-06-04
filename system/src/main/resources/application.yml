@@ -105,8 +105,6 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
-    # 仅在开发环境开启日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     enable-sql-runner: true
     db-config:
@@ -135,6 +133,8 @@ github:
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
 # 接口文档配置
+# Knife4j UI：http://ip:9999/api/doc.html
+# Swagger 资源：http://localhost:9999/api/swagger-ui.html
 knife4j:
   enable: true
   openapi:
@@ -148,3 +148,17 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.prodigal.system.controller
+
+# Actuator 监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
