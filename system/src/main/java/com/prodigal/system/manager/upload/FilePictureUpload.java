@@ -1,6 +1,7 @@
 package com.prodigal.system.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
+import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
@@ -32,9 +33,17 @@ public class FilePictureUpload extends PictureUploadTemplate{
         ThrowUtils.throwIf(fileSize > 5 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过5M");
         //校验文件后缀
         String fileSuffix = FileUtil.getSuffix(multipartFile.getOriginalFilename());
-        //允许上传文件的后缀
         List<String> ALLOW_FORMAT_LIST = Arrays.asList("jpg", "jpeg", "png", "webp");
         ThrowUtils.throwIf(!ALLOW_FORMAT_LIST.contains(fileSuffix), ErrorCode.PARAMS_ERROR, "文件格式错误");
+        //校验文件真实类型（magic bytes）
+        try {
+            String contentType = multipartFile.getContentType();
+            List<String> ALLOW_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/png", "image/webp");
+            ThrowUtils.throwIf(contentType == null || !ALLOW_CONTENT_TYPES.contains(contentType),
+                    ErrorCode.PARAMS_ERROR, "文件类型不合法");
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件校验失败");
+        }
     }
 
     @Override

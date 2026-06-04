@@ -886,4 +886,12 @@ declare namespace API {
     userRole?: string
     vipNumber?: number
   }
+
+  type ResetPasswordDto = {
+    userAccount?: string
+    userEmail?: string
+    captcha?: string
+    newPassword?: string
+    checkPassword?: string
+  }
 }

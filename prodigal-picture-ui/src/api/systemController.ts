@@ -134,6 +134,18 @@ export async function registerUsingPost(body: API.RegisterDto, options?: { [key:
   })
 }
 
+/** resetPassword POST /api/sys/reset-password */
+export async function resetPasswordUsingPost(body: API.ResetPasswordDto, options?: { [key: string]: any }) {
+  return request<API.BaseResultBoolean_>('/api/sys/reset-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** updateUser POST /api/sys/update */
 export async function updateUserUsingPost(
   body: API.UserUpdateDto,

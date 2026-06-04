@@ -348,21 +348,19 @@ public class PictureController {
     public BaseResult<Page<Picture>> listPictureByPage(@RequestBody PictureQueryDto pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
-        List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
-
-//        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),pictureService.getQueryWrapper(pictureQueryDto) );
-        //若包含主色调，则需对主色调进行筛选
-        //将目标颜色转换为 color 对象
         String picColor = pictureQueryDto.getPicColor();
         if (StrUtil.isNotBlank(picColor)) {
+            List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
             Color targetColor = Color.decode(picColor);
             pictureList = pictureService.getPicturePageWithColor(targetColor, pictureList);
+            long total = pictureList.size();
+            Page<Picture> picturePage = new Page<>(current, size, total, false);
+            int fromIndex = (int) ((current - 1) * size);
+            int toIndex = (int) Math.min(current * size, total);
+            picturePage.setRecords(pictureList.subList(fromIndex, toIndex));
+            return ResultUtils.success(picturePage);
         }
-        long total = pictureList.size();
-        Page<Picture> picturePage = pictureService.page(new Page<>(current, size, total, false));
-        int fromIndex = (int) ((current - 1) * size);
-        int toIndex = (int) Math.min(current * size, total);
-        picturePage.setRecords(pictureList.subList(fromIndex, toIndex));
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
         return ResultUtils.success(picturePage);
     }
 
@@ -378,40 +376,31 @@ public class PictureController {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize() == 0 ? 20 : pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
-        // 限制爬虫
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
-        //空间权限校验
         Long spaceId = pictureQueryDto.getSpaceId();
         if (spaceId == null) {
-            //普通用户查看公共图库(已过审)
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryDto.setNullSpaceId(true);
         } else {
-//            User loginUser = userService.getLoginUser(request);
-//            Space space = spaceService.getById(spaceId);
-//            if (space == null) {
-//                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "空间不存在");
-//            }
-//            ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
             ThrowUtils.throwIf(!hasPermission, ErrorCode.USER_NOT_PERMISSION);
         }
-        List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
-
-//        Page<Picture> picturePage = pictureService.page(new Page<>(current, size), pictureService.getQueryWrapper(pictureQueryDto));
-        //若包含主色调，则需对主色调进行筛选
-        //将目标颜色转换为 color 对象
-
         String picColor = pictureQueryDto.getPicColor();
         if (StrUtil.isNotBlank(picColor)) {
+            List<Picture> pictureList = pictureService.list(pictureService.getQueryWrapper(pictureQueryDto));
             Color targetColor = Color.decode(picColor);
             pictureList = pictureService.getPicturePageWithColor(targetColor, pictureList);
+            long total = pictureList.size();
+//            Page<PictureVO> pictureVOPage = new Page<>(current, size, total, false);
+            int fromIndex = (int) ((current - 1) * size);
+            int toIndex = (int) Math.min(current * size, total);
+            List<Picture> pageRecords = pictureList.subList(fromIndex, toIndex);
+            Page<Picture> picturePage = new Page<>(current, size, total, false);
+            picturePage.setRecords(pageRecords);
+            return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
         }
-        long total = pictureList.size();
-        Page<Picture> picturePage = pictureService.page(new Page<>(current, size, total, false));
-        int fromIndex = (int) ((current - 1) * size);
-        int toIndex = (int) Math.min(current * size, total);
-        picturePage.setRecords(pictureList.subList(fromIndex, toIndex));
+        Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
+                pictureService.getQueryWrapper(pictureQueryDto));
         Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
         return ResultUtils.success(pictureVOPage);
     }

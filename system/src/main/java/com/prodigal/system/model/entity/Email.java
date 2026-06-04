@@ -1,5 +1,6 @@
 package com.prodigal.system.model.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -72,6 +73,7 @@ public class Email implements Serializable {
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
@@ -90,6 +92,7 @@ public class Email implements Serializable {
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

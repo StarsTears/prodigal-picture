@@ -70,16 +70,19 @@ public class User implements Serializable {
     /**
      * 编辑时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date editTime;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

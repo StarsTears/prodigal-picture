@@ -2,6 +2,7 @@ package com.prodigal.system.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
+import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.UserConstant;
@@ -43,6 +44,7 @@ public class EmailController {
     /**
      * 发送登录验证码：验证码写入 Redis，邮件经 RabbitMQ 异步发送
      */
+    @RateLimit(maxRequests = 3, window = 60)
     @PostMapping("/send/captcha")
     public BaseResult sendVerificationCode(@Valid @RequestBody EmailRequest request) {
         emailService.sendVerificationCodeAsync(request.getEmail());

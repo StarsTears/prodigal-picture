@@ -61,16 +61,19 @@ public class Space implements Serializable {
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 编辑时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date editTime;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

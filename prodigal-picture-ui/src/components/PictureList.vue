@@ -12,7 +12,8 @@
             <template #cover>
               <div class="card-cover">
                 <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
-                     style="height: 180px;object-fit: cover"/>
+                     loading="lazy"
+                     style="height: 180px;object-fit: cover;background: #f0f0f0;"/>
 <!--                <div class="card-description" v-if="hoveringRefs[index].value">-->
 <!--                  {{ picture.name }}-->
 <!--                  <a-flex>-->
@@ -43,7 +44,9 @@
               <share-alt-outlined @click="(e) => doShare(picture, e)"/>
               <FullscreenOutlined @click="(e) => doAiOutPainting(picture, e)"/>
               <edit-outlined v-if="canEdit" @click="(e) => doEdit(picture, e)"/>
-              <delete-outlined v-if="canDelete" @click="(e) => doDelete(picture, e)"/>
+              <a-popconfirm v-if="canDelete" title="确定删除该图片？" ok-text="确定" cancel-text="取消" @confirm="doDelete(picture)">
+                <delete-outlined @click="(e) => e.stopPropagation()"/>
+              </a-popconfirm>
             </template>
           </a-card>
         </a-list-item>
@@ -151,8 +154,7 @@ const doEdit = (picture, e) => {
 }
 
 // 删除
-const doDelete = async (picture, e) => {
-  e.stopPropagation()
+const doDelete = async (picture) => {
   const id = picture.id
   if (!id) {
     return
@@ -188,6 +190,14 @@ const doDelete = async (picture, e) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .card-description {

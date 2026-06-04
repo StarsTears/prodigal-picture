@@ -25,6 +25,7 @@ public enum ErrorCode {
     CAPTCHA_ERROR(41200, "验证码错误或已过期"),
     PASSWORD_NOT_MATCH(41300, "两次密码不一致"),
     EMAIL_NOT_MATCH(41400, "邮箱与账户不匹配"),
+    TOO_MANY_REQUESTS(42900, "请求过于频繁，请稍后再试"),
     SYSTEM_ERROR(50000, "系统错误"),
     OPERATION_ERROR(50100, "操作失败"),
     NOT_FOUND_ERROR(50200, "未找到该数据"),

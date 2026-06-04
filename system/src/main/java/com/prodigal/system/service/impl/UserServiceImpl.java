@@ -14,14 +14,15 @@ import com.prodigal.system.model.dto.user.LoginDto;
 import com.prodigal.system.model.dto.user.RegisterDto;
 import com.prodigal.system.model.dto.user.ResetPasswordDto;
 import com.prodigal.system.model.dto.user.UserQueryDto;
-import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
@@ -29,24 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
-/**
- * @author Lang
- * @description 针对表【user(用户)】的数据库操作Service实现
- */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
-    /**
-     * 注册
-     *
-     * @param registerDto 注册参数
-     * @return 用户ID
-     */
+
+    private static final String MD5_SALT = "prodigal";
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Override
     public long register(RegisterDto registerDto) {
-        //参数校验
         if (registerDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -54,10 +47,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度过短!");
         }
         String userEmail = registerDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)){
+        if (StrUtil.isBlank(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
         }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)){
+        if (!EmailValidatorUtils.isValidEmail(userEmail)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         if (registerDto.getUserPassword().length() < 6 || registerDto.getCheckPassword().length() < 6) {
@@ -66,28 +59,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!registerDto.getUserPassword().equals(registerDto.getCheckPassword())) {
             throw new BusinessException(ErrorCode.PASSWORD_NOT_MATCH);
         }
-        //查询账户是否重复
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
         wrapper.eq(User::getUserAccount, registerDto.getUserAccount())
                 .or()
-                .eq(StrUtil.isNotBlank(userEmail),User::getUserEmail, registerDto.getUserEmail());
+                .eq(StrUtil.isNotBlank(userEmail), User::getUserEmail, registerDto.getUserEmail());
         Long count = this.baseMapper.selectCount(wrapper);
         if (count > 0) {
             throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户/邮箱已存在!");
         }
-        //密码加密存储
         String encryptPassword = getEncryptPassword(registerDto.getUserPassword());
-        //插入数据
         User user = new User();
         user.setUserAccount(registerDto.getUserAccount());
         user.setUserPassword(encryptPassword);
         user.setUserRole(UserRoleEnum.USER.getRole());
         String userName = registerDto.getUserName();
-        user.setUserName(StrUtil.isNotBlank(userName)?userName:user.getUserAccount());
-        if (StrUtil.isNotBlank(userEmail)){
+        user.setUserName(StrUtil.isNotBlank(userName) ? userName : user.getUserAccount());
+        if (StrUtil.isNotBlank(userEmail)) {
             user.setUserEmail(userEmail);
         }
-
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败!");
@@ -95,16 +84,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user.getId();
     }
 
-    /**
-     * 用户登录
-     *
-     * @param loginDto 登录参数
-     * @param request  请求
-     * @return 用户信息（脱敏）
-     */
     @Override
     public UserVO login(LoginDto loginDto, HttpServletRequest request) {
-        //参数校验
         if (loginDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -114,61 +95,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (loginDto.getUserPassword().length() < 6) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误!");
         }
-        //密码加密
-        String encryptPassword = getEncryptPassword(loginDto.getUserPassword());
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUserAccount, loginDto.getUserAccount())
-                .eq(User::getUserPassword, encryptPassword);
-        User user = this.baseMapper.selectOne(wrapper);
-        if (user == null) {
+        User user = this.lambdaQuery()
+                .eq(User::getUserAccount, loginDto.getUserAccount())
+                .one();
+        if (user == null || !matchPassword(loginDto.getUserPassword(), user.getUserPassword())) {
             log.error("user login failed,userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在或密码错误!");
         }
-        // 3. 记录用户的登录态
+        // MD5 密码自动升级为 BCrypt
+        if (isLegacyHash(user.getUserPassword())) {
+            user.setUserPassword(getEncryptPassword(loginDto.getUserPassword()));
+            this.updateById(user);
+        }
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
-        // 4. 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
         StpKit.SPACE.login(user.getId());
         StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
         return this.getUserVO(user);
     }
-    /**
-     * 获取登录用户信息
-     *
-     * @param request 请求
-     * @return 用户信息
-     */
+
     @Override
     public User getLoginUser(HttpServletRequest request) {
-        //判断是否登录
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null || currentUser.getId() == null) {
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
         }
-        //可以查遍数据库在返回；追求性能可直接返回上述结果
         Long userId = currentUser.getId();
         currentUser = this.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
         }
-
         return currentUser;
     }
 
-    /**
-     * 退出登录
-     *
-     * @param request 请求
-     * @return 结果
-     */
     @Override
     public boolean logout(HttpServletRequest request) {
-        //先判断是否登录
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         if (userObj == null) {
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN, "未登录!");
         }
-        //移除登录标志
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return true;
     }
@@ -186,10 +151,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .like(StrUtil.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserProfile()), User::getUserProfile, userQueryDto.getUserProfile());
-        //查询角色
         String userRoleStr = StrUtil.isNotBlank(userQueryDto.getUserRole()) && userQueryDto.getUserRole().startsWith(",") ?
-                                userQueryDto.getUserRole().substring(1) :
-                                userQueryDto.getUserRole();
+                userQueryDto.getUserRole().substring(1) :
+                userQueryDto.getUserRole();
         if (StrUtil.isNotBlank(userRoleStr)) {
             if (userRoleStr.contains(",")) {
                 List<String> userRoles = Arrays.stream(userRoleStr.split(",")).collect(Collectors.toList());
@@ -198,7 +162,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         e.eq(User::getUserRole, userRole).or();
                     }
                 });
-            }else{
+            } else {
                 wrapper.eq(User::getUserRole, userRoleStr);
             }
         }
@@ -222,15 +186,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 密码加密
-     *
-     * @param password 密码
-     * @return 密文
+     * BCrypt 密文以 $2a$、$2b$、$2y$ 开头，用于区分新旧算法
      */
-    @Override
-    public String getEncryptPassword(String password) {
-        final String salt = "prodigal";
-        return DigestUtils.md5DigestAsHex((salt + password).getBytes());
+    private boolean isLegacyHash(String hash) {
+        return hash != null && !hash.startsWith("$2");
     }
 
     @Override
@@ -251,16 +210,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userList.stream().map(this::getUserVO).collect(Collectors.toList());
     }
 
-    /**
-     * 判断用户是否为管理员
-     *
-     * @param user 用户
-     */
     @Override
     public boolean isAdmin(User user) {
         return user != null && (user.getUserRole().contains(UserConstant.ADMIN_ROLE) || user.getUserRole().contains(UserConstant.SUPER_ADMIN_ROLE));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void resetPassword(ResetPasswordDto dto) {
         String userAccount = dto.getUserAccount();
@@ -277,16 +232,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!userEmail.equals(user.getUserEmail())) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_MATCH);
         }
-        String encryptPassword = getEncryptPassword(newPassword);
-        user.setUserPassword(encryptPassword);
+        user.setUserPassword(getEncryptPassword(newPassword));
         boolean updated = this.updateById(user);
         if (!updated) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码重置失败");
         }
     }
 
+    @Override
+    public String getEncryptPassword(String password) {
+        return passwordEncoder.encode(password);
+    }
+
+    /**
+     * 密码匹配：BCrypt 优先，回退 MD5 兼容存量数据
+     */
+    private boolean matchPassword(String rawPassword, String storedHash) {
+        if (isLegacyHash(storedHash)) {
+            String legacyHash = DigestUtils.md5DigestAsHex((MD5_SALT + rawPassword).getBytes());
+            return legacyHash.equals(storedHash);
+        }
+        return passwordEncoder.matches(rawPassword, storedHash);
+    }
 }
-
-
-
-

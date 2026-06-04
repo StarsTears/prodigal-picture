@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
+import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -50,15 +52,17 @@ public class SystemController {
      * @param registerDto 注册参数
      * @return 注册结果
      */
+    @RateLimit(maxRequests = 5, window = 60)
     @PostMapping("/register")
-    public BaseResult<String> register(@RequestBody RegisterDto registerDto) {
+    public BaseResult<String> register(@Valid @RequestBody RegisterDto registerDto) {
         ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAMS_ERROR);
         long register = userService.register(registerDto);
         return ResultUtils.success(String.valueOf(register));
     }
 
+    @RateLimit(maxRequests = 10, window = 60)
     @PostMapping("/login")
-    public BaseResult<UserVO> login(@RequestBody LoginDto loginDto, HttpServletRequest request) {
+    public BaseResult<UserVO> login(@Valid @RequestBody LoginDto loginDto, HttpServletRequest request) {
         ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);
         ThrowUtils.throwIf(loginDto.getLoginType() == null, ErrorCode.PARAMS_ERROR);
         if (loginDto.getLoginType().equals(LoginConstant.USER_LOGIN_TYPE)) {
@@ -224,8 +228,9 @@ public class SystemController {
     /**
      * 忘记密码 - 重置密码
      */
+    @RateLimit(maxRequests = 3, window = 60)
     @PostMapping("/reset-password")
-    public BaseResult<Boolean> resetPassword(@RequestBody ResetPasswordDto dto) {
+    public BaseResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordDto dto) {
         ThrowUtils.throwIf(dto == null, ErrorCode.PARAMS_ERROR);
         boolean valid = emailService.verifyCode(dto.getUserEmail(), dto.getCaptcha());
         ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);

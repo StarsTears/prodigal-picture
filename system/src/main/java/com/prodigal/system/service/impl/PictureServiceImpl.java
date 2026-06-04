@@ -341,40 +341,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 break;
             }
         }
-
-/**
- int uploadCount = 0;
- Elements imgElementList = div.select("img.mimg");
- for (Element imgElement : imgElementList) {
- String fileUrl = imgElement.attr("src");
- if (StrUtil.isBlank(fileUrl)){
- log.info("图片批量上传-获取图片地址为空,已跳过:{}",fileUrl);
- continue;
- }
- //处理图片url.防止出现转义错误
- int questionMarkIndex = fileUrl.indexOf("?");
- if (questionMarkIndex > -1){
- fileUrl = fileUrl.substring(0,questionMarkIndex);
- }
- //上传图片
- PictureUploadDto pictureUploadDto = new PictureUploadDto();
- if (StrUtil.isNotBlank(namePrefix)){
- pictureUploadDto.setPicName(namePrefix + (uploadCount+1));
- }
- try {
- //                PictureVO pictureVO = this.uploadPicture(fileUrl, pictureUploadDto, loginUser);
- //                log.info("图片批量上传-上传成功->id:{}",pictureVO.getId());
- uploadCount++;
- }catch (Exception e){
- log.error("图片批量上传-上传失败",e);
- continue;
- }
- //如果上传数量达到要求，则跳出循环
- if (uploadCount >= count){
- break;
- }
- }
- */
         return uploadCount;
     }
 

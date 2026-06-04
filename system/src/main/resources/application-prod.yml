@@ -2,16 +2,20 @@ server:
   port: 9999
   servlet:
     context-path: /api
-  #session 配置
   session:
-    timeout: 2592000 #30天过期
+    timeout: 1800 #30分钟过期
+
+# CORS 允许的前端域名（多个用逗号分隔）
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:80}
+
 spring:
   application:
     name: prodigal-system
   #开放更大的上传文件大小
   servlet:
     multipart:
-      max-file-size: 10MB
+      max-file-size: 5MB
   #数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -59,7 +63,7 @@ spring:
               strategy: standard
               algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
     props:
-      sql-show: true
+      sql-show: false
   #redis 配置
   redis:
     database: 1
@@ -102,8 +106,6 @@ spring:
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: false
-    # 仅在开发环境开启日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     enable-sql-runner: true
     db-config:
@@ -131,7 +133,7 @@ github:
 
 # 接口文档配置
 knife4j:
-  enable: true
+  enable: false
   openapi:
     title: "Prodigal Picture 接口文档"
     version: v1.0

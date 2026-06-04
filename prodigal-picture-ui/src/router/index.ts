@@ -8,6 +8,8 @@ import AddSpaceView from  '../views/space/AddSpaceView.vue'
 import SpaceDetailView from '../views/space/SpaceDetailView.vue'
 import EmailNoticeView from '../views/email/EmailNoticeView.vue'
 import EmailManageView from '../views/admin/EmailManageView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
+import ServerErrorView from '../views/ServerErrorView.vue'
 import ACCESS_ENUM from "@/access/accessEnum";
 import FullScreenLayout from "@/layouts/FullScreenLayout.vue";
 
@@ -48,6 +50,15 @@ const router = createRouter({
       children:[{
         path: '',
         component:()=>import('../views/RegisterView.vue')
+      }]
+    },
+    {
+      path:'/reset-password',
+      name:'resetPassword',
+      component: FullScreenLayout,
+      children:[{
+        path: '',
+        component:()=>import('../views/ResetPasswordView.vue')
       }]
     },
     {
@@ -203,6 +214,23 @@ const router = createRouter({
       children:[{
         path: '',
         component: ()=>import('../views/git/GitHubView.vue'),
+      }],
+    },{
+      path:'/500',
+      name:'服务器错误',
+      component: FullScreenLayout,
+      children:[{
+        path: '',
+        component: ServerErrorView,
+      }],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'notFound',
+      component: FullScreenLayout,
+      children:[{
+        path: '',
+        component: NotFoundView,
       }],
     },
   ],

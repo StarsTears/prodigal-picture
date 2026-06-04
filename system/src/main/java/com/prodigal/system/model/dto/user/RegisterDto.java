@@ -2,34 +2,28 @@ package com.prodigal.system.model.dto.user;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
-/**
- * @program: prodigal-picture
- * @author: Lang
- * @description: 用户注册请求参数
- **/
 @Data
 public class RegisterDto implements Serializable {
     private static final long serialVersionUID = 1L;
-    /**
-     * 账号
-     */
+
+    @NotBlank(message = "账号不能为空")
+    @Size(min = 4, message = "账号长度至少 4 位")
     private String userAccount;
-    /**
-     * 用户昵称
-     */
+
     private String userName;
-    /**
-     * 用户邮箱
-     */
+
+    @NotBlank(message = "邮箱不能为空")
     private String userEmail;
-    /**
-     * 密码
-     */
+
+    @NotBlank(message = "密码不能为空")
+    @Size(min = 6, message = "密码长度至少 6 位")
     private String userPassword;
-    /**
-     * 确认密码
-     */
+
+    @NotBlank(message = "确认密码不能为空")
+    @Size(min = 6, message = "确认密码长度至少 6 位")
     private String checkPassword;
 }
