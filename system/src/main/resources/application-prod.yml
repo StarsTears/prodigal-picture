@@ -32,11 +32,6 @@ spring:
     baseline-on-migrate: true
     baseline-version: 1
     validate-on-migrate: true
-  # elasticsearch
-#  elasticsearch:
-#    uris: http://localhost:9200
-#    password:
-#    username:
   #空间图片分表
   shardingsphere:
     datasource:
@@ -125,11 +120,6 @@ cos:
 aliYunAi:
   workSpaceId: ${ALIYUNAI_WORKSPACEID}
   apiKey: ${ALIYUNAI_APIKEY}
-
-#github
-github:
-  owner:  Lang
-  repo:  prodigal-picture
 
 # 接口文档配置
 knife4j:

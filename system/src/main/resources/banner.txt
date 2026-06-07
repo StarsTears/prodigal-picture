@@ -1,4 +1,5 @@
 Spring Boot Version: ${spring-boot.version}
+Spring Active Profile: ${spring.profiles.active}
 Spring Application Name: ${spring.application.name}
 
 oooooooooo oooooooooo    ooooooo  ooooooooo  ooooo  ooooooo8      o      ooooo
