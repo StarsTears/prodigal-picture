@@ -52,7 +52,7 @@ defineExpose({
 //获取当前登录用户的邮件信息
 const loginUserStore = useLoginUserStore()
 const dataList = ref<API.EmailVO[]>([])
-const emilMessage = reactive<API.EmailQueryDto>({
+const emilMessage = reactive<API.EmailQueryDTO>({
   to: loginUserStore?.loginUser.userEmail,
   subject: '',
 })

@@ -29,7 +29,7 @@ const props = defineProps<Props>();
 const handleUpload = async () => {
   loading.value = true
   try {
-    const params: API.PictureUploadDto = { fileUrl: fileUrl.value }
+    const params: API.PictureUploadDTO = { fileUrl: fileUrl.value }
     if (props.picture) {
       params.id = props.picture.id
     }

@@ -32,12 +32,12 @@ public class BaseResult<T> implements Serializable {
     public BaseResult(ErrorCode errorCode) {
         this(errorCode.getCode(), false, errorCode.getMessage(),null);
     }
-    public static BaseResult success() {
-        return new BaseResult(0, true, "成功", null);
+    public static <T> BaseResult<T> success() {
+        return new BaseResult<T>(0, true, "成功", null);
     }
 
-    public static BaseResult error() {
-        BaseResult baseResult = new BaseResult();
+    public static <T> BaseResult<T> error() {
+        BaseResult<T> baseResult = new BaseResult<T>();
         return baseResult.status(false);
     }
 

@@ -2,6 +2,8 @@ package com.prodigal.system.common;
 
 import lombok.Data;
 
+import jakarta.validation.constraints.Min;
+
 /**
  * @program: prodigal-picture
  * @author: Lang
@@ -12,10 +14,12 @@ public class PageRequest {
     /**
      * 当前页号
      */
+    @Min(value = 1, message = "页码从1开始")
     private long current = 1;
     /**
      * 页面大小
      */
+    @Min(value = 1, message = "每页至少1条")
     private long pageSize=10;
     /**
      * 排序字段

@@ -82,14 +82,14 @@ import {listPictureTagCategoryUsingGet} from "@/api/pictureController";
 import {message} from "ant-design-vue";
 
 interface Props {
-  onSearch?: (searchParams: API.PictureQueryDto) => void
+  onSearch?: (searchParams: API.PictureQueryDTO) => void
 }
 
 const props = defineProps<Props>()
 const activeKey = ref([]);
 
 //搜索条件
-const searchParams = reactive<API.PictureQueryDto>({})
+const searchParams = reactive<API.PictureQueryDTO>({})
 const onColorChange = (color: string) => {
   searchParams.picColor = color
 }

@@ -44,7 +44,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   title: () => '新增邮件',
 });
-const emailForm = reactive<API.EmailDto>({})
+const emailForm = reactive<API.EmailDTO>({})
 const open = ref<boolean>(false);
 //该函数需传递给父组件，用于打开弹窗
 const openModal = (e: MouseEvent) => {

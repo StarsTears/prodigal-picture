@@ -74,7 +74,7 @@ import {LikeFilled, LikeOutlined, DislikeFilled, DislikeOutlined,UsergroupAddOut
 import {ref, onMounted, reactive,computed} from 'vue';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import {useLoginUserStore} from "@/stores/loginUserStore";
-import {listEmailByPageUsingPost} from "@/api/emailController";
+import {listNoticeByPageUsingPost} from "@/api/emailController";
 import {message} from "ant-design-vue";
 
 dayjs.extend(relativeTime);
@@ -88,19 +88,15 @@ const like = () => {
 //获取当前登录用户的邮件信息
 const loginUserStore = useLoginUserStore()
 const dataList = ref<API.EmailVO[]>([])
-const emilMessage = reactive<API.EmailQueryDto>({
-  to: '',
-  subject: '',
-})
-// 搜索条件
-const searchParams = reactive<API.EmailQueryDto>({
+// 分页参数
+const searchParams = reactive<API.PageRequest>({
   current: 1,
   pageSize: 5
 })
 const fetchData = async () => {
-  const res = await listEmailByPageUsingPost({
-    ...emilMessage,
-    status: 2,
+  const res = await listNoticeByPageUsingPost({
+    current: searchParams.current,
+    pageSize: searchParams.pageSize,
   });
   console.log(res)
   if (res.code === 0) {

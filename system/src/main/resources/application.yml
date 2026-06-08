@@ -17,13 +17,12 @@ spring:
       max-file-size: 5MB
   #数据库配置
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST:127.0.0.1}:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:classpath:sharding-local.yml
   # Flyway 数据库迁移（直连 MySQL，绕过 ShardingSphere）
   flyway:
     enabled: true
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://${DB_HOST:127.0.0.1}:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     user: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -31,40 +30,22 @@ spring:
     baseline-on-migrate: true
     baseline-version: 1
     validate-on-migrate: true
-  #空间图片分表
-  shardingsphere:
-    datasource:
-      names: prodigal-picture
-      prodigal-picture:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://${DB_HOST:127.0.0.1}:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
-    rules:
-      sharding:
-        tables:
-          picture:
-            actual-data-nodes: prodigal-picture.picture # 动态分表
-            table-strategy:
-              standard:
-                sharding-column: spaceId
-                sharding-algorithm-name: picture-sharding-algorithm # 分表算法 自定义分片算法
-        sharding-algorithms:
-          picture-sharding-algorithm:
-            type: CLASS_BASED
-            props:
-              strategy: standard
-              algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
-    props:
-      sql-show: true
-  #redis 配置
-  redis:
-    database: 1
-    host: ${REDIS_HOST:127.0.0.1}
-    port: 6379
-    timeout: 5000
   data:
+    # redis
+    redis:
+      database: 1
+      host: ${REDIS_HOST:127.0.0.1}
+      port: 6379
+      # 连接超时设置
+      # 支持两种格式：直接写毫秒数字，或者使用 Duration 格式如 5s, 500ms
+      timeout: 5000
+      # Lettuce 连接池配置（推荐配置，能有效管理连接资源）
+      lettuce:
+        pool:
+          max-active: 8      # 连接池最大连接数（正数即可，可参考设为 8~20）
+          max-idle: 8        # 连接池中的最大空闲连接
+          min-idle: 0        # 连接池中的最小空闲连接
+          max-wait: 1s       # 当连接池耗尽时，获取连接的最大等待时间
     #mongoDB
     mongodb:
       host: ${MONGO_HOST:127.0.0.1}
@@ -123,22 +104,24 @@ aliYunAi:
 # CORS 允许的前端域名（多个用逗号分隔）
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
-# 接口文档配置
-# Knife4j UI：http://ip:9999/api/doc.html
-# Swagger 资源：http://localhost:9999/api/swagger-ui.html
+# SpringDoc + Knife4j 接口文档配置
+# Knife4j UI：http://localhost:9999/api/doc.html
+# OpenAPI 文档：http://localhost:9999/api/v3/api-docs
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'uat'
+      paths-to-match: '/**'
+      packages-to-scan: com.prodigal.system.controller
 knife4j:
   enable: true
-  openapi:
-    title: "Prodigal Picture 接口文档"
-    version: v1.0
-    description: "Prodigal Picture 云图库接口文档"
-    concat: Lang
-    group:
-      default:
-        group-name: "uat"
-        api-rule: package
-        api-rule-resources:
-          - com.prodigal.system.controller
+  setting:
+    language: zh_cn
+    # 禁用静态资源自动注册，避免路径匹配错误
+    enable-document-manage: false
 
 # Actuator 监控
 management:

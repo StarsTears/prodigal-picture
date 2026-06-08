@@ -7,18 +7,17 @@ import com.prodigal.system.model.enums.SpaceTypeEnum;
 import com.prodigal.system.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.driver.jdbc.core.connection.ShardingSphereConnection;
-import org.apache.shardingsphere.infra.metadata.database.rule.ShardingSphereRuleMetaData;
+import org.apache.shardingsphere.infra.metadata.database.rule.RuleMetaData;
 import org.apache.shardingsphere.mode.manager.ContextManager;
 import org.apache.shardingsphere.sharding.api.config.ShardingRuleConfiguration;
 import org.apache.shardingsphere.sharding.api.config.rule.ShardingTableRuleConfiguration;
 import org.apache.shardingsphere.sharding.rule.ShardingRule;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -82,10 +81,9 @@ public class DynamicShardingManager {
         log.info("动态分表 actual-data-nodes 配置:{}", newActualDataNodes);
 
         ContextManager contextManager = this.getContextManager();
-        ShardingSphereRuleMetaData ruleMetaData = contextManager.getMetaDataContexts()
+        RuleMetaData ruleMetaData = contextManager.getMetaDataContexts()
                                                                 .getMetaData()
-                                                                .getDatabases()
-                                                                .get(DATABASE_NAME)
+                                                                .getDatabase(DATABASE_NAME)
                                                                 .getRuleMetaData();
         Optional<ShardingRule> shardingRule  = ruleMetaData.findSingleRule(ShardingRule.class);
         if (shardingRule .isPresent()){
@@ -105,9 +103,14 @@ public class DynamicShardingManager {
                                                                     }).collect(Collectors.toList());
 
             ruleConfig.setTables(updateRules);
-            contextManager.alterRuleConfiguration(DATABASE_NAME, Collections.singleton(ruleConfig));
-            contextManager.reloadDatabase(DATABASE_NAME);
-            log.info("动态分表规则 actual-data-nodes 更新成功.");
+            try {
+                contextManager.getMetaDataContextManager()
+                        .getDatabaseRuleConfigurationManager()
+                        .refresh(DATABASE_NAME, ruleConfig, true);
+                log.info("动态分表规则 actual-data-nodes 更新成功.");
+            } catch (SQLException e) {
+                log.error("动态分表规则刷新失败", e);
+            }
         }else{
             log.error("未找到 ShardingSphere 的分片规则配置,动态分表更新失败.");
         }

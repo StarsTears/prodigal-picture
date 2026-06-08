@@ -4,7 +4,7 @@ import request from '@/request.ts'
 
 /** addSpaceUser POST /api/spaceUser/add */
 export async function addSpaceUserUsingPost(
-  body: API.SpaceUserAddDto,
+  body: API.SpaceUserAddDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultLong_>('/api/spaceUser/add', {
@@ -34,7 +34,7 @@ export async function deleteSpaceUserUsingPost(
 
 /** editSpaceUser POST /api/spaceUser/edit */
 export async function editSpaceUserUsingPost(
-  body: API.SpaceUserEditDto,
+  body: API.SpaceUserEditDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/spaceUser/edit', {
@@ -49,7 +49,7 @@ export async function editSpaceUserUsingPost(
 
 /** getSpaceUser GET /api/spaceUser/get */
 export async function getSpaceUserUsingGet(
-  body: API.SpaceUserQueryDto,
+  body: API.SpaceUserQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultSpaceUser_>('/api/spaceUser/get', {
@@ -72,7 +72,7 @@ export async function listMyTeamSpaceUsingPost(options?: { [key: string]: any })
 
 /** listSpaceUserVOByPage POST /api/spaceUser/list/page */
 export async function listSpaceUserVoByPageUsingPost(
-  body: API.SpaceUserQueryDto,
+  body: API.SpaceUserQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPageSpaceUserVO_>('/api/spaceUser/list/page', {

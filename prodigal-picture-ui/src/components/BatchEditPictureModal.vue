@@ -72,7 +72,7 @@ defineExpose({
   openModal,
 })
 
-const formData = reactive<API.PictureEditByBatchDto>({
+const formData = reactive<API.PictureEditByBatchDTO>({
   category: '',
   tags: [],
   nameRule: '',

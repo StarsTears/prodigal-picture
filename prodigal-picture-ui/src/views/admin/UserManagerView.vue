@@ -196,7 +196,7 @@ const loading = ref<boolean>(true)
 // 搜索条件
 const roleList = ref<string[]>(["administrator","admin","user"])
 const selectRoleList = ref<boolean[]>([])
-const searchParams = reactive<API.UserQueryDto>({
+const searchParams = reactive<API.UserQueryDTO>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',

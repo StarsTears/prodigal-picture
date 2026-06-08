@@ -151,7 +151,7 @@ const uploadLoading = ref<boolean>(false)
 const handleUpload = async (edit: boolean) => {
   uploadLoading.value = true
   try {
-    const params: API.PictureUploadDto = {
+    const params: API.PictureUploadDTO = {
       fileUrl: resultImageUrl.value,
       spaceId: props.spaceId,
     }

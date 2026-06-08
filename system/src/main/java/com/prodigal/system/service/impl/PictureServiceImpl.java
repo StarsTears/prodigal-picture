@@ -11,7 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.api.aliyunai.AliYunAiApi;
-import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDto;
+import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDTO;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.FilePathConstant;
@@ -42,7 +42,7 @@ import com.prodigal.system.utils.ColorSimilarUtils;
 import com.prodigal.system.utils.CustomThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang.time.DateUtils;
+import cn.hutool.core.date.DateUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -53,8 +53,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -122,7 +122,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @param loginUser        登录用户
      */
     @Override
-    public PictureVO uploadPicture(Object inputSource, PictureUploadDto pictureUploadDto, User loginUser) {
+    public PictureVO uploadPicture(Object inputSource, PictureUploadDTO pictureUploadDto, User loginUser) {
         if (inputSource == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "上传图片数据源为空");
         }
@@ -143,10 +143,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
 
         //判断新增还是修改
-        Long pictureID = null;
-        if (pictureUploadDto != null) {
-            pictureID = pictureUploadDto.getId();
-        }
+        Long pictureID = pictureUploadDto.getId();
+
         //校验图片是否存在
         if (pictureID != null) {
             Picture picture = this.getById(pictureID);
@@ -254,7 +252,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @param loginUser               登录用户
      */
     @Override
-    public int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser) {
+    public int uploadPictureByBatch(PictureUploadByBatchDTO pictureUploadByBatchDto, User loginUser) {
         String searchText = pictureUploadByBatchDto.getSearchText();
         //图片名称前缀为空，则使用关键词
         String namePrefix = pictureUploadByBatchDto.getNamePrefix();
@@ -309,7 +307,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 try {
                     json.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("URL parameter decode error", e);
                 }
             }
             //处理图片url.防止出现转义错误
@@ -324,7 +322,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             //以免数据重复，可以将其查出与数据的源url进行对比
 
             //上传图片
-            PictureUploadDto pictureUploadDto = new PictureUploadDto();
+            PictureUploadDTO pictureUploadDto = new PictureUploadDTO();
             if (StrUtil.isNotBlank(namePrefix)) {
                 pictureUploadDto.setPicName(namePrefix + (uploadCount + 1));
             }
@@ -360,7 +358,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
    }
 
     @Override
-    public void editPicture(PictureEditDto pictureEditDto, User loginUser) {
+    public void editPicture(PictureEditDTO pictureEditDto, User loginUser) {
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureEditDto, picture);
         picture.setTags(JSONUtil.toJsonStr(pictureEditDto.getTags()));
@@ -407,7 +405,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void editPictureByBatch(PictureEditByBatchDto pictureEditByBatchDto, User loginUser) {
+    public void editPictureByBatch(PictureEditByBatchDTO pictureEditByBatchDto, User loginUser) {
         //获取所有参数
         List<Long> pictureIdList = pictureEditByBatchDto.getPictureIdList();
         Long spaceId = pictureEditByBatchDto.getSpaceId();
@@ -475,7 +473,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public void batchEditPictureMetaData(PictureEditByBatchDto pictureEditByBatchDto, User loginUser) {
+    public void batchEditPictureMetaData(PictureEditByBatchDTO pictureEditByBatchDto, User loginUser) {
         Long spaceId = pictureEditByBatchDto.getSpaceId();
         String category = pictureEditByBatchDto.getCategory();
         List<String> tags = pictureEditByBatchDto.getTags();
@@ -537,7 +535,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @param pictureQueryDto 图片查询参数
      */
     @Override
-    public LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto) {
+    public LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDTO pictureQueryDto) {
         LambdaQueryWrapper<Picture> wrapper = new LambdaQueryWrapper<Picture>();
         if (pictureQueryDto == null) {
             return wrapper;
@@ -702,7 +700,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @return
      */
     @Override
-    public Page<PictureVO> getPictureVOPageCache(PictureQueryDto pictureQueryDto, HttpServletRequest request) {
+    public Page<PictureVO> getPictureVOPageCache(PictureQueryDTO pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
         //先去查询缓存，未命中再去查询数据库
@@ -757,7 +755,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Override
-    public void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser) {
+    public void doPictureReview(PictureReviewDTO pictureReviewDto, User loginUser) {
         //1、校验数据能否审核
         Long id = pictureReviewDto.getId();
         Integer reviewStatus = pictureReviewDto.getReviewStatus();
@@ -896,7 +894,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                                         .collect(Collectors.toList());
         spaceIds.add(0L);
         if (date == null){
-            date = DateUtils.addWeeks(new Date(), -1);
+            date = DateUtil.offsetWeek(new Date(), -1);
         }
         return pictureMapper.selectDeletedPictures(date,spaceIds);
     }
@@ -921,7 +919,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Override
     public int deleteDeletedPictures(Date date, List<Long> spaceIds){
         if (date == null){
-            date = DateUtils.addWeeks(new Date(), -1);
+            date = DateUtil.offsetWeek(new Date(), -1);
         }
         return pictureMapper.deleteDeletedPictures(date,spaceIds);
     }
@@ -949,15 +947,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @return 扩图任务信息
      */
     @Override
-    public CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDto createPictureOutPaintingTaskDto, User loginUser) {
+    public CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDTO createPictureOutPaintingTaskDto, User loginUser) {
         //1、获取图片信息
         Long pictureId = createPictureOutPaintingTaskDto.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
         //2、权限校验
 //        this.checkPicturePermission(loginUser, picture);
         //3、组装 ai 扩图 请求参数
-        CreateOutPaintingTaskDto taskDto = new CreateOutPaintingTaskDto();
-        CreateOutPaintingTaskDto.Input input = new CreateOutPaintingTaskDto.Input();
+        CreateOutPaintingTaskDTO taskDto = new CreateOutPaintingTaskDTO();
+        CreateOutPaintingTaskDTO.Input input = new CreateOutPaintingTaskDTO.Input();
         input.setImageUrl(picture.getUrl());
         taskDto.setInput(input);
         BeanUtils.copyProperties(createPictureOutPaintingTaskDto, taskDto);

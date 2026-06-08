@@ -84,7 +84,7 @@ const loginUserStore = useLoginUserStore()
 
 const route = useRoute();
 const space = ref<API.SpaceVO>();
-const spaceForm = reactive<API.SpaceAddDto | API.SpaceUpdateDto>({
+const spaceForm = reactive<API.SpaceAddDTO | API.SpaceUpdateDTO>({
   userId: '',
   userName: '',
   spaceName: '',
@@ -164,7 +164,7 @@ const handleSubmit = async (values: any) => {
   if (res.code === 0 && res.data) {
     message.success('操作成功')
     //跳转到空间详情页
-    router.push({path: `/space/${spaceID ?? res.date}`})
+    router.push({path: `/space/${spaceID ?? res.data}`})
   } else {
     message.error('操作失败，' + res.msg)
   }

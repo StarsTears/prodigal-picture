@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.model.dto.spaceuser.SpaceUserAddDto;
-import com.prodigal.system.model.dto.spaceuser.SpaceUserQueryDto;
+import com.prodigal.system.model.dto.spaceuser.SpaceUserAddDTO;
+import com.prodigal.system.model.dto.spaceuser.SpaceUserQueryDTO;
 import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.SpaceUser;
 import com.prodigal.system.model.entity.User;
@@ -24,8 +24,8 @@ import com.prodigal.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         if (add) {
             ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
             User user = userService.getById(userId);
-            ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "用户不存在");
+            ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
         }
@@ -64,11 +64,11 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
     }
 
     @Override
-    public long addSpaceUser(SpaceUserAddDto spaceUserAddDto) {
+    public long addSpaceUser(SpaceUserAddDTO spaceUserAddDTO) {
         // 参数校验
-        ThrowUtils.throwIf(spaceUserAddDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
         SpaceUser spaceUser = new SpaceUser();
-        BeanUtils.copyProperties(spaceUserAddDto, spaceUser);
+        BeanUtils.copyProperties(spaceUserAddDTO, spaceUser);
         this.validSpaceUser(spaceUser, true);
         // 数据库操作
         boolean result = this.save(spaceUser);
@@ -135,24 +135,22 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
 
 
     @Override
-    public QueryWrapper<SpaceUser> getQueryWrapper(SpaceUserQueryDto spaceUserQueryDto) {
+    public QueryWrapper<SpaceUser> getQueryWrapper(SpaceUserQueryDTO spaceUserQueryDTO) {
         QueryWrapper<SpaceUser> queryWrapper = new QueryWrapper<>();
-        if (spaceUserQueryDto == null) {
+        if (spaceUserQueryDTO == null) {
             return queryWrapper;
         }
         // 从对象中取值
-        Long id = spaceUserQueryDto.getId();
-        Long spaceId = spaceUserQueryDto.getSpaceId();
-        Long userId = spaceUserQueryDto.getUserId();
-        String spaceRole = spaceUserQueryDto.getSpaceRole();
+        Long id = spaceUserQueryDTO.getId();
+        Long spaceId = spaceUserQueryDTO.getSpaceId();
+        Long userId = spaceUserQueryDTO.getUserId();
+        String spaceRole = spaceUserQueryDTO.getSpaceRole();
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "spaceId", spaceId);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceRole), "spaceRole", spaceRole);
         return queryWrapper;
     }
-
-
 }
 
 

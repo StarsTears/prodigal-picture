@@ -3,7 +3,7 @@
 import request from '@/request.ts'
 
 /** addEmail POST /api/email/add */
-export async function addEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
+export async function addEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultString_>('/api/email/add', {
     method: 'POST',
     headers: {
@@ -44,7 +44,7 @@ export async function getEmailByIdUsingGet(
 
 /** listEmailByPage POST /api/email/list */
 export async function listEmailByPageUsingPost(
-  body: API.EmailQueryDto,
+  body: API.EmailQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPageEmailVO_>('/api/email/list', {
@@ -57,8 +57,23 @@ export async function listEmailByPageUsingPost(
   })
 }
 
+/** listNoticeByPage POST /api/email/notice/list */
+export async function listNoticeByPageUsingPost(
+  body: API.PageRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultPageEmailVO_>('/api/email/notice/list', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** sendEmail POST /api/email/send */
-export async function sendEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
+export async function sendEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/send', {
     method: 'POST',
     headers: {
@@ -99,7 +114,7 @@ export async function sendVerificationCodeUsingPost(
 }
 
 /** updateEmail POST /api/email/update */
-export async function updateEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
+export async function updateEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/update', {
     method: 'POST',
     headers: {

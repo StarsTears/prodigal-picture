@@ -64,7 +64,7 @@ const router = createRouter({
       name:'用户管理',
       component: () => import('@/layouts/BasicLayout.vue'),
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       },
       children:[{
         path: '',
@@ -89,7 +89,7 @@ const router = createRouter({
         component:()=>import('../views/admin/PictureManagerView.vue'),
       }],
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       }
     },
     {
@@ -101,7 +101,7 @@ const router = createRouter({
         component:()=>import('../views/admin/SpaceManagerView.vue'),
       }],
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       }
     },
     {

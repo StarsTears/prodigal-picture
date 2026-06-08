@@ -221,7 +221,7 @@ const dataList = ref<API.Picture>([])
 const total = ref(0)
 const loading = ref<boolean>(true)
 // 搜索条件
-const searchParams = reactive<API.PictureQueryDto>({
+const searchParams = reactive<API.PictureQueryDTO>({
   current: 1,
   pageSize: 5,
   sortField: 'createTime',

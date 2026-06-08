@@ -198,7 +198,7 @@ import {
   EMAIL_TYPE_MAP,
   EMAIL_TYPE_OPTIONS
 } from "@/constants/email";
-import EmailDto = API.EmailDto;
+import EmailDTO = API.EmailDTO;
 
 const columns: TableColumnsType = [
   {
@@ -279,7 +279,7 @@ const columns: TableColumnsType = [
 const dataList = ref<API.EmailVO[]>([])
 const loading = ref<boolean>(true)
 // 搜索条件
-const searchParams = reactive<API.EmailQueryDto>({})
+const searchParams = reactive<API.EmailQueryDTO>({})
 
 // 获取数据
 const fetchData = async () => {
@@ -345,7 +345,7 @@ const doCancel = (key: string) => {
   delete editableData[key];
 };
 //---------------------------------提交数据------------------------
-const doSubmit = async (email: EmailDto) => {
+const doSubmit = async (email: EmailDTO) => {
   const res = await updateEmailUsingPost({
     ...email,
     status: EMAIL_STATUS_ENUM.PASS

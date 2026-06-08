@@ -3,7 +3,7 @@
 import request from '@/request.ts'
 
 /** addSpace POST /api/space/add */
-export async function addSpaceUsingPost(body: API.SpaceAddDto, options?: { [key: string]: any }) {
+export async function addSpaceUsingPost(body: API.SpaceAddDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultLong_>('/api/space/add', {
     method: 'POST',
     headers: {
@@ -30,7 +30,7 @@ export async function deleteSpaceUsingPost(
 }
 
 /** editSpace POST /api/space/edit */
-export async function editSpaceUsingPost(body: API.SpaceEditDto, options?: { [key: string]: any }) {
+export async function editSpaceUsingPost(body: API.SpaceEditDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/space/edit', {
     method: 'POST',
     headers: {
@@ -81,7 +81,7 @@ export async function listSpaceLevelUsingGet(options?: { [key: string]: any }) {
 
 /** listSpaceByPage POST /api/space/list/page */
 export async function listSpaceByPageUsingPost(
-  body: API.SpaceQueryDto,
+  body: API.SpaceQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPageSpace_>('/api/space/list/page', {
@@ -96,7 +96,7 @@ export async function listSpaceByPageUsingPost(
 
 /** listSpaceVOByPage POST /api/space/list/page/vo */
 export async function listSpaceVoByPageUsingPost(
-  body: API.SpaceQueryDto,
+  body: API.SpaceQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPageSpaceVO_>('/api/space/list/page/vo', {
@@ -111,7 +111,7 @@ export async function listSpaceVoByPageUsingPost(
 
 /** updateSpace POST /api/space/update */
 export async function updateSpaceUsingPost(
-  body: API.SpaceUpdateDto,
+  body: API.SpaceUpdateDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/space/update', {

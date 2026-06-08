@@ -47,7 +47,7 @@ import {onMounted, reactive, ref} from "vue";
 import {message} from "ant-design-vue";
 import {listPictureTagCategoryUsingGet, uploadPictureByBatchUsingPost} from "@/api/pictureController";
 import {useRouter} from "vue-router";
-const formData = reactive<API.PictureUploadByBatchDto>({
+const formData = reactive<API.PictureUploadByBatchDTO>({
   count: 5,
 })
 const loading = ref(false)

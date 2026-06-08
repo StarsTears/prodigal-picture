@@ -64,7 +64,7 @@ import { useRoute, useRouter } from "vue-router";
 
 const loginType = ref<'account' | 'email'>('account');
 
-const formState = reactive<API.LoginDto>({
+const formState = reactive<API.LoginDTO>({
   userAccount: '',
   userPassword: ''
 });
@@ -111,7 +111,7 @@ const onSendCaptcha = async () => {
   }
   sendingCaptcha.value = true;
   try {
-    const res = await sendVerificationCodeUsingPost(emailFormState.email);
+    const res = await sendVerificationCodeUsingPost({ email: emailFormState.email });
     if (res.code === 0) {
       message.success('验证码已发送，请查收邮箱');
       startCountdown();

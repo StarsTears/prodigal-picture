@@ -26,5 +26,12 @@ public interface CacheConstant {
 
     long SEND_LOCK_SECONDS = 60;
 
+    /*********登录失败限制************/
+    String LOGIN_FAIL_PREFIX = "login:fail:";
+    /** 失败次数阈值，达到后需要验证码 */
+    long LOGIN_FAIL_MAX_COUNT = 3L;
+    /** 失败计数器有效期（分钟） */
+    long LOGIN_FAIL_EXPIRE_MINUTES = 15;
+
 
 }

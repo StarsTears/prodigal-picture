@@ -20,7 +20,7 @@ import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDto spaceUsageAnalyzeDto, User loginUser) {
+    public SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDTO spaceUsageAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceUsageAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //查询公共空间 权限校验：仅管理员可访问
         //查询全控件/公共空间，需从 Picture 表查询
@@ -106,7 +106,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param loginUser               登录用户
      */
     @Override
-    public List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDto spaceCategoryAnalyzeDto, User loginUser) {
+    public List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDTO spaceCategoryAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceCategoryAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceCategoryAnalyzeDto, loginUser);
@@ -136,7 +136,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDto spaceTagAnalyzeDto, User loginUser) {
+    public List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDTO spaceTagAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceTagAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceTagAnalyzeDto, loginUser);
@@ -163,7 +163,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDto spaceSizeAnalyzeDto, User loginUser) {
+    public List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDTO spaceSizeAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceSizeAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceSizeAnalyzeDto, loginUser);
@@ -196,7 +196,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDto spaceUserAnalyzeDto, User loginUser) {
+    public List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDTO spaceUserAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceUserAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //检查权限
         this.checkSpaceAnalyzeAuth(spaceUserAnalyzeDto, loginUser);
@@ -241,7 +241,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<Space> analyzeSpaceRank(SpaceRankAnalyzeDto spaceRankAnalyzeDto, User loginUser) {
+    public List<Space> analyzeSpaceRank(SpaceRankAnalyzeDTO spaceRankAnalyzeDto, User loginUser) {
         ThrowUtils.throwIf(spaceRankAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
         //仅管理员可查看空间排行
         ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问空间排行");
@@ -260,7 +260,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param spaceAnalyzeDto 空间请求参数
      * @param loginUser       登录用户
      */
-    private void checkSpaceAnalyzeAuth(SpaceAnalyzeDto spaceAnalyzeDto, User loginUser) {
+    private void checkSpaceAnalyzeAuth(SpaceAnalyzeDTO spaceAnalyzeDto, User loginUser) {
         // 检查权限
         if (spaceAnalyzeDto.isQueryAll() || spaceAnalyzeDto.isQueryPublic()) {
             // 全空间分析或者公共图库权限校验：仅管理员可访问
@@ -281,12 +281,12 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param spaceAnalyzeDto 空间请求参数
      * @param queryWrapper    查询条件
      */
-    private void fillAnalyzeQueryWrapper(SpaceAnalyzeDto spaceAnalyzeDto, QueryWrapper<Picture> queryWrapper) {
+    private void fillAnalyzeQueryWrapper(SpaceAnalyzeDTO spaceAnalyzeDto, QueryWrapper<Picture> queryWrapper) {
         if (spaceAnalyzeDto.isQueryAll()) {
             return;
         }
         if (spaceAnalyzeDto.isQueryPublic()) {
-            queryWrapper.isNull("spaceId");
+            queryWrapper.eq("spaceId", 0);
             return;
         }
         Long spaceId = spaceAnalyzeDto.getSpaceId();

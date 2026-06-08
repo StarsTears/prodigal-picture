@@ -5,7 +5,6 @@ import org.apache.shardingsphere.sharding.api.sharding.standard.RangeShardingVal
 import org.apache.shardingsphere.sharding.api.sharding.standard.StandardShardingAlgorithm;
 
 import java.util.Collection;
-import java.util.Properties;
 
 /**
  * @program: prodigal-picture
@@ -34,15 +33,5 @@ public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Long>
     @Override
     public Collection<String> doSharding(Collection<String> collection, RangeShardingValue<Long> rangeShardingValue) {
         return null;
-    }
-
-    @Override
-    public Properties getProps() {
-        return null;
-    }
-
-    @Override
-    public void init(Properties properties) {
-
     }
 }

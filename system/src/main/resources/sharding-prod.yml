@@ -1,0 +1,29 @@
+dataSources:
+  prodigal-picture:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+rules:
+  - !SINGLE
+    tables:
+      - "*.*"
+  - !SHARDING
+    tables:
+      picture:
+        actualDataNodes: prodigal-picture.picture
+        tableStrategy:
+          standard:
+            shardingColumn: spaceId
+            shardingAlgorithmName: picture-sharding-algorithm
+    shardingAlgorithms:
+      picture-sharding-algorithm:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
+
+props:
+  sql-show: false

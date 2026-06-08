@@ -17,8 +17,8 @@ import com.prodigal.system.model.message.EmailCaptchaMessage;
 import com.prodigal.system.mq.producer.EmailCaptchaProducer;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.model.dto.email.EmailQueryDto;
-import com.prodigal.system.model.dto.email.EmailDto;
+import com.prodigal.system.model.dto.email.EmailQueryDTO;
+import com.prodigal.system.model.dto.email.EmailDTO;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.EmailTypeEnum;
@@ -42,10 +42,10 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.mail.*;
-import javax.mail.internet.MimeMessage;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.mail.*;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -117,7 +117,7 @@ public class EmailServiceImpl implements EmailService {
 
 
     @Override
-    public String addEmail(EmailDto emailDto, User loginUser,boolean isAdd) {
+    public String addEmail(EmailDTO emailDto, User loginUser,boolean isAdd) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         //校验邮箱格式、邮件类型
         this.validEmail(emailDto);
@@ -171,7 +171,7 @@ public class EmailServiceImpl implements EmailService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void sendEmailBySimpleMessage(EmailDto emailDto, User loginUser) {
+    public void sendEmailBySimpleMessage(EmailDTO emailDto, User loginUser) {
         this.validEmail(emailDto);
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -194,7 +194,7 @@ public class EmailServiceImpl implements EmailService {
      * @param loginUser
      */
     @Override
-    public void sendEmailByMimeMessage(EmailDto emailDto, User loginUser) {
+    public void sendEmailByMimeMessage(EmailDTO emailDto, User loginUser) {
        this.validEmail(emailDto);
         MimeMessage message = emailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
@@ -253,37 +253,37 @@ public class EmailServiceImpl implements EmailService {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件收件人不能为空");
         }
         // 如果 message 存在，执行发送邮件的逻辑
-        EmailDto sendEmailDto = new EmailDto();
-        BeanUtils.copyProperties(email, sendEmailDto);
-        sendEmailDto.setAttachments(JSONUtil.toList(email.getAttachments(), String.class));
-        this.sendEmailByMimeMessage(sendEmailDto, loginUser);
+        EmailDTO sendEmailDTO = new EmailDTO();
+        BeanUtils.copyProperties(email, sendEmailDTO);
+        sendEmailDTO.setAttachments(JSONUtil.toList(email.getAttachments(), String.class));
+        this.sendEmailByMimeMessage(sendEmailDTO, loginUser);
     }
 
-    Query fillParamsByCriteria(EmailQueryDto queryEmailDto) {
+    Query fillParamsByCriteria(EmailQueryDTO queryEmailDTO) {
         Query query = new Query();
 //        Criteria criteria = new Criteria();
-        if (StrUtil.isNotBlank(queryEmailDto.getTo())) {
-//            criteria.andOperator(Criteria.where("to").is(queryEmailDto.getTo()));
-            query.addCriteria(Criteria.where("to").is(queryEmailDto.getTo()));
+        if (StrUtil.isNotBlank(queryEmailDTO.getTo())) {
+//            criteria.andOperator(Criteria.where("to").is(queryEmailDTO.getTo()));
+            query.addCriteria(Criteria.where("to").is(queryEmailDTO.getTo()));
         }
         //邮件状态
-        if (ObjectUtil.isNotEmpty(queryEmailDto.getStatus())) {
-//            criteria.andOperator(Criteria.where("status").is(queryEmailDto.getStatus()));
-            query.addCriteria(Criteria.where("status").is(queryEmailDto.getStatus()));
+        if (ObjectUtil.isNotEmpty(queryEmailDTO.getStatus())) {
+//            criteria.andOperator(Criteria.where("status").is(queryEmailDTO.getStatus()));
+            query.addCriteria(Criteria.where("status").is(queryEmailDTO.getStatus()));
         }
         //邮件类型
-        if (ObjectUtil.isNotEmpty(queryEmailDto.getType())) {
-//            criteria.andOperator(Criteria.where("status").is(queryEmailDto.getStatus()));
-            query.addCriteria(Criteria.where("type").is(queryEmailDto.getType()));
+        if (ObjectUtil.isNotEmpty(queryEmailDTO.getType())) {
+//            criteria.andOperator(Criteria.where("status").is(queryEmailDTO.getStatus()));
+            query.addCriteria(Criteria.where("type").is(queryEmailDTO.getType()));
         }
-        if (StrUtil.isNotBlank(queryEmailDto.getSubject())) {
-            Pattern pattern= Pattern.compile("^.*"+queryEmailDto.getSubject()+".*$", Pattern.CASE_INSENSITIVE);
+        if (StrUtil.isNotBlank(queryEmailDTO.getSubject())) {
+            Pattern pattern= Pattern.compile("^.*"+queryEmailDTO.getSubject()+".*$", Pattern.CASE_INSENSITIVE);
 //            criteria.andOperator(Criteria.where("subject").regex(pattern));
             query.addCriteria(Criteria.where("subject").regex(pattern));
         }
         //邮件内容 应用正则
-        if (StrUtil.isNotBlank(queryEmailDto.getTxt())) {
-            Pattern pattern= Pattern.compile("^.*"+queryEmailDto.getTxt()+".*$", Pattern.CASE_INSENSITIVE);
+        if (StrUtil.isNotBlank(queryEmailDTO.getTxt())) {
+            Pattern pattern= Pattern.compile("^.*"+queryEmailDTO.getTxt()+".*$", Pattern.CASE_INSENSITIVE);
 //            criteria.andOperator(Criteria.where("txt").regex(pattern));
             query.addCriteria(Criteria.where("txt").regex(pattern));
         }
@@ -293,12 +293,12 @@ public class EmailServiceImpl implements EmailService {
 
 
     @Override
-    public Page<Email> listEmail(EmailQueryDto queryEmailDto, User loginUser) {
+    public Page<Email> listEmail(EmailQueryDTO queryEmailDTO, User loginUser) {
         //获取分页大小，及当前页
-        int current = (int) queryEmailDto.getCurrent();
-        int pageSize = (int) queryEmailDto.getPageSize();
+        int current = (int) queryEmailDTO.getCurrent();
+        int pageSize = (int) queryEmailDTO.getPageSize();
         Pageable pageable = PageRequest.of(current,pageSize, Sort.by("createTime").descending());
-        Query query = fillParamsByCriteria(queryEmailDto);
+        Query query = fillParamsByCriteria(queryEmailDTO);
         // 查询总条数
         long total = mongoTemplate.count(query, Email.class, "email");
 
@@ -349,7 +349,7 @@ public class EmailServiceImpl implements EmailService {
      * @param loginUser
      */
     @Override
-    public void updateEmail(EmailDto emailDto, User loginUser) {
+    public void updateEmail(EmailDTO emailDto, User loginUser) {
         ThrowUtils.throwIf(emailDto==null || emailDto.getId() == null, ErrorCode.PARAMS_ERROR);
         Email oldEmail = mongoTemplate.findById(emailDto.getId(), Email.class);
         ThrowUtils.throwIf(oldEmail == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailDto.getId());
@@ -390,7 +390,7 @@ public class EmailServiceImpl implements EmailService {
      * @return
      */
     @Override
-    public void fillEmailParams(Email email, EmailDto emailDto) {
+    public void fillEmailParams(Email email, EmailDTO emailDto) {
         BeanUtils.copyProperties(emailDto, email);
         email.setStatus(emailDto.getStatus());
         email.setCreateTime(new Date());
@@ -437,7 +437,7 @@ public class EmailServiceImpl implements EmailService {
      * 邮箱格式、类型 校验
      * @param emailDto
      */
-    private void validEmail(EmailDto emailDto){
+    private void validEmail(EmailDTO emailDto){
         String to = emailDto.getTo();
         if (StrUtil.isNotBlank(to)){
             if (!EmailValidatorUtils.isValidEmail(to)) {

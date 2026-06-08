@@ -10,9 +10,9 @@ import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.sharding.DynamicShardingManager;
-import com.prodigal.system.model.dto.space.SpaceAddDto;
-import com.prodigal.system.model.dto.space.SpaceEditDto;
-import com.prodigal.system.model.dto.space.SpaceQueryDto;
+import com.prodigal.system.model.dto.space.SpaceAddDTO;
+import com.prodigal.system.model.dto.space.SpaceEditDTO;
+import com.prodigal.system.model.dto.space.SpaceQueryDTO;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.SpaceUser;
@@ -32,8 +32,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -104,7 +104,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     }
 
     @Override
-    public long addSpace(SpaceAddDto spaceAddDto, User loginUser) {
+    public long addSpace(SpaceAddDTO spaceAddDto, User loginUser) {
         ThrowUtils.throwIf(spaceAddDto == null, ErrorCode.PARAMS_ERROR);
 
         //空间名称为空，给其赋默认值
@@ -164,7 +164,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     }
 
     @Override
-    public void editSpace(SpaceEditDto spaceEditDto, User loginUser) {
+    public void editSpace(SpaceEditDTO spaceEditDto, User loginUser) {
         Space space = new Space();
         BeanUtils.copyProperties(spaceEditDto, space);
         //自动填充数据
@@ -254,7 +254,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
      * @param spaceQueryDto 图片查询参数
      */
     @Override
-    public LambdaQueryWrapper<Space> getQueryWrapper(SpaceQueryDto spaceQueryDto) {
+    public LambdaQueryWrapper<Space> getQueryWrapper(SpaceQueryDTO spaceQueryDto) {
         LambdaQueryWrapper<Space> wrapper = new LambdaQueryWrapper<Space>();
         if (spaceQueryDto == null) {
             return wrapper;

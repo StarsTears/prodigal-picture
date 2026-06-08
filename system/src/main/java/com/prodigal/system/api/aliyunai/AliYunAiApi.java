@@ -6,7 +6,7 @@ import cn.hutool.http.Header;
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.json.JSONUtil;
-import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDto;
+import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDTO;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.api.aliyunai.model.vo.GetOutPaintingTaskVO;
 import com.prodigal.system.exception.BusinessException;
@@ -44,7 +44,7 @@ public class AliYunAiApi {
      * @param createOutPaintingTaskDto 扩图接收参数
      * @return 扩图任务结果
      */
-    public CreateOutPaintingTaskVO createOutPaintingTask(CreateOutPaintingTaskDto createOutPaintingTaskDto) {
+    public CreateOutPaintingTaskVO createOutPaintingTask(CreateOutPaintingTaskDTO createOutPaintingTaskDto) {
         ThrowUtils.throwIf(createOutPaintingTaskDto == null, ErrorCode.PARAMS_ERROR,"扩图参数为空！");
         /**
          * curl --location --request POST 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting' \

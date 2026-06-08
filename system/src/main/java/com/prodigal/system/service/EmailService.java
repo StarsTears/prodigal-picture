@@ -1,14 +1,14 @@
 package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.prodigal.system.model.dto.email.EmailQueryDto;
-import com.prodigal.system.model.dto.email.EmailDto;
+import com.prodigal.system.model.dto.email.EmailQueryDTO;
+import com.prodigal.system.model.dto.email.EmailDTO;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.EmailVO;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * @program: prodigal-picture
@@ -27,23 +27,23 @@ public interface EmailService {
      */
 //    void deliverVerificationEmail(String toEmail, String code);
 
-    String addEmail(EmailDto emailDto, User loginUser, boolean isAdd);
+    String addEmail(EmailDTO emailDto, User loginUser, boolean isAdd);
     @Transactional(rollbackFor = Exception.class)
-    void sendEmailBySimpleMessage(EmailDto emailDto, User loginUser);
+    void sendEmailBySimpleMessage(EmailDTO emailDto, User loginUser);
 
     void sendMessageById(String emailId, User loginUser);
 
-    void sendEmailByMimeMessage(EmailDto emailDto, User loginUser);
+    void sendEmailByMimeMessage(EmailDTO emailDto, User loginUser);
 
     Page<EmailVO> getEmailVOPage(Page<Email> emailPage, HttpServletRequest request);
 
-    void updateEmail(EmailDto emailDto, User loginUser);
+    void updateEmail(EmailDTO emailDto, User loginUser);
 
     void deleteEmail(String emailId, User loginUser);
 
-    void fillEmailParams(Email email, EmailDto emailDto);
+    void fillEmailParams(Email email, EmailDTO emailDto);
 
-    Page<Email> listEmail(EmailQueryDto queryEmailDto, User loginUser);
+    Page<Email> listEmail(EmailQueryDTO queryEmailDTO, User loginUser);
 
     /**
      * 校验邮箱验证码

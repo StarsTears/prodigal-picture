@@ -25,9 +25,9 @@ instance.interceptors.response.use(function (response) {
   //未登录
   if (data.code === 40100 || data.code === 40200){
     const isLogin =!response.request.responseURL.includes('/sys/getLoginUser')&&!window.location.pathname.includes('/sys/login');
-    const isHome = !window.location.pathname.includes('/')
+    const isHome = window.location.pathname === '/' || window.location.pathname === '/login';
     if (isLogin && isHome){
-      window.location.href = `/login?redicect=${window.location.href}`
+      window.location.href = `/login?redirect=${window.location.href}`
       message.warning('请先登录')
     }
   }

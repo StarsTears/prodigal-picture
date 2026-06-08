@@ -146,7 +146,7 @@ const props = defineProps<Props>()
 const dataList = ref([])
 const total = ref(0)
 // 搜索条件
-const searchParams = reactive<API.SpaceUserQueryDto>({
+const searchParams = reactive<API.SpaceUserQueryDTO>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
@@ -236,7 +236,7 @@ const doDelete = async (id: number) => {
 }
 
 // 添加用户
-const formData = reactive<API.SpaceUserAddDto>({})
+const formData = reactive<API.SpaceUserAddDTO>({})
 
 const handleSubmit = async () => {
   const spaceId = props.id

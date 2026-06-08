@@ -1,8 +1,10 @@
 package com.prodigal.system.utils;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 
 /**
@@ -11,6 +13,7 @@ import java.net.InetAddress;
  * @description: 网络工具类
  **/
 public class NetUtils {
+    private static final Logger log = LoggerFactory.getLogger(NetUtils.class);
     /**
      * 获取客户端 IP 地址
      *
@@ -33,6 +36,7 @@ public class NetUtils {
                 try {
                     inet = InetAddress.getLocalHost();
                 } catch (Exception e) {
+                    log.error("Failed to get local host address", e);
                     e.printStackTrace();
                 }
                 if (inet != null) {

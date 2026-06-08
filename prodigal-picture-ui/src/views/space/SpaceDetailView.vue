@@ -117,13 +117,13 @@ const dataList = ref<API.Picture[]>([])
 const loading = ref<boolean>(true)
 const total = ref(0)
 // 搜索条件
-const searchParams = ref<API.PictureQueryDto>({
+const searchParams = ref<API.PictureQueryDTO>({
   current: 1,
   pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend'
 })
-const onSearch = (newSearchParams: API.PictureQueryDto) => {
+const onSearch = (newSearchParams: API.PictureQueryDTO) => {
   searchParams.value = {
           ...searchParams.value,
           ...newSearchParams,

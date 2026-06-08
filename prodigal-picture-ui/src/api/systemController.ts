@@ -3,7 +3,7 @@
 import request from '@/request.ts'
 
 /** addUser POST /api/sys/addUser */
-export async function addUserUsingPost(body: API.UserAddDto, options?: { [key: string]: any }) {
+export async function addUserUsingPost(body: API.UserAddDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultLong_>('/api/sys/addUser', {
     method: 'POST',
     headers: {
@@ -30,7 +30,7 @@ export async function deleteUserUsingDelete(
 }
 
 /** editUser POST /api/sys/edit */
-export async function editUserUsingPost(body: API.UserUpdateDto, options?: { [key: string]: any }) {
+export async function editUserUsingPost(body: API.UserUpdateDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/sys/edit', {
     method: 'POST',
     headers: {
@@ -89,7 +89,7 @@ export async function helloUsingGet(options?: { [key: string]: any }) {
 
 /** listUserVOByPage POST /api/sys/list/page/vo */
 export async function listUserVoByPageUsingPost(
-  body: API.UserQueryDto,
+  body: API.UserQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPageUserVO_>('/api/sys/list/page/vo', {
@@ -103,7 +103,7 @@ export async function listUserVoByPageUsingPost(
 }
 
 /** login POST /api/sys/login */
-export async function loginUsingPost(body: API.LoginDto, options?: { [key: string]: any }) {
+export async function loginUsingPost(body: API.LoginDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultUserVO_>('/api/sys/login', {
     method: 'POST',
     headers: {
@@ -123,7 +123,7 @@ export async function logoutUsingPost(options?: { [key: string]: any }) {
 }
 
 /** register POST /api/sys/register */
-export async function registerUsingPost(body: API.RegisterDto, options?: { [key: string]: any }) {
+export async function registerUsingPost(body: API.RegisterDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultString_>('/api/sys/register', {
     method: 'POST',
     headers: {
@@ -135,7 +135,7 @@ export async function registerUsingPost(body: API.RegisterDto, options?: { [key:
 }
 
 /** resetPassword POST /api/sys/reset-password */
-export async function resetPasswordUsingPost(body: API.ResetPasswordDto, options?: { [key: string]: any }) {
+export async function resetPasswordUsingPost(body: API.ResetPasswordDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/sys/reset-password', {
     method: 'POST',
     headers: {
@@ -148,7 +148,7 @@ export async function resetPasswordUsingPost(body: API.ResetPasswordDto, options
 
 /** updateUser POST /api/sys/update */
 export async function updateUserUsingPost(
-  body: API.UserUpdateDto,
+  body: API.UserUpdateDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/sys/update', {

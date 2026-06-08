@@ -4,7 +4,7 @@ import request from '@/request.ts'
 
 /** analyzeSpaceCategory POST /api/space/analyze/category */
 export async function analyzeSpaceCategoryUsingPost(
-  body: API.SpaceCategoryAnalyzeDto,
+  body: API.SpaceCategoryAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListSpaceCategoryAnalyzeVO_>('/api/space/analyze/category', {
@@ -19,7 +19,7 @@ export async function analyzeSpaceCategoryUsingPost(
 
 /** analyzeSpaceRank POST /api/space/analyze/rank */
 export async function analyzeSpaceRankUsingPost(
-  body: API.SpaceRankAnalyzeDto,
+  body: API.SpaceRankAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListSpace_>('/api/space/analyze/rank', {
@@ -34,7 +34,7 @@ export async function analyzeSpaceRankUsingPost(
 
 /** analyzeSpaceSize POST /api/space/analyze/size */
 export async function analyzeSpaceSizeUsingPost(
-  body: API.SpaceSizeAnalyzeDto,
+  body: API.SpaceSizeAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListSpaceSizeAnalyzeVO_>('/api/space/analyze/size', {
@@ -49,7 +49,7 @@ export async function analyzeSpaceSizeUsingPost(
 
 /** analyzeSpaceTag POST /api/space/analyze/tag */
 export async function analyzeSpaceTagUsingPost(
-  body: API.SpaceTagAnalyzeDto,
+  body: API.SpaceTagAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListSpaceTagAnalyzeVO_>('/api/space/analyze/tag', {
@@ -64,7 +64,7 @@ export async function analyzeSpaceTagUsingPost(
 
 /** analyzeSpaceUsage POST /api/space/analyze/usage */
 export async function analyzeSpaceUsageUsingPost(
-  body: API.SpaceUsageAnalyzeDto,
+  body: API.SpaceUsageAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultSpaceUsageAnalyzeVO_>('/api/space/analyze/usage', {
@@ -79,7 +79,7 @@ export async function analyzeSpaceUsageUsingPost(
 
 /** analyzeSpaceUser POST /api/space/analyze/user */
 export async function analyzeSpaceUserUsingPost(
-  body: API.SpaceUserAnalyzeDto,
+  body: API.SpaceUserAnalyzeDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListSpaceUserAnalyzeVO_>('/api/space/analyze/user', {

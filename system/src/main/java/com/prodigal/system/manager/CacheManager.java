@@ -7,7 +7,7 @@ import com.prodigal.system.manager.strategy.CaffeineCacheStrategy;
 import com.prodigal.system.manager.strategy.RedisCacheStrategy;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @program: prodigal-picture

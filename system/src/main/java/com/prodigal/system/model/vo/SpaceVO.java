@@ -1,6 +1,5 @@
 package com.prodigal.system.model.vo;
 
-import cn.hutool.json.JSONUtil;
 import com.prodigal.system.model.entity.Space;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;

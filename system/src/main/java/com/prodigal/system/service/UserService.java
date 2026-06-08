@@ -3,14 +3,11 @@ package com.prodigal.system.service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.prodigal.system.model.dto.user.LoginDto;
-import com.prodigal.system.model.dto.user.RegisterDto;
-import com.prodigal.system.model.dto.user.ResetPasswordDto;
-import com.prodigal.system.model.dto.user.UserQueryDto;
+import com.prodigal.system.model.dto.user.*;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.UserVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -18,15 +15,17 @@ import java.util.List;
 * @description 针对表【user(用户)】的数据库操作Service
 */
 public interface UserService extends IService<User> {
-    long register(RegisterDto registerDto);
+    long register(RegisterDTO registerDto);
 
-    UserVO login(LoginDto loginDto, HttpServletRequest request);
+    UserVO login(LoginDTO loginDto, HttpServletRequest request);
 
     User getLoginUser(HttpServletRequest request);
 
     boolean logout(HttpServletRequest request);
 
-    LambdaQueryWrapper<User> getQueryWrapper(UserQueryDto userQueryDto);
+    Long createUser(UserAddDTO userAddDto);
+
+    LambdaQueryWrapper<User> getQueryWrapper(UserQueryDTO userQueryDto);
 
     String getEncryptPassword(String password);
 
@@ -36,5 +35,5 @@ public interface UserService extends IService<User> {
 
     boolean isAdmin(User user);
 
-    void resetPassword(ResetPasswordDto dto);
+    void resetPassword(ResetPasswordDTO dto);
 }

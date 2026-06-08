@@ -49,7 +49,7 @@ const props = defineProps<Props>();
 const handleUpload=async ({file}:any)=>{
   loading.value = true;
   try {
-    const params:API.PictureUploadDto  = props.picture ? {id:props.picture.id} : {}
+    const params:API.PictureUploadDTO  = props.picture ? {id:props.picture.id} : {}
     params.spaceId = props.spaceId;
     const res = await uploadPictureUsingPost(params,{}, file);
     if (res.code === 0 && res.data) {

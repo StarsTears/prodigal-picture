@@ -49,7 +49,7 @@ import {message} from "ant-design-vue";
 import {getLoginUserUsingGet, loginUsingPost, registerUsingPost} from "@/api/systemController";
 import {useRouter} from "vue-router";
 
-const formState = reactive<API.RegisterDto>({
+const formState = reactive<API.RegisterDTO>({
   userAccount: '',
   userPassword: '',
   checkPassword: ''

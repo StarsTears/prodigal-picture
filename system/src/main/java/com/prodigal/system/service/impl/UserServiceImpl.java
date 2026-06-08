@@ -3,33 +3,37 @@ package com.prodigal.system.service.impl;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.StpKit;
 import com.prodigal.system.mapper.UserMapper;
-import com.prodigal.system.model.dto.user.LoginDto;
-import com.prodigal.system.model.dto.user.RegisterDto;
-import com.prodigal.system.model.dto.user.ResetPasswordDto;
-import com.prodigal.system.model.dto.user.UserQueryDto;
+import com.prodigal.system.model.dto.user.*;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.UserVO;
+import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,8 +42,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private static final String MD5_SALT = "prodigal";
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Lazy
+    @Resource
+    private EmailService emailService;
+
     @Override
-    public long register(RegisterDto registerDto) {
+    public long register(RegisterDTO registerDto) {
         if (registerDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -65,7 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(StrUtil.isNotBlank(userEmail), User::getUserEmail, registerDto.getUserEmail());
         Long count = this.baseMapper.selectCount(wrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户/邮箱已存在!");
+            throw new BusinessException(ErrorCode.USER_EXIST);
         }
         String encryptPassword = getEncryptPassword(registerDto.getUserPassword());
         User user = new User();
@@ -85,23 +96,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public UserVO login(LoginDto loginDto, HttpServletRequest request) {
-        if (loginDto == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+    public UserVO login(LoginDTO loginDto, HttpServletRequest request) {
+        String failKey = CacheConstant.LOGIN_FAIL_PREFIX + loginDto.getUserAccount();
+        String failCountStr = stringRedisTemplate.opsForValue().get(failKey);
+        long failCount = failCountStr != null ? Long.parseLong(failCountStr) : 0;
+        if (failCount >= CacheConstant.LOGIN_FAIL_MAX_COUNT) {
+            if (StrUtil.isBlank(loginDto.getEmail()) || StrUtil.isBlank(loginDto.getCaptcha())) {
+                throw new BusinessException(ErrorCode.CAPTCHA_ERROR, "请先获取验证码");
+            }
+            boolean valid = emailService.verifyCode(loginDto.getEmail(), loginDto.getCaptcha());
+            if (!valid) {
+                throw new BusinessException(ErrorCode.CAPTCHA_ERROR);
+            }
         }
-        if (loginDto.getUserAccount().length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户错误!");
-        }
-        if (loginDto.getUserPassword().length() < 6) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误!");
-        }
+
         User user = this.lambdaQuery()
                 .eq(User::getUserAccount, loginDto.getUserAccount())
                 .one();
         if (user == null || !matchPassword(loginDto.getUserPassword(), user.getUserPassword())) {
-            log.error("user login failed,userAccount cannot match userPassword");
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在或密码错误!");
+            log.error("user login failed, userAccount cannot match userPassword");
+            Long newCount = stringRedisTemplate.opsForValue().increment(failKey);
+            if (newCount != null && newCount == 1) {
+                stringRedisTemplate.expire(failKey, CacheConstant.LOGIN_FAIL_EXPIRE_MINUTES, TimeUnit.MINUTES);
+            }
+            throw new BusinessException(ErrorCode.LOGIN_FAIL);
         }
+
+        stringRedisTemplate.delete(failKey);
         // MD5 密码自动升级为 BCrypt
         if (isLegacyHash(user.getUserPassword())) {
             user.setUserPassword(getEncryptPassword(loginDto.getUserPassword()));
@@ -138,8 +159,32 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public LambdaQueryWrapper<User> getQueryWrapper(UserQueryDto userQueryDto) {
+    public Long createUser(UserAddDTO userAddDto) {
+        ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
+        User user = new User();
+        BeanUtils.copyProperties(userAddDto, user);
+        String userEmail = userAddDto.getUserEmail();
+        if (StrUtil.isBlank(userEmail)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+        }
+        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+        }
+        //初始密码 123456
+        final String DEFAULT_PASSWORD = "123456";
+        String encryptPassword = this.getEncryptPassword(DEFAULT_PASSWORD);
+        user.setUserPassword(encryptPassword);
+        //设置默认角色
+        user.setUserRole(StringUtils.isEmpty(userAddDto.getUserRole()) ? UserConstant.DEFAULT_ROLE : userAddDto.getUserRole());
+        boolean save = this.save(user);
+        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
+        return user.getId();
+    }
+
+    @Override
+    public LambdaQueryWrapper<User> getQueryWrapper(UserQueryDTO userQueryDto) {
         if (userQueryDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空!");
         }
@@ -212,12 +257,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public boolean isAdmin(User user) {
-        return user != null && (user.getUserRole().contains(UserConstant.ADMIN_ROLE) || user.getUserRole().contains(UserConstant.SUPER_ADMIN_ROLE));
+        if (user == null || StrUtil.isBlank(user.getUserRole())) {
+            return false;
+        }
+        List<String> roles = StrUtil.split(user.getUserRole(), ',');
+        return roles.contains(UserConstant.ADMIN_ROLE) || roles.contains(UserConstant.SUPER_ADMIN_ROLE);
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void resetPassword(ResetPasswordDto dto) {
+    public void resetPassword(ResetPasswordDTO dto) {
         String userAccount = dto.getUserAccount();
         String userEmail = dto.getUserEmail();
         String newPassword = dto.getNewPassword();
@@ -227,7 +276,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         User user = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
         if (user == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "账户不存在");
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
         if (!userEmail.equals(user.getUserEmail())) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_MATCH);

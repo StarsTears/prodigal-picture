@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -130,7 +130,7 @@ public class FileController {
      */
     @GetMapping("/test/get/temp/url")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<String> testGetTempURL(String filepath) {
+    public BaseResult<String> testGetTempURL(@RequestParam("filepath") String filepath) {
         ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
         String tempUrl = cosManager.generateTempUrl(filepath);
         return ResultUtils.success(tempUrl);

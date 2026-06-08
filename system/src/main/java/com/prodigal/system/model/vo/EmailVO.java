@@ -1,14 +1,11 @@
 package com.prodigal.system.model.vo;
 
-import cn.hutool.json.JSONUtil;
 import com.prodigal.system.model.entity.Email;
-import com.prodigal.system.model.entity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @program: prodigal-picture

@@ -14,7 +14,7 @@ import com.qcloud.cos.model.ciModel.persistence.PicOperations;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -132,9 +132,9 @@ public class CosManager {
             log.info("删除COS图片失败:{}", deleteErrors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()));
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除失败");
         } catch (CosServiceException e) {
-            e.printStackTrace();
+            log.error("COS service error", e);
         } catch (CosClientException e) {
-            e.printStackTrace();
+            log.error("COS client error", e);
         }
     }
 

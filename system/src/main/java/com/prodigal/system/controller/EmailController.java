@@ -4,32 +4,36 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.common.BaseResult;
+import com.prodigal.system.common.PageRequest;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
-import com.prodigal.system.model.dto.email.EmailQueryDto;
-import com.prodigal.system.model.dto.email.EmailDto;
+import com.prodigal.system.model.dto.email.EmailQueryDTO;
+import com.prodigal.system.model.dto.email.EmailDTO;
 import com.prodigal.system.model.dto.email.EmailRequest;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.EmailVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
+import com.prodigal.system.model.enums.EmailTypeEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 /**
  * @program: prodigal-picture
  * @author: Lang
  * @description: 邮件control 层
  **/
+@Slf4j
 @RestController
 @RequestMapping("/email")
 public class EmailController {
@@ -59,7 +63,7 @@ public class EmailController {
      */
     @PostMapping("/add")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<String> addEmail(@RequestBody EmailDto emailDto, HttpServletRequest request) {
+    public BaseResult<String> addEmail(@RequestBody EmailDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         String messageId = emailService.addEmail(emailDto, loginUser,true);
@@ -75,7 +79,7 @@ public class EmailController {
      */
     @PostMapping("/update")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> updateEmail(@RequestBody EmailDto emailDto, HttpServletRequest request) {
+    public BaseResult<Boolean> updateEmail(@RequestBody EmailDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.updateEmail(emailDto, loginUser);
@@ -109,29 +113,42 @@ public class EmailController {
      * 读取邮件（读取当前登录用户所接受的所有邮件，也可根据条件查询）
      */
     @PostMapping("/list")
-    public BaseResult<Page<EmailVO>> listEmailByPage(@RequestBody EmailQueryDto queryEmailDto, HttpServletRequest request) {
+    public BaseResult<Page<EmailVO>> listEmailByPage(@RequestBody EmailQueryDTO queryEmailDTO, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        Page<Email> emailPage = emailService.listEmail(queryEmailDto, loginUser);
+        Page<Email> emailPage = emailService.listEmail(queryEmailDTO, loginUser);
         Page<EmailVO> emailVOPage = emailService.getEmailVOPage(emailPage, request);
         return ResultUtils.success(emailVOPage);
     }
 
-
+    /**
+     * 公告列表（无需登录，仅分页，固定查询 type=公告 + status=已发）
+     */
+    @PostMapping("/notice/list")
+    public BaseResult<Page<EmailVO>> listNoticeByPage(@RequestBody PageRequest pageRequest) {
+        EmailQueryDTO queryEmailDTO = new EmailQueryDTO();
+        queryEmailDTO.setCurrent(pageRequest.getCurrent());
+        queryEmailDTO.setPageSize(pageRequest.getPageSize());
+        queryEmailDTO.setType(EmailTypeEnum.NOTICE.getValue());
+        queryEmailDTO.setStatus(2);
+        Page<Email> emailPage = emailService.listEmail(queryEmailDTO, null);
+        Page<EmailVO> emailVOPage = emailService.getEmailVOPage(emailPage, null);
+        return ResultUtils.success(emailVOPage);
+    }
 
     /**
      * 发送邮件（管理员-发送公告、告警）
      *
-     * @param sendEmailDto
+     * @param sendEmailDTO
      * @param request
      * @return
      */
     @PostMapping("/send")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> sendEmail(@RequestBody EmailDto sendEmailDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(sendEmailDto == null, ErrorCode.PARAMS_ERROR);
+    public BaseResult<Boolean> sendEmail(@RequestBody EmailDTO sendEmailDTO, HttpServletRequest request) {
+        ThrowUtils.throwIf(sendEmailDTO == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
 //        emailService.sendSimpleMessage(emailSendDto, loginUser);
-        emailService.sendEmailByMimeMessage(sendEmailDto, loginUser);
+        emailService.sendEmailByMimeMessage(sendEmailDTO, loginUser);
 
         return ResultUtils.success(true);
     }

@@ -1,4 +1,9 @@
 declare namespace API {
+  type PageRequest = {
+    current?: number
+    pageSize?: number
+  }
+
   type BaseResultBoolean_ = {
     code?: number
     data?: boolean
@@ -237,7 +242,7 @@ declare namespace API {
     requestId?: string
   }
 
-  type CreatePictureOutPaintingTaskDto = {
+  type CreatePictureOutPaintingTaskDTO = {
     parameters?: Parameters
     pictureId?: number
   }
@@ -258,7 +263,7 @@ declare namespace API {
     id?: number
   }
 
-  type EmailDto = {
+  type EmailDTO = {
     attachments?: string[]
     html?: boolean
     id?: string
@@ -270,7 +275,7 @@ declare namespace API {
     type?: number
   }
 
-  type EmailQueryDto = {
+  type EmailQueryDTO = {
     current?: number
     id?: string
     pageSize?: number
@@ -355,7 +360,7 @@ declare namespace API {
     url?: string
   }
 
-  type ImageSearchDto = {
+  type ImageSearchDTO = {
     pictureId?: number
     spaceId?: number
   }
@@ -366,7 +371,7 @@ declare namespace API {
     thumbUrl?: string
   }
 
-  type LoginDto = {
+  type LoginDTO = {
     captcha?: string
     email?: string
     loginType?: string
@@ -491,12 +496,12 @@ declare namespace API {
     viewQuantity?: number
   }
 
-  type PictureDeleteDto = {
+  type PictureDeleteDTO = {
     id?: number
     spaceId?: number
   }
 
-  type PictureEditByBatchDto = {
+  type PictureEditByBatchDTO = {
     category?: string
     nameRule?: string
     pictureIdList?: number[]
@@ -504,7 +509,7 @@ declare namespace API {
     tags?: string[]
   }
 
-  type PictureEditDto = {
+  type PictureEditDTO = {
     category?: string
     id?: number
     introduction?: string
@@ -514,12 +519,12 @@ declare namespace API {
     userId?: number
   }
 
-  type PictureGetDto = {
+  type PictureGetDTO = {
     id?: number
     spaceId?: number
   }
 
-  type PictureQueryDto = {
+  type PictureQueryDTO = {
     category?: string
     current?: number
     endEditTime?: string
@@ -546,7 +551,7 @@ declare namespace API {
     userId?: number
   }
 
-  type PictureReviewDto = {
+  type PictureReviewDTO = {
     id?: number
     reviewMessage?: string
     reviewStatus?: number
@@ -558,7 +563,7 @@ declare namespace API {
     tagList?: string[]
   }
 
-  type PictureUpdateDto = {
+  type PictureUpdateDTO = {
     category?: string
     id?: number
     introduction?: string
@@ -567,7 +572,7 @@ declare namespace API {
     tags?: string[]
   }
 
-  type PictureUploadByBatchDto = {
+  type PictureUploadByBatchDTO = {
     category?: string
     count?: number
     namePrefix?: string
@@ -577,7 +582,7 @@ declare namespace API {
     url?: string
   }
 
-  type PictureUploadDto = {
+  type PictureUploadDTO = {
     fileUrl?: string
     id?: number
     picName?: string
@@ -609,7 +614,7 @@ declare namespace API {
     viewQuantity?: number
   }
 
-  type RegisterDto = {
+  type RegisterDTO = {
     checkPassword?: string
     userAccount?: string
     userEmail?: string
@@ -638,14 +643,14 @@ declare namespace API {
     userId?: number
   }
 
-  type SpaceAddDto = {
+  type SpaceAddDTO = {
     spaceLevel?: number
     spaceName?: string
     spaceType?: number
     userId?: number
   }
 
-  type SpaceCategoryAnalyzeDto = {
+  type SpaceCategoryAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
     spaceId?: number
@@ -657,7 +662,7 @@ declare namespace API {
     totalSize?: number
   }
 
-  type SpaceEditDto = {
+  type SpaceEditDTO = {
     id?: number
     spaceName?: string
   }
@@ -669,7 +674,7 @@ declare namespace API {
     value?: number
   }
 
-  type SpaceQueryDto = {
+  type SpaceQueryDTO = {
     current?: number
     id?: number
     pageSize?: number
@@ -681,11 +686,11 @@ declare namespace API {
     userId?: number
   }
 
-  type SpaceRankAnalyzeDto = {
+  type SpaceRankAnalyzeDTO = {
     topN?: number
   }
 
-  type SpaceSizeAnalyzeDto = {
+  type SpaceSizeAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
     spaceId?: number
@@ -696,7 +701,7 @@ declare namespace API {
     sizeRange?: string
   }
 
-  type SpaceTagAnalyzeDto = {
+  type SpaceTagAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
     spaceId?: number
@@ -707,7 +712,7 @@ declare namespace API {
     tag?: string
   }
 
-  type SpaceUpdateDto = {
+  type SpaceUpdateDTO = {
     id?: number
     maxCount?: number
     maxSize?: number
@@ -715,7 +720,7 @@ declare namespace API {
     spaceName?: string
   }
 
-  type SpaceUsageAnalyzeDto = {
+  type SpaceUsageAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
     spaceId?: number
@@ -739,14 +744,14 @@ declare namespace API {
     userId?: number
   }
 
-  type SpaceUserAddDto = {
+  type SpaceUserAddDTO = {
     id?: number
     spaceId?: number
     spaceRole?: string
     userId?: number
   }
 
-  type SpaceUserAnalyzeDto = {
+  type SpaceUserAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
     spaceId?: number
@@ -759,12 +764,12 @@ declare namespace API {
     timeRange?: string
   }
 
-  type SpaceUserEditDto = {
+  type SpaceUserEditDTO = {
     id?: number
     spaceRole?: string
   }
 
-  type SpaceUserQueryDto = {
+  type SpaceUserQueryDTO = {
     current?: number
     id?: number
     pageSize?: number
@@ -839,7 +844,7 @@ declare namespace API {
     vipNumber?: number
   }
 
-  type UserAddDto = {
+  type UserAddDTO = {
     userAccount?: string
     userAvatar?: string
     userEmail?: string
@@ -848,7 +853,7 @@ declare namespace API {
     userRole?: string
   }
 
-  type UserQueryDto = {
+  type UserQueryDTO = {
     current?: number
     id?: number
     pageSize?: number
@@ -861,7 +866,7 @@ declare namespace API {
     userRole?: string
   }
 
-  type UserUpdateDto = {
+  type UserUpdateDTO = {
     id?: number
     userAccount?: string
     userAvatar?: string
@@ -887,7 +892,7 @@ declare namespace API {
     vipNumber?: number
   }
 
-  type ResetPasswordDto = {
+  type ResetPasswordDTO = {
     userAccount?: string
     userEmail?: string
     captcha?: string

@@ -163,7 +163,7 @@ const columns = [
 const dataList = ref<API.Space[]>([])
 const total = ref(0)
 // 搜索条件
-const searchParams = reactive<API.SpaceQueryDto>({
+const searchParams = reactive<API.SpaceQueryDTO>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',

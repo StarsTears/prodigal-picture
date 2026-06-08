@@ -14,7 +14,7 @@ import com.prodigal.system.service.SpaceUserService;
 import com.prodigal.system.service.UserService;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 

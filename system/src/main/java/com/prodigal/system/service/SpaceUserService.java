@@ -1,13 +1,13 @@
 package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.prodigal.system.model.dto.spaceuser.SpaceUserAddDto;
-import com.prodigal.system.model.dto.spaceuser.SpaceUserQueryDto;
+import com.prodigal.system.model.dto.spaceuser.SpaceUserAddDTO;
+import com.prodigal.system.model.dto.spaceuser.SpaceUserQueryDTO;
 import com.prodigal.system.model.entity.SpaceUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.vo.SpaceUserVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -18,11 +18,11 @@ public interface SpaceUserService extends IService<SpaceUser> {
 
     void validSpaceUser(SpaceUser spaceUser, boolean add);
 
-    long addSpaceUser(SpaceUserAddDto spaceUserAddDto);
+    long addSpaceUser(SpaceUserAddDTO spaceUserAddDTO);
 
     SpaceUserVO getSpaceUserVO(SpaceUser spaceUser, HttpServletRequest request);
 
     List<SpaceUserVO> getSpaceUserVOList(List<SpaceUser> spaceUserList);
 
-    QueryWrapper<SpaceUser> getQueryWrapper(SpaceUserQueryDto spaceUserQueryDto);
+    QueryWrapper<SpaceUser> getQueryWrapper(SpaceUserQueryDTO spaceUserQueryDTO);
 }

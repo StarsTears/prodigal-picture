@@ -59,7 +59,7 @@ import { resetPasswordUsingPost } from "@/api/systemController";
 import { sendVerificationCodeUsingPost } from '@/api/emailController';
 import { useRouter } from "vue-router";
 
-const formState = reactive<API.ResetPasswordDto>({
+const formState = reactive<API.ResetPasswordDTO>({
   userAccount: '',
   userEmail: '',
   captcha: '',
@@ -121,7 +121,7 @@ const onSendCaptcha = async () => {
   }
   sendingCaptcha.value = true;
   try {
-    const res = await sendVerificationCodeUsingPost(formState.userEmail);
+    const res = await sendVerificationCodeUsingPost({ email: formState.userEmail });
     if (res.code === 0) {
       message.success('验证码已发送，请查收邮箱');
       startCountdown();

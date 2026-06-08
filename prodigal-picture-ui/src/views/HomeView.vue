@@ -140,7 +140,7 @@ onUnmounted(() => {
 const loadingLock = ref(false)
 
 // 搜索条件
-const searchParams = reactive<API.PictureQueryDto>({
+const searchParams = reactive<API.PictureQueryDTO>({
   current: 1,
   pageSize: 20,
   sortField: 'viewQuantity',

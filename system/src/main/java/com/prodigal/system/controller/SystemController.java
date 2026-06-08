@@ -1,7 +1,5 @@
 package com.prodigal.system.controller;
 
-import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.annotation.RateLimit;
@@ -18,14 +16,13 @@ import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
-import com.prodigal.system.utils.EmailValidatorUtils;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -43,7 +40,7 @@ public class SystemController {
 
     @GetMapping("/hello")
     public BaseResult<String> hello() {
-        return BaseResult.success().data("hello! Prodigal Picture");
+        return BaseResult.<String>success().data("hello! Prodigal Picture");
     }
 
     /**
@@ -54,7 +51,7 @@ public class SystemController {
      */
     @RateLimit(maxRequests = 5, window = 60)
     @PostMapping("/register")
-    public BaseResult<String> register(@Valid @RequestBody RegisterDto registerDto) {
+    public BaseResult<String> register(@Valid @RequestBody RegisterDTO registerDto) {
         ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAMS_ERROR);
         long register = userService.register(registerDto);
         return ResultUtils.success(String.valueOf(register));
@@ -62,7 +59,7 @@ public class SystemController {
 
     @RateLimit(maxRequests = 10, window = 60)
     @PostMapping("/login")
-    public BaseResult<UserVO> login(@Valid @RequestBody LoginDto loginDto, HttpServletRequest request) {
+    public BaseResult<UserVO> login(@Valid @RequestBody LoginDTO loginDto, HttpServletRequest request) {
         ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);
         ThrowUtils.throwIf(loginDto.getLoginType() == null, ErrorCode.PARAMS_ERROR);
         if (loginDto.getLoginType().equals(LoginConstant.USER_LOGIN_TYPE)) {
@@ -77,12 +74,12 @@ public class SystemController {
             User user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
             //用户不存在就创建一个；
             if (ObjectUtils.isEmpty(user)){
-                UserAddDto userAddDto = new UserAddDto();
+                UserAddDTO userAddDto = new UserAddDTO();
                 userAddDto.setUserEmail(loginDto.getEmail());
                 userAddDto.setUserAccount(loginDto.getEmail());
                 userAddDto.setUserName(loginDto.getEmail());
 
-                BaseResult<Long> longBaseResult = this.addUser(userAddDto);
+                userService.createUser(userAddDto);
                 user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
             }
             // 写入登录态
@@ -109,26 +106,8 @@ public class SystemController {
 
     @PostMapping("/addUser")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Long> addUser(@RequestBody UserAddDto userAddDto) {
-        ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
-        User user = new User();
-        BeanUtils.copyProperties(userAddDto, user);
-        String userEmail = userAddDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
-        }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
-        }
-        //初始密码 123456
-        final String DEFAULT_PASSWORD = "123456";
-        String encryptPassword = userService.getEncryptPassword(DEFAULT_PASSWORD);
-        user.setUserPassword(encryptPassword);
-        //设置默认角色
-        user.setUserRole(StringUtils.isEmpty(userAddDto.getUserRole()) ? UserConstant.DEFAULT_ROLE : userAddDto.getUserRole());
-        boolean save = userService.save(user);
-        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(user.getId());
+    public BaseResult<Long> addUser(@Valid @RequestBody UserAddDTO userAddDto) {
+        return ResultUtils.success(userService.createUser(userAddDto));
     }
 
     /**
@@ -139,7 +118,7 @@ public class SystemController {
      */
     @GetMapping("/get")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<User> getUserByID(long id) {
+    public BaseResult<User> getUserByID(@RequestParam("id") long id) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND);
@@ -148,7 +127,7 @@ public class SystemController {
 
     @GetMapping("/get/vo")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<UserVO> getUserVOByID(long id) {
+    public BaseResult<UserVO> getUserVOByID(@RequestParam("id") long id) {
         BaseResult<User> res = getUserByID(id);
         User user = res.getData();
         return ResultUtils.success(userService.getUserVO(user));
@@ -159,8 +138,8 @@ public class SystemController {
      */
     @DeleteMapping("/delete")
     @PermissionCheck(mustRole = UserConstant.SUPER_ADMIN_ROLE)
-    public BaseResult<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
-        ThrowUtils.throwIf(deleteRequest == null || deleteRequest.getId() <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<Boolean> deleteUser(@Valid @RequestBody DeleteRequest deleteRequest) {
+        ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
         boolean removeById = userService.removeById(deleteRequest.getId());
         return ResultUtils.success(removeById);
     }
@@ -170,16 +149,9 @@ public class SystemController {
      */
     @PostMapping("/update")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> updateUser(@RequestBody UserUpdateDto userUpdateDto) {
+    public BaseResult<Boolean> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDto) {
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
-        String userEmail = userUpdateDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
-        }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
-        }
         BeanUtils.copyProperties(userUpdateDto, user);
         boolean update = userService.updateById(user);
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
@@ -190,19 +162,12 @@ public class SystemController {
      * 更新用户信息(管理员和本人)
      */
     @PostMapping("/edit")
-    public BaseResult<Boolean> editUser(@RequestBody UserUpdateDto userUpdateDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(userUpdateDto == null || userUpdateDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<Boolean> editUser(@Valid @RequestBody UserUpdateDTO userUpdateDto, HttpServletRequest request) {
+        ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         //应只能管理员/本人删除
         User loginUser = userService.getLoginUser(request);
         if (!loginUser.getId().equals(userUpdateDto.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
-        }
-        String userEmail = userUpdateDto.getUserEmail();
-        if (StrUtil.isBlank(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
-        }
-        if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
         }
         User user = new User();
         BeanUtils.copyProperties(userUpdateDto, user);
@@ -213,7 +178,7 @@ public class SystemController {
 
     @PostMapping("/list/page/vo")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDto userQueryDto) {
+    public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDTO userQueryDto) {
         ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR);
         long current = userQueryDto.getCurrent();
         long pageSize = userQueryDto.getPageSize();
@@ -230,7 +195,7 @@ public class SystemController {
      */
     @RateLimit(maxRequests = 3, window = 60)
     @PostMapping("/reset-password")
-    public BaseResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordDto dto) {
+    public BaseResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
         ThrowUtils.throwIf(dto == null, ErrorCode.PARAMS_ERROR);
         boolean valid = emailService.verifyCode(dto.getUserEmail(), dto.getCaptcha());
         ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);

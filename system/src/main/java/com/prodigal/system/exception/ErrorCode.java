@@ -11,8 +11,9 @@ import lombok.Getter;
 public enum ErrorCode {
     SUCCESS(0, "操作成功"),
     PARAMS_ERROR(40000, "参数错误"),
-    USER_NOT_FOUND(40400, "用户不存在"),
-    USER_PASSWORD_ERROR(40100, "用户名或密码错误"),
+    USER_NOT_FOUND(40400, "账户不存在"),
+    USER_EXIST(41500, "账户或邮箱已存在"),
+    LOGIN_FAIL(40100, "账户或密码错误"),
     USER_NOT_LOGIN(40200, "用户未登录"),
     USER_NOT_AUTHORIZED(40300, "用户未授权"),
     USER_NOT_PERMISSION(40500, "用户无权限"),

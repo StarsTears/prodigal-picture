@@ -1,8 +1,6 @@
 package com.prodigal.system.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.prodigal.system.model.entity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
