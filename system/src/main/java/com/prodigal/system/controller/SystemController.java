@@ -90,6 +90,12 @@ public class SystemController {
         throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的登录类型");
     }
 
+    @GetMapping("/getLoginUser")
+    public BaseResult<UserVO> getLoginUser(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getUserVO(loginUser));
+    }
+
     /**
      * 忘记密码 - 重置密码
      */

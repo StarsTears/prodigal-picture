@@ -69,14 +69,6 @@ export async function getUserVoByIdUsingGet(
   })
 }
 
-/** getLoginUser GET /api/user/getLoginUser */
-export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
-  return request<API.BaseResultUserVO_>('/api/user/getLoginUser', {
-    method: 'GET',
-    ...(options || {}),
-  })
-}
-
 /** listUserVOByPage POST /api/user/list/page/vo */
 export async function listUserVoByPageUsingPost(
   body: API.UserQueryDTO,

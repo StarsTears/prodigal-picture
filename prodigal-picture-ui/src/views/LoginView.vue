@@ -58,8 +58,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useLoginUserStore } from "@/stores/loginUserStore";
 import { message } from "ant-design-vue";
-import { getLoginUserUsingGet } from "@/api/userController";
-import { loginUsingPost } from "@/api/systemController";
+import { getLoginUserUsingGet, loginUsingPost } from "@/api/systemController";
 import { sendVerificationCodeUsingPost } from '@/api/emailController';
 import { useRoute, useRouter } from "vue-router";
 

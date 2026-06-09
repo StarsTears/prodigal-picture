@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { getLoginUserUsingGet } from '@/api/userController'
+import { getLoginUserUsingGet } from '@/api/systemController'
 import router from "@/router";
 
 /**

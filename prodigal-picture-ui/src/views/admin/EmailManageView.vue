@@ -131,7 +131,7 @@
   <EmailAddModal ref="emailFormModalRef" :onReload="fetchData"/>
 </template>
 <script lang="ts" setup>
-import {h, onMounted, reactive, ref} from "vue";
+import {h, onMounted, onUnmounted, reactive, ref} from "vue";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -153,6 +153,7 @@ import {
   EMAIL_TYPE_MAP,
   EMAIL_TYPE_OPTIONS
 } from "@/constants/email";
+import { useSSE } from "@/composables/useSSE";
 
 const statusColorMap: Record<number, string> = {
   0: 'default',
@@ -238,6 +239,15 @@ const fetchData = async () => {
 
 onMounted(() => {
   fetchData()
+})
+
+// SSE 监听邮件发送完成，自动刷新列表
+const { onEmailSent } = useSSE()
+const unsubSSE = onEmailSent(() => {
+  fetchData()
+})
+onUnmounted(() => {
+  unsubSSE()
 })
 
 const doTableChange = () => {

@@ -46,8 +46,7 @@
 import {reactive} from 'vue';
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {message} from "ant-design-vue";
-import { getLoginUserUsingGet } from "@/api/userController";
-import { loginUsingPost, registerUsingPost } from "@/api/systemController";
+import { getLoginUserUsingGet, loginUsingPost, registerUsingPost } from "@/api/systemController";
 import {useRouter} from "vue-router";
 
 const formState = reactive<API.RegisterDTO>({

@@ -134,21 +134,42 @@
   </a-modal>
 </template>
 <script lang="ts" setup>
-import {computed, h, reactive, ref} from 'vue';
+import {computed, h, reactive, ref, watch} from 'vue';
 import {
   HomeOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
   EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
   BellOutlined,MailOutlined
 } from '@ant-design/icons-vue';
-import {type FormInstance, MenuProps, message, UploadProps} from 'ant-design-vue';
+import {type FormInstance, MenuProps, message, notification, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {editUserUsingPost, updateUserUsingPost} from "@/api/userController";
 import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
 import ACCESS_ENUM from "@/access/accessEnum";
 import EmailDrawView from "@/views/email/EmailDrawView.vue";
+import { useSSE } from "@/composables/useSSE";
 
 const loginUserStore = useLoginUserStore();
+const { connect, disconnect, onEmailSent } = useSSE();
+
+// 登录后建立 SSE 连接
+watch(() => loginUserStore.loginUser?.id, (newId) => {
+  if (newId) {
+    connect();
+  } else {
+    disconnect();
+  }
+}, { immediate: true });
+
+// 收到邮件通知时提示
+onEmailSent((data) => {
+  notification.info({
+    message: '邮件通知',
+    description: data.message || '您收到一封新的通知邮件',
+    placement: 'topRight',
+    top: '64px',
+  });
+});
 
 const originItems = [
   {

@@ -24,10 +24,11 @@ instance.interceptors.response.use(function (response) {
   const { data } = response
   //未登录
   if (data.code === 40100 || data.code === 40200){
-    const isLogin =!response.request.responseURL.includes('/sys/getLoginUser')&&!window.location.pathname.includes('/sys/login');
-    const isHome = window.location.pathname === '/' || window.location.pathname === '/login';
-    if (isLogin && isHome){
-      window.location.href = `/login?redirect=${window.location.href}`
+    const requestUrl = response.request.responseURL || '';
+    const isGetLoginUser = requestUrl.includes('/user/getLoginUser') || requestUrl.includes('/sys/getLoginUser');
+    const isOnAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
+    if (!isGetLoginUser && !isOnAuthPage){
+      window.location.href = `/login?redirect=${encodeURIComponent(window.location.href)}`
       message.warning('请先登录')
     }
   }

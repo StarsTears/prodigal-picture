@@ -53,3 +53,11 @@ export async function resetPasswordUsingPost(body: API.ResetPasswordDTO, options
     ...(options || {}),
   })
 }
+
+/** getLoginUser GET /api/sys/getLoginUser */
+export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
+  return request<API.BaseResultUserVO_>('/api/sys/getLoginUser', {
+    method: 'GET',
+    ...(options || {}),
+  })
+}
