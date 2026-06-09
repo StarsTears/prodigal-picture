@@ -1,6 +1,5 @@
 package com.prodigal.system.model.message;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,11 +7,11 @@ import java.io.Serializable;
 import java.util.UUID;
 
 /**
- * 验证码邮件 MQ 消息体
+ * 邮件发送 MQ 消息体
  */
 @Data
 @NoArgsConstructor
-public class EmailCaptchaMessage implements Serializable {
+public class EmailSendMessage implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -21,13 +20,10 @@ public class EmailCaptchaMessage implements Serializable {
      */
     private String messageId;
 
-    private String email;
+    private String emailId;
 
-    private String code;
-
-    public EmailCaptchaMessage(String email, String code) {
+    public EmailSendMessage(String emailId) {
         this.messageId = UUID.randomUUID().toString();
-        this.email = email;
-        this.code = code;
+        this.emailId = emailId;
     }
 }

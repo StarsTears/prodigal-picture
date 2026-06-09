@@ -10,14 +10,17 @@ import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.model.dto.email.EmailAddDTO;
 import com.prodigal.system.model.dto.email.EmailQueryDTO;
-import com.prodigal.system.model.dto.email.EmailDTO;
 import com.prodigal.system.model.dto.email.EmailRequest;
+import com.prodigal.system.model.dto.email.EmailSendDTO;
+import com.prodigal.system.model.dto.email.EmailUpdateDTO;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.EmailVO;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
+import com.prodigal.system.model.enums.EmailStatusEnum;
 import com.prodigal.system.model.enums.EmailTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
@@ -63,10 +66,10 @@ public class EmailController {
      */
     @PostMapping("/add")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<String> addEmail(@RequestBody EmailDTO emailDto, HttpServletRequest request) {
+    public BaseResult<String> addEmail(@Valid @RequestBody EmailAddDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
-        String messageId = emailService.addEmail(emailDto, loginUser,true);
+        String messageId = emailService.addEmail(emailDto, loginUser);
         return ResultUtils.success(messageId);
     }
 
@@ -79,16 +82,15 @@ public class EmailController {
      */
     @PostMapping("/update")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> updateEmail(@RequestBody EmailDTO emailDto, HttpServletRequest request) {
+    public BaseResult<Boolean> updateEmail(@Valid @RequestBody EmailUpdateDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.updateEmail(emailDto, loginUser);
-
         return ResultUtils.success(true);
     }
 
     @PostMapping("/delete/{emailId}")
-    public BaseResult<Boolean> deleteEmail(@PathVariable String emailId, HttpServletRequest request) {
+    public BaseResult<Boolean> deleteEmail(@PathVariable("emailId") String emailId, HttpServletRequest request) {
         ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.deleteEmail(emailId, loginUser);
@@ -99,7 +101,7 @@ public class EmailController {
      * 读取邮件（管理员或者邮件接收人是当前登录用户）
      */
     @GetMapping("/get/{emailId}")
-    public BaseResult<EmailVO> getEmailById(@PathVariable String emailId, HttpServletRequest request) {
+    public BaseResult<EmailVO> getEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Email email = mongoTemplate.findById(emailId, Email.class);
         ThrowUtils.throwIf(email == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
@@ -112,7 +114,7 @@ public class EmailController {
     /**
      * 读取邮件（读取当前登录用户所接受的所有邮件，也可根据条件查询）
      */
-    @PostMapping("/list")
+    @PostMapping("/page")
     public BaseResult<Page<EmailVO>> listEmailByPage(@RequestBody EmailQueryDTO queryEmailDTO, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Page<Email> emailPage = emailService.listEmail(queryEmailDTO, loginUser);
@@ -123,13 +125,13 @@ public class EmailController {
     /**
      * 公告列表（无需登录，仅分页，固定查询 type=公告 + status=已发）
      */
-    @PostMapping("/notice/list")
+    @PostMapping("/notice/page")
     public BaseResult<Page<EmailVO>> listNoticeByPage(@RequestBody PageRequest pageRequest) {
         EmailQueryDTO queryEmailDTO = new EmailQueryDTO();
         queryEmailDTO.setCurrent(pageRequest.getCurrent());
         queryEmailDTO.setPageSize(pageRequest.getPageSize());
         queryEmailDTO.setType(EmailTypeEnum.NOTICE.getValue());
-        queryEmailDTO.setStatus(2);
+        queryEmailDTO.setStatus(EmailStatusEnum.SENT.getValue());
         Page<Email> emailPage = emailService.listEmail(queryEmailDTO, null);
         Page<EmailVO> emailVOPage = emailService.getEmailVOPage(emailPage, null);
         return ResultUtils.success(emailVOPage);
@@ -144,18 +146,16 @@ public class EmailController {
      */
     @PostMapping("/send")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> sendEmail(@RequestBody EmailDTO sendEmailDTO, HttpServletRequest request) {
+    public BaseResult<Boolean> sendEmail(@Valid @RequestBody EmailSendDTO sendEmailDTO, HttpServletRequest request) {
         ThrowUtils.throwIf(sendEmailDTO == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
-//        emailService.sendSimpleMessage(emailSendDto, loginUser);
         emailService.sendEmailByMimeMessage(sendEmailDTO, loginUser);
-
         return ResultUtils.success(true);
     }
 
     @PostMapping("/send/{emailId}")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> sendEmailById(@PathVariable String emailId, HttpServletRequest request) {
+    public BaseResult<Boolean> sendEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
         ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.sendMessageById(emailId, loginUser);

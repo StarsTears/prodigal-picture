@@ -1,4 +1,4 @@
-package com.prodigal.system.model.dto.user;
+package com.prodigal.system.model.dto.system;
 
 import lombok.Data;
 

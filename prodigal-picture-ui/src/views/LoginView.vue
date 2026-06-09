@@ -27,7 +27,7 @@
             <a-form-item>
               <a-button type="primary" html-type="submit" style="width: 100%">登录</a-button>
             </a-form-item>
-            <div class="test-account-tip">测试账号：test 密码：123456</div>
+<!--            <div class="test-account-tip">测试账号：test 密码：123456</div>-->
           </a-form>
         </a-tab-pane>
         <a-tab-pane key="email" tab="邮箱登录">
@@ -58,7 +58,8 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useLoginUserStore } from "@/stores/loginUserStore";
 import { message } from "ant-design-vue";
-import { getLoginUserUsingGet, loginUsingPost } from "@/api/systemController";
+import { getLoginUserUsingGet } from "@/api/userController";
+import { loginUsingPost } from "@/api/systemController";
 import { sendVerificationCodeUsingPost } from '@/api/emailController';
 import { useRoute, useRouter } from "vue-router";
 

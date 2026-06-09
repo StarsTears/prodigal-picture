@@ -1,7 +1,6 @@
 package com.prodigal.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -11,43 +10,36 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mongodb.client.result.DeleteResult;
 import com.prodigal.system.config.MailConfig;
 import com.prodigal.system.constant.CacheConstant;
-import com.prodigal.system.constant.GlobalConstant;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.model.message.EmailCaptchaMessage;
-import com.prodigal.system.mq.producer.EmailCaptchaProducer;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
+import com.prodigal.system.model.dto.email.EmailAddDTO;
 import com.prodigal.system.model.dto.email.EmailQueryDTO;
-import com.prodigal.system.model.dto.email.EmailDTO;
+import com.prodigal.system.model.dto.email.EmailSendDTO;
+import com.prodigal.system.model.dto.email.EmailUpdateDTO;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
+import com.prodigal.system.model.enums.EmailStatusEnum;
 import com.prodigal.system.model.enums.EmailTypeEnum;
+import com.prodigal.system.model.message.EmailCaptchaMessage;
+import com.prodigal.system.model.message.EmailSendMessage;
 import com.prodigal.system.model.vo.EmailVO;
+import com.prodigal.system.mq.producer.EmailCaptchaProducer;
+import com.prodigal.system.mq.producer.EmailSendProducer;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
-import jakarta.mail.*;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -68,16 +60,13 @@ public class EmailServiceImpl implements EmailService {
     private MongoTemplate mongoTemplate;
     @Resource
     private UserService userService;
-    private final JavaMailSender emailSender;
     @Autowired
     private StringRedisTemplate redisTemplate;
     @Resource
     private EmailCaptchaProducer emailCaptchaProducer;
+    @Resource
+    private EmailSendProducer emailSendProducer;
 
-    @Autowired
-    public EmailServiceImpl(JavaMailSender emailSender) {
-        this.emailSender = emailSender;
-    }
     @Override
     public void sendVerificationCodeAsync(String email) {
         String sendLockKey = CacheConstant.SEND_LOCK_PREFIX + email;
@@ -117,75 +106,18 @@ public class EmailServiceImpl implements EmailService {
 
 
     @Override
-    public String addEmail(EmailDTO emailDto, User loginUser,boolean isAdd) {
+    public String addEmail(EmailAddDTO emailDto, User loginUser) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
-        //校验邮箱格式、邮件类型
-        this.validEmail(emailDto);
- 
-        //根据邮箱查询用户
-        //todo 目前向一个用户发送邮件和全部用户发送邮件，（向部分用户）暂时不处理
-        if (ObjUtil.isNotNull(emailDto.getReceiveUserId())) {
-//            List<User> users = userService.listByIds(emailDto.getReceiveUserId());
-            Long receiveUseId = emailDto.getReceiveUserId();
-            QueryWrapper<User> wrapper = new QueryWrapper<>();
-            wrapper.select("id","userEmail");
-            User user = userService.getOne(wrapper);
-            if (ObjectUtil.isNull(user)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
-            }
-            String userEmail = user.getUserEmail();
-            if (StrUtil.isBlank(userEmail)){
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户邮箱未填写");
-            }
-            emailDto.setTo(userEmail);
-        }
-//        if (CollUtil.isNotEmpty(emailDto.getTo())){
-//            QueryWrapper<User> wrapper = new QueryWrapper<>();
-//            wrapper.select("id","userEmail");
-//            wrapper.in("userEmail", emailDto.getTo());
-//            userService.getBaseMapper().selectObjs(wrapper)
-//                    .stream().forEach(obj -> {
-//                        
-//                    });
-//        }
-        
-        
+        validEmail(emailDto.getTo(), emailDto.getType());
+
         Email message = new Email();
-        this.fillEmailParams(message, emailDto);
-        if (isAdd) {
-            message.setCreateTime(new Date());
-            message.setCreateUserId(loginUser.getId());
-        }else{
-            message.setUpdateTime(new Date());
-            message.setUpdateUserId(loginUser.getId());
-        }
+        fillEmailFromDTO(message, emailDto.getTo(), emailDto.getType(),
+                emailDto.getSubject(), emailDto.getTxt(), emailDto.isHtml(), emailDto.getAttachments());
+        message.setStatus(EmailStatusEnum.DRAFT.getValue());
+        message.setCreateTime(new Date());
+        message.setCreateUserId(loginUser.getId());
         message = mongoTemplate.save(message);
         return message.getId();
-    }
-
-    /**
-     * 发送邮件
-     *
-     * @param emailDto
-     * @return
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void sendEmailBySimpleMessage(EmailDTO emailDto, User loginUser) {
-        this.validEmail(emailDto);
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(mailConfig.getUsername());
-        message.setTo(JSONUtil.toJsonStr(emailDto.getTo()));
-        message.setSubject(emailDto.getSubject());
-        message.setText(emailDto.getTxt());
-        emailSender.send(message);
-
-        Email email = new Email();
-        this.fillEmailParams(email, emailDto);
-        email.setSendTime(new Date());
-        email.setStatus(2);
-        mongoTemplate.save(email);
     }
 
     /**
@@ -194,49 +126,40 @@ public class EmailServiceImpl implements EmailService {
      * @param loginUser
      */
     @Override
-    public void sendEmailByMimeMessage(EmailDTO emailDto, User loginUser) {
-       this.validEmail(emailDto);
-        MimeMessage message = emailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message);
+    public void sendEmailByMimeMessage(EmailSendDTO emailDto, User loginUser) {
+        validEmail(emailDto.getTo(), emailDto.getType());
 
-        try {
-            EmailTypeEnum emailTypeEnum = EmailTypeEnum.getEnumByValue(emailDto.getType());
-            helper.setFrom(mailConfig.getUsername(), GlobalConstant.PERSONAL);
-            if (EmailTypeEnum.NOTICE.equals(emailTypeEnum)){
-                List<String> emailList = userService.getBaseMapper()
-                                                    .selectObjs(
-                                                            new QueryWrapper<User>()
-                                                            .select("userEmail")
-                                                            .eq("isDelete", 0))
-                                                    .stream()
-                                                    .map(obj -> (String) obj).collect(Collectors.toList());
-                helper.setTo(emailList.toArray(new String[0]));
-            }else{
-                helper.setTo(emailDto.getTo());
-            }
-            helper.setSubject(emailDto.getSubject());
-            //邮件正文
-            helper.setText(emailDto.getTxt(), emailDto.isHtml()); // 第二个参数 true 表示 HTML 邮件
-            //有附件
-            if (emailDto.getAttachments() != null && !emailDto.getAttachments().isEmpty()) {
-                for (String attachment : emailDto.getAttachments()) {
-                    helper.addAttachment(attachment, new File(attachment));
-                }
-            }
-            emailSender.send(message);
-
-            // 保存邮件信息到 MongoDB
-            Email email = new Email();
-            this.fillEmailParams(email, emailDto);
-            email.setSendTime(new Date());
-            email.setStatus(2);
-            mongoTemplate.save(email);
-        } catch (MessagingException e) {
-            log.error("Failed to send email:{} ", e.getMessage());
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Failed to send email:" + e);
-        } catch (UnsupportedEncodingException e) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "Failed to send email setFrom:" + e);
+        // 告警类型必须指定收件人
+        EmailTypeEnum emailTypeEnum = EmailTypeEnum.getEnumByValue(emailDto.getType());
+        if (EmailTypeEnum.alert.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
         }
+
+        // 公告类型：若未指定收件人，则查询全量用户邮箱
+        if (EmailTypeEnum.NOTICE.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
+            List<String> emailList = userService.getBaseMapper()
+                    .selectObjs(new QueryWrapper<User>()
+                            .select("userEmail")
+                            .eq("isDelete", 0))
+                    .stream()
+                    .map(obj -> (String) obj)
+                    .collect(Collectors.toList());
+            emailDto.setTo(String.join(",", emailList));
+        }
+
+        // 先存 MongoDB，状态为已提交
+        Email email = new Email();
+        fillEmailFromDTO(email, emailDto.getTo(), emailDto.getType(),
+                emailDto.getSubject(), emailDto.getTxt(), emailDto.isHtml(), emailDto.getAttachments());
+        email.setStatus(EmailStatusEnum.SUBMITTED.getValue());
+        email.setCreateTime(new Date());
+        if (loginUser != null) {
+            email.setCreateUserId(loginUser.getId());
+        }
+        email = mongoTemplate.save(email);
+
+        // 投递 MQ 异步发送
+        emailSendProducer.send(new EmailSendMessage(email.getId()));
     }
 
     /**
@@ -249,22 +172,28 @@ public class EmailServiceImpl implements EmailService {
     public void sendMessageById(String emailId, User loginUser) {
         Email email = mongoTemplate.findById(emailId, Email.class);
         ThrowUtils.throwIf(email == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
-        if (StrUtil.isBlank(email.getTo())){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件收件人不能为空");
+        if (Integer.valueOf(EmailStatusEnum.SENT.getValue()).equals(email.getStatus())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "邮件已发送，无法重复发送");
         }
-        // 如果 message 存在，执行发送邮件的逻辑
-        EmailDTO sendEmailDTO = new EmailDTO();
-        BeanUtils.copyProperties(email, sendEmailDTO);
-        sendEmailDTO.setAttachments(JSONUtil.toList(email.getAttachments(), String.class));
-        this.sendEmailByMimeMessage(sendEmailDTO, loginUser);
+        // 告警类型必须指定收件人
+        EmailTypeEnum typeEnum = EmailTypeEnum.getEnumByValue(email.getType());
+        if (EmailTypeEnum.alert.equals(typeEnum) && StrUtil.isBlank(email.getTo())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
+        }
+        // 更新状态为已提交
+        email.setStatus(EmailStatusEnum.SUBMITTED.getValue());
+        mongoTemplate.save(email);
+
+        // 投递 MQ 异步发送
+        emailSendProducer.send(new EmailSendMessage(email.getId()));
     }
 
     Query fillParamsByCriteria(EmailQueryDTO queryEmailDTO) {
         Query query = new Query();
 //        Criteria criteria = new Criteria();
         if (StrUtil.isNotBlank(queryEmailDTO.getTo())) {
-//            criteria.andOperator(Criteria.where("to").is(queryEmailDTO.getTo()));
-            query.addCriteria(Criteria.where("to").is(queryEmailDTO.getTo()));
+            Pattern pattern = Pattern.compile("^.*" + queryEmailDTO.getTo() + ".*$", Pattern.CASE_INSENSITIVE);
+            query.addCriteria(Criteria.where("to").regex(pattern));
         }
         //邮件状态
         if (ObjectUtil.isNotEmpty(queryEmailDTO.getStatus())) {
@@ -294,23 +223,17 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public Page<Email> listEmail(EmailQueryDTO queryEmailDTO, User loginUser) {
-        //获取分页大小，及当前页
         int current = (int) queryEmailDTO.getCurrent();
         int pageSize = (int) queryEmailDTO.getPageSize();
-        Pageable pageable = PageRequest.of(current,pageSize, Sort.by("createTime").descending());
         Query query = fillParamsByCriteria(queryEmailDTO);
-        // 查询总条数
         long total = mongoTemplate.count(query, Email.class, "email");
 
-        query.with(pageable);
-        //获取总页数
-        long pages = (long)Math.ceil(total/pageSize) ;
-        //mongo分页通过skip和limit
-        long skip = (long) (current - 1) *pageSize;
+        query.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        long skip = (long) (current - 1) * pageSize;
         query.skip(skip).limit(pageSize);
         List<Email> emailList = mongoTemplate.find(query, Email.class);
 
-        Page<Email> emailPage = new Page<>(current, pageSize, total,false);
+        Page<Email> emailPage = new Page<>(current, pageSize, total, false);
         return emailPage.setRecords(emailList);
     }
 
@@ -349,22 +272,32 @@ public class EmailServiceImpl implements EmailService {
      * @param loginUser
      */
     @Override
-    public void updateEmail(EmailDTO emailDto, User loginUser) {
-        ThrowUtils.throwIf(emailDto==null || emailDto.getId() == null, ErrorCode.PARAMS_ERROR);
+    public void updateEmail(EmailUpdateDTO emailDto, User loginUser) {
+        ThrowUtils.throwIf(emailDto == null || emailDto.getId() == null, ErrorCode.PARAMS_ERROR);
         Email oldEmail = mongoTemplate.findById(emailDto.getId(), Email.class);
         ThrowUtils.throwIf(oldEmail == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailDto.getId());
 
-        if (oldEmail.getStatus()==2){
+        if (Integer.valueOf(EmailStatusEnum.SENT.getValue()).equals(oldEmail.getStatus())) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "邮件已发送，无法修改!!!");
         }
 
-        this.validEmail(emailDto);
+        validEmail(emailDto.getTo(), emailDto.getType());
 
-        Email message = new Email();
-        this.fillEmailParams(message, emailDto);
-        message.setUpdateTime(new Date());
-        message.setUpdateUserId(loginUser.getId());
-        mongoTemplate.save(message);
+        Email email = new Email();
+        fillEmailFromDTO(email, emailDto.getTo(), emailDto.getType(),
+                emailDto.getSubject(), emailDto.getTxt(), emailDto.isHtml(), emailDto.getAttachments());
+        email.setId(emailDto.getId());
+        email.setCreateTime(oldEmail.getCreateTime());
+        email.setCreateUserId(oldEmail.getCreateUserId());
+        email.setSendTime(oldEmail.getSendTime());
+        if (emailDto.getStatus() != null) {
+            email.setStatus(emailDto.getStatus());
+        } else if (!Integer.valueOf(EmailStatusEnum.DRAFT.getValue()).equals(oldEmail.getStatus())) {
+            email.setStatus(oldEmail.getStatus());
+        }
+        email.setUpdateTime(new Date());
+        email.setUpdateUserId(loginUser.getId());
+        mongoTemplate.save(email);
     }
 
     /**
@@ -382,43 +315,24 @@ public class EmailServiceImpl implements EmailService {
         log.info("删除邮件成功，邮件id:{},受影响行数：{}", emailId,remove.getDeletedCount());
     }
 
-    /**
-     * 保存邮件消息
-     *
-     * @param email
-     * @param emailDto
-     * @return
-     */
-    @Override
-    public void fillEmailParams(Email email, EmailDTO emailDto) {
-        BeanUtils.copyProperties(emailDto, email);
-        email.setStatus(emailDto.getStatus());
-        email.setCreateTime(new Date());
-        if (emailDto.getAttachments() != null) {
-            email.setAttachments(JSONUtil.toJsonStr(emailDto.getAttachments()));
+    private void fillEmailFromDTO(Email email, String to, Integer type, String subject,
+                                   String txt, boolean isHtml, List<String> attachments) {
+        email.setTo(to);
+        email.setType(type);
+        email.setSubject(subject);
+        email.setTxt(txt);
+        email.setHtml(isHtml);
+        if (attachments != null) {
+            email.setAttachments(JSONUtil.toJsonStr(attachments));
         }
-        if (StrUtil.isNotBlank(emailDto.getTo())) {
+        if (StrUtil.isNotBlank(to)) {
+            String firstEmail = to.split(",")[0].trim();
             LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>()
-                    .in(User::getUserEmail, emailDto.getTo())
+                    .eq(User::getUserEmail, firstEmail)
                     .eq(User::getIsDelete, 0);
             User user = userService.getBaseMapper().selectOne(wrapper);
-            ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR, "User not found for email: " + emailDto.getTo());
-            email.setReceiveUserId(user.getId());
-        }else{
-            email.setReceiveUserId(null);
-        }
-
-        //存在email_id 就将 创建人及创建时间 记录
-        if (StrUtil.isNotBlank(emailDto.getId())) {
-            Email oldEmail = mongoTemplate.findById(emailDto.getId(), Email.class);
-            if (ObjectUtil.isNotEmpty(oldEmail)) {
-                // 如果 message 存在，执行发送邮件的逻辑
-                email.setCreateTime(oldEmail.getCreateTime());
-                email.setCreateUserId(oldEmail.getCreateUserId());
-                email.setSendTime(oldEmail.getSendTime());
-                if (oldEmail.getStatus() != 0) {
-                    email.setStatus(oldEmail.getStatus());
-                }
+            if (user != null) {
+                email.setReceiveUserId(user.getId());
             }
         }
     }
@@ -435,18 +349,20 @@ public class EmailServiceImpl implements EmailService {
 
     /**
      * 邮箱格式、类型 校验
-     * @param emailDto
+     * @param to 收件人
+     * @param type 邮件类型
      */
-    private void validEmail(EmailDTO emailDto){
-        String to = emailDto.getTo();
-        if (StrUtil.isNotBlank(to)){
-            if (!EmailValidatorUtils.isValidEmail(to)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "以下邮箱格式错误:" + to);
+    private void validEmail(String to, Integer type) {
+        if (StrUtil.isNotBlank(to)) {
+            String[] emails = to.split(",");
+            for (String email : emails) {
+                String trimmed = email.trim();
+                if (StrUtil.isNotBlank(trimmed) && !EmailValidatorUtils.isValidEmail(trimmed)) {
+                    throw new BusinessException(ErrorCode.PARAMS_ERROR, "以下邮箱格式错误:" + trimmed);
+                }
             }
         }
-        Integer type = emailDto.getType();
-        EmailTypeEnum enumByValue = EmailTypeEnum.getEnumByValue(type);
-        if (type!=null && enumByValue == null){
+        if (type != null && EmailTypeEnum.getEnumByValue(type) == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮件类型错误");
         }
     }

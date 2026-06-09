@@ -1,6 +1,8 @@
 package com.prodigal.system.model.dto.email;
 
 import com.prodigal.system.model.enums.EmailTypeEnum;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,11 +28,13 @@ public class EmailDTO implements Serializable {
     /**
      * 邮件类型
      */
+    @NotNull(message = "邮件类型不能为空")
     private Integer type;
     /**
      * 状态：
      *  0:自建(草稿) 1:提交 2：已发
      */
+    @NotNull(message = "邮件状态不能为空")
     private Integer status;
 
     /**

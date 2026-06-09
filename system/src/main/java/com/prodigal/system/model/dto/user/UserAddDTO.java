@@ -19,6 +19,7 @@ public class UserAddDTO implements Serializable {
     /**
      * 账号
      */
+    @NotBlank(message = "账号不能为空")
     private String userAccount;
 
     /**

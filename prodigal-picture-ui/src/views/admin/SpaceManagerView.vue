@@ -57,10 +57,15 @@
       </template>
       <!-- 空间类别 -->
       <template v-if="column.dataIndex === 'spaceType'">
-        <a-tag>{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
+        <a-tag v-if="record.spaceType === 0" color="blue">{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
+        <a-tag v-else-if="record.spaceType === 1" color="green">{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
+        <a-tag v-else>{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
       </template>
       <template v-if="column.dataIndex ==='spaceLevel'">
-        <a-tag>{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
+        <a-tag v-if="record.spaceLevel === 0" color="blue">{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
+        <a-tag v-else-if="record.spaceLevel === 1" color="orange">{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
+        <a-tag v-else-if="record.spaceLevel === 2" color="red">{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
+        <a-tag v-else>{{ SPACE_LEVEL_MAP[record.spaceLevel] }}</a-tag>
       </template>
       <template v-if="column.dataIndex === 'spaceUseInfo'">
         <div>大小：{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
@@ -75,10 +80,11 @@
       </template>
       <template v-if="column.key === 'action'">
         <a-space wrap>
-          <a-button type="link" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
+          <a-button size="small" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
             分析
           </a-button>
-          <a-button type="primary"
+          <a-button size="small"
+                    type="primary"
                     :icon="h(EditOutlined)"
                     :href="`/space/add_space?id=${record.id}`"
                     target="_blank">
@@ -86,13 +92,10 @@
           </a-button>
           <a-popconfirm okText="确定"
                         cancelText="取消"
-                        title="Sure to delete?"
+                        title="确定删除？"
                         @confirm="doDelete(record.id)">
-            <a-button danger>
+            <a-button size="small" danger :icon="h(DeleteOutlined)">
               删除
-              <template #icon>
-                <DeleteOutlined/>
-              </template>
             </a-button>
           </a-popconfirm>
         </a-space>
@@ -115,18 +118,15 @@ const columns = [
   {
     title: '序号',
     width: 50,
-    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
     width: 80,
-    fixed: 'left'
   },
   {
     title: '空间名称',
     dataIndex: 'spaceName',
-    fixed: 'left'
   },
   {
     title: '空间类别',
@@ -156,7 +156,6 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    fixed: 'right'
   },
 ]
 // 数据

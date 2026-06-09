@@ -6,6 +6,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.support.RetryTemplate;
@@ -34,7 +35,8 @@ public class EmailRabbitMQConfig {
     }
 
     @Bean
-    public Binding emailCaptchaBinding(Queue emailCaptchaQueue, DirectExchange emailCaptchaExchange) {
+    public Binding emailCaptchaBinding(@Qualifier("emailCaptchaQueue") Queue emailCaptchaQueue,
+                                       @Qualifier("emailCaptchaExchange") DirectExchange emailCaptchaExchange) {
         return BindingBuilder.bind(emailCaptchaQueue)
                 .to(emailCaptchaExchange)
                 .with(EmailMqConstant.CAPTCHA_ROUTING_KEY);
@@ -48,12 +50,49 @@ public class EmailRabbitMQConfig {
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(messageConverter);
         factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
-//        RetryTemplate retryTemplate = new RetryTemplateBuilder()
-//                .maxAttempts(3)
-//                .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
-//                .build();
-//        factory.setRetryTemplate(retryTemplate);
-        factory.setErrorHandler(e -> log.warn("[send email captcha] Error: {}", e.getMessage(), e));
+        RetryTemplate retryTemplate = new RetryTemplateBuilder()
+                .maxAttempts(3)
+                .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
+                .build();
+        factory.setRetryTemplate(retryTemplate);
+        factory.setErrorHandler(e -> log.warn("[send email captcha] retry exhausted, error: {}", e.getMessage(), e));
+        return factory;
+    }
+
+    // ---------- 邮件发送（公告/告警）拓扑 ----------
+
+    @Bean
+    public Queue emailSendQueue() {
+        return new Queue(EmailMqConstant.EMAIL_SEND_QUEUE, true);
+    }
+
+    @Bean
+    public DirectExchange emailSendExchange() {
+        return new DirectExchange(EmailMqConstant.EMAIL_SEND_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Binding emailSendBinding(@Qualifier("emailSendQueue") Queue emailSendQueue,
+                                    @Qualifier("emailSendExchange") DirectExchange emailSendExchange) {
+        return BindingBuilder.bind(emailSendQueue)
+                .to(emailSendExchange)
+                .with(EmailMqConstant.EMAIL_SEND_ROUTING_KEY);
+    }
+
+    @Bean("emailSendRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory emailSendListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        RetryTemplate retryTemplate = new RetryTemplateBuilder()
+                .maxAttempts(3)
+                .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
+                .build();
+        factory.setRetryTemplate(retryTemplate);
+        factory.setErrorHandler(e -> log.warn("[send email] retry exhausted, error: {}", e.getMessage(), e));
         return factory;
     }
 }

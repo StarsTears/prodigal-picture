@@ -4,7 +4,7 @@ server:
     context-path: /api
   #session 配置
   session:
-    timeout: 2592000 #30天过期
+    timeout: 1800 #30天过期
 spring:
   application:
     name: prodigal-system

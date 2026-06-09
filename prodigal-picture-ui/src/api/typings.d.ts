@@ -39,13 +39,6 @@ declare namespace API {
     status?: boolean
   }
 
-  type BaseResultListGitHubCommitInfo_ = {
-    code?: number
-    data?: GitHubCommitInfo[]
-    msg?: string
-    status?: boolean
-  }
-
   type BaseResultListImageSearchResult_ = {
     code?: number
     data?: ImageSearchResult[]
@@ -263,6 +256,35 @@ declare namespace API {
     id?: number
   }
 
+  type EmailAddDTO = {
+    attachments?: string[]
+    html?: boolean
+    subject?: string
+    to?: string
+    txt?: string
+    type?: number
+  }
+
+  type EmailUpdateDTO = {
+    attachments?: string[]
+    html?: boolean
+    id?: string
+    status?: number
+    subject?: string
+    to?: string
+    txt?: string
+    type?: number
+  }
+
+  type EmailSendDTO = {
+    attachments?: string[]
+    html?: boolean
+    subject?: string
+    to?: string
+    txt?: string
+    type?: number
+  }
+
   type EmailDTO = {
     attachments?: string[]
     html?: boolean
@@ -349,15 +371,6 @@ declare namespace API {
   type getUserVOByIDUsingGETParams = {
     /** id */
     id?: number
-  }
-
-  type GitHubCommitInfo = {
-    authorEmail?: string
-    authorName?: string
-    date?: string
-    message?: string
-    sha?: string
-    url?: string
   }
 
   type ImageSearchDTO = {

@@ -136,14 +136,15 @@
 <script lang="ts" setup>
 import {computed, h, reactive, ref} from 'vue';
 import {
-  HomeOutlined, GithubOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
+  HomeOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
   EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
   BellOutlined,MailOutlined
 } from '@ant-design/icons-vue';
 import {type FormInstance, MenuProps, message, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
-import {editUserUsingPost, helloUsingGet, logoutUsingPost, updateUserUsingPost} from "@/api/systemController";
+import {editUserUsingPost, updateUserUsingPost} from "@/api/userController";
+import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
 import ACCESS_ENUM from "@/access/accessEnum";
 import EmailDrawView from "@/views/email/EmailDrawView.vue";
 
@@ -181,13 +182,6 @@ const originItems = [
     label: '用户管理',
     title: '用户管理',
   },
-  // {
-  //   key: '/admin/gitHub',
-  //   icon: h(GithubOutlined),
-  //   title: 'GitHub Commit History',
-  //   label: 'GitHub Commit History',
-  //   // label: h('a', {href: 'https://github.com/StarsTears/prodigal-picture', target: '_blank'}, 'prodigal-picture'),
-  // },
   {
     key: "/email/notice",
     icon: h(SoundOutlined),

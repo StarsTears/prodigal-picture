@@ -10,12 +10,10 @@ export const EMAIL_TYPE_MAP = {
   1: '告警',
 }
 
-export const  EMAIL_TYPE_OPTIONS = Object.keys( EMAIL_TYPE_MAP).map((key) => {
-  return {
-    label:  EMAIL_TYPE_MAP[key],
-    value: key,
-  }
-})
+export const EMAIL_TYPE_OPTIONS = [
+  { label: '公告', value: 0 },
+  { label: '告警', value: 1 },
+]
 
 
 
@@ -32,9 +30,8 @@ export const EMAIL_STATUS_MAP = {
   2: '已发',
 }
 
-export const  EMAIL_STATUS_OPTIONS = Object.keys( EMAIL_STATUS_MAP).map((key) => {
-  return {
-    label:  EMAIL_STATUS_MAP[key],
-    value: key,
-  }
-})
+export const EMAIL_STATUS_OPTIONS = [
+  { label: '草稿', value: 0 },
+  { label: '提交', value: 1 },
+  { label: '已发', value: 2 },
+]

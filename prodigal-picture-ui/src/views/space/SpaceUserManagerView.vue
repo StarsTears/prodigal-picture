@@ -76,13 +76,10 @@
           <a-space wrap>
             <a-popconfirm okText="确定"
                           cancelText="取消"
-                          title="Sure to delete?"
+                          title="确定删除？"
                           @confirm="doDelete(record.id)">
-              <a-button danger>
+              <a-button size="small" danger :icon="h(DeleteOutlined)">
                 删除
-                <template #icon>
-                  <DeleteOutlined/>
-                </template>
               </a-button>
             </a-popconfirm>
           </a-space>
@@ -109,13 +106,11 @@ const columns = [
   {
     title: '序号',
     width: 50,
-    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
     width: 80,
-    fixed: 'left'
   },
   {
     title: '用户',

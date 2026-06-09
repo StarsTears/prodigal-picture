@@ -12,6 +12,9 @@ import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.StpKit;
 import com.prodigal.system.mapper.UserMapper;
+import com.prodigal.system.model.dto.system.LoginDTO;
+import com.prodigal.system.model.dto.system.RegisterDTO;
+import com.prodigal.system.model.dto.system.ResetPasswordDTO;
 import com.prodigal.system.model.dto.user.*;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
@@ -33,6 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -88,6 +92,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StrUtil.isNotBlank(userEmail)) {
             user.setUserEmail(userEmail);
         }
+        user.setShareCode(generateShareCode());
         boolean save = this.save(user);
         if (!save) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败!");
@@ -178,6 +183,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserPassword(encryptPassword);
         //设置默认角色
         user.setUserRole(StringUtils.isEmpty(userAddDto.getUserRole()) ? UserConstant.DEFAULT_ROLE : userAddDto.getUserRole());
+        user.setShareCode(generateShareCode());
         boolean save = this.save(user);
         ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
         return user.getId();
@@ -302,5 +308,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return legacyHash.equals(storedHash);
         }
         return passwordEncoder.matches(rawPassword, storedHash);
+    }
+
+    private static final String SHARE_CODE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final Random RANDOM = new Random();
+
+    /**
+     * 生成不重复的分享码（8位大写字母+数字）
+     */
+    private String generateShareCode() {
+        for (int attempt = 0; attempt < 10; attempt++) {
+            StringBuilder sb = new StringBuilder(8);
+            for (int i = 0; i < 8; i++) {
+                sb.append(SHARE_CODE_CHARS.charAt(RANDOM.nextInt(SHARE_CODE_CHARS.length())));
+            }
+            String code = sb.toString();
+            if (!this.lambdaQuery().eq(User::getShareCode, code).exists()) {
+                return code;
+            }
+        }
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "分享码生成失败，请重试");
     }
 }

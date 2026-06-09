@@ -3,7 +3,7 @@
 import request from '@/request.ts'
 
 /** addEmail POST /api/email/add */
-export async function addEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
+export async function addEmailUsingPost(body: API.EmailAddDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultString_>('/api/email/add', {
     method: 'POST',
     headers: {
@@ -42,12 +42,12 @@ export async function getEmailByIdUsingGet(
   })
 }
 
-/** listEmailByPage POST /api/email/list */
+/** listEmailByPage POST /api/email/page */
 export async function listEmailByPageUsingPost(
   body: API.EmailQueryDTO,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResultPageEmailVO_>('/api/email/list', {
+  return request<API.BaseResultPageEmailVO_>('/api/email/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -57,12 +57,12 @@ export async function listEmailByPageUsingPost(
   })
 }
 
-/** listNoticeByPage POST /api/email/notice/list */
+/** listNoticeByPage POST /api/email/notice/page */
 export async function listNoticeByPageUsingPost(
   body: API.PageRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResultPageEmailVO_>('/api/email/notice/list', {
+  return request<API.BaseResultPageEmailVO_>('/api/email/notice/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export async function listNoticeByPageUsingPost(
 }
 
 /** sendEmail POST /api/email/send */
-export async function sendEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
+export async function sendEmailUsingPost(body: API.EmailSendDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/send', {
     method: 'POST',
     headers: {
@@ -114,7 +114,7 @@ export async function sendVerificationCodeUsingPost(
 }
 
 /** updateEmail POST /api/email/update */
-export async function updateEmailUsingPost(body: API.EmailDTO, options?: { [key: string]: any }) {
+export async function updateEmailUsingPost(body: API.EmailUpdateDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/update', {
     method: 'POST',
     headers: {

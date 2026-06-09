@@ -15,9 +15,6 @@
         </a-layout-content>
       </a-layout>
       <a-layout-footer class="footer">
-        <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
-          <GithubOutlined/>
-        </a>
         Prodigal Picture | Copyright 20001-2026  All Rights Reserved.
       </a-layout-footer>
     </a-layout>
@@ -27,12 +24,11 @@
 <script lang="ts">
 import GlobalHeader from "@/components/GlobalHeader.vue";
 import GlobalSider from "@/components/GlobalSider.vue";
-import {GithubOutlined} from '@ant-design/icons-vue';
 import {ref, watchEffect,computed} from "vue";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 export default {
   name: "BasicLayout",
-  components: {GlobalHeader,GlobalSider, GithubOutlined},
+  components: {GlobalHeader,GlobalSider},
   setup() {
     const siderWidth = ref(200);
     const loginUserStore = useLoginUserStore();

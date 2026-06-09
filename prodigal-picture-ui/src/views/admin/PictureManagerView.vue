@@ -94,14 +94,13 @@
         </template>
         <template v-if="column.key === 'action'">
           <a-space wrap>
-            <a-button type="link" :href="`/picture/add_picture?id=${record.id}`" target="_blank">
+            <a-button size="small" type="primary" :icon="h(EditOutlined)" :href="`/picture/add_picture?id=${record.id}`" target="_blank">
               编辑
-              <template #icon>
-                <EditOutlined/>
-              </template>
             </a-button>
             <a-button v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.PASS"
-                      type="link"
+                      size="small"
+                      type="primary"
+                      ghost
                       :icon="h(CheckOutlined)"
                       @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS)">
               通过
@@ -109,21 +108,18 @@
             <a-popconfirm v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.REJECT"
                           okText="确定"
                           cancelText="取消"
-                          title="Sure to Reject?"
+                          title="确定拒绝？"
                           @confirm="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)">
-              <a-button danger :icon="h(SmileOutlined)">
+              <a-button size="small" danger :icon="h(StopOutlined)">
                 拒绝
               </a-button>
             </a-popconfirm>
             <a-popconfirm okText="确定"
                           cancelText="取消"
-                          title="Sure to delete?"
+                          title="确定删除？"
                           @confirm="doDelete(record)">
-              <a-button danger>
+              <a-button size="small" danger :icon="h(DeleteOutlined)">
                 删除
-                <template #icon>
-                  <DeleteOutlined/>
-                </template>
               </a-button>
             </a-popconfirm>
           </a-space>
@@ -133,8 +129,8 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {h, computed, onMounted, reactive, ref, UnwrapRef, unref} from "vue";
-import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined, CheckOutlined} from '@ant-design/icons-vue';
+import {h, computed, onMounted, reactive, ref, unref} from "vue";
+import {StopOutlined, DeleteOutlined, EditOutlined, CheckOutlined} from '@ant-design/icons-vue';
 import {Table, message} from "ant-design-vue";
 import dayjs from "dayjs";
 import {cloneDeep} from 'lodash-es';
@@ -148,20 +144,17 @@ import {
 const columns = [
   {
     title: '序号',
-    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
     width: 150,
-    fixed: 'left',
     ellipsis: true,
   },
   {
     title: '名称',
     dataIndex: 'name',
     width: 200,
-    fixed: 'left'
   },
   {
     title: '图片',
@@ -212,8 +205,6 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    // width: 260,
-    fixed: 'right'
   },
 ]
 // 数据

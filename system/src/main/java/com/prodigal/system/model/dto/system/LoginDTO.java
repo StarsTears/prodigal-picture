@@ -1,9 +1,9 @@
-package com.prodigal.system.model.dto.user;
+package com.prodigal.system.model.dto.system;
 
 import lombok.Data;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 
 @Data
@@ -19,5 +19,6 @@ public class LoginDTO implements Serializable {
 
     private String captcha;
 
+    @Email(message = "邮箱格式错误")
     private String email;
 }

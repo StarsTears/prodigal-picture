@@ -22,6 +22,10 @@ public interface CacheConstant {
     String CODE_PREFIX = "verification:code:";
     /** 发送频率限制（与验证码有效期解耦，避免 5 分钟内无法重发） */
     String SEND_LOCK_PREFIX = "verification:send:lock:";
+    /** 验证码消息幂等消费标记 */
+    String CAPTCHA_CONSUMED_PREFIX = "captcha:consumed:";
+    /** 邮件发送消息幂等消费标记 */
+    String EMAIL_SEND_CONSUMED_PREFIX = "email:send:consumed:";
     long CODE_EXPIRE_MINUTES = 5;
 
     long SEND_LOCK_SECONDS = 60;

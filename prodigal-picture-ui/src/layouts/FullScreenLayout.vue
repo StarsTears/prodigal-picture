@@ -7,9 +7,6 @@
       </a-layout-content>
 
       <a-layout-footer class="footer">
-        <a href="https://github.com/StarsTears/prodigal-picture/" target="_blank">
-          <GithubOutlined/>
-        </a>
         Prodigal Picture | Copyright © prodigal 20001-2026  All Rights Reserved.
       </a-layout-footer>
     </a-layout>
@@ -17,10 +14,8 @@
 </template>
 
 <script lang="ts">
-import {GithubOutlined} from '@ant-design/icons-vue';
 export default {
   name: "FullScreenLayout",
-  components: {GithubOutlined}
 }
 </script>
 

@@ -4,17 +4,18 @@
       <h2 class="title">Prodigal Picture - 重置密码</h2>
       <div class="desc">企业级智能协同云图库</div>
       <a-form ref="formRef" :model="formState" name="resetPassword" autocomplete="off" @finish="handleSubmit">
+        <input type="text" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off" name="decoy"/>
         <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">
-          <a-input v-model:value="formState.userAccount" placeholder="请输入账号" />
+          <a-input v-model:value="formState.userAccount" placeholder="请输入账号" autocomplete="nope" />
         </a-form-item>
         <a-form-item name="userEmail"
                      :rules="[{ required: true, message: '请输入邮箱' },
                               { type: 'email', validator: checkEmail, message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }]">
-          <a-input v-model:value="formState.userEmail" placeholder="请输入邮箱" />
+          <a-input v-model:value="formState.userEmail" placeholder="请输入邮箱" autocomplete="nope" />
         </a-form-item>
         <a-form-item name="captcha" :rules="[{ required: true, message: '请输入验证码' }]">
           <a-input-group compact>
-            <a-input v-model:value="formState.captcha" style="width: 60%" placeholder="请输入验证码" />
+            <a-input v-model:value="formState.captcha" style="width: 60%" placeholder="请输入验证码" autocomplete="nope" />
             <a-button class="captcha-btn" style="width: 38%" :disabled="countdown > 0 || !formState.userEmail || sendingCaptcha" @click="onSendCaptcha">
               <span v-if="countdown === 0">获取验证码</span>
               <span v-else>{{ countdown }} 秒后重试</span>
@@ -28,7 +29,7 @@
             { min: 6, message: '密码不能小于 6 位' },
           ]"
         >
-          <a-input-password v-model:value="formState.newPassword" placeholder="请输入新密码" @change="onNewPasswordChange" />
+          <a-input-password v-model:value="formState.newPassword" placeholder="请输入新密码" autocomplete="new-password" @change="onNewPasswordChange" />
         </a-form-item>
         <a-form-item
           name="checkPassword"
@@ -38,7 +39,7 @@
             { validator: validateCheckPassword, message: '两次输入的密码不一致', trigger: ['blur', 'change'] },
           ]"
         >
-          <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" />
+          <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" autocomplete="new-password" />
         </a-form-item>
         <div class="tips">
           想起密码了？
