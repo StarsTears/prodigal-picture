@@ -1,5 +1,6 @@
 package com.prodigal.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
@@ -46,10 +47,10 @@ public class SpaceController {
     private SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/add")
-    public BaseResult<Long> addSpace(@RequestBody SpaceAddDTO spaceAddDto, HttpServletRequest request) {
+    public BaseResult<String> addSpace(@RequestBody SpaceAddDTO spaceAddDto, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceAddDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
-        long spaceId = spaceService.addSpace(spaceAddDto, loginUser);
+        String spaceId = spaceService.addSpace(spaceAddDto, loginUser);
 
         return ResultUtils.success(spaceId);
     }
@@ -63,7 +64,7 @@ public class SpaceController {
         //校验
         spaceService.validSpace(space, false);
         //校验空间是否存在
-        Long id = spaceUpdateDto.getId();
+        String id = spaceUpdateDto.getId();
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         //操作数据库
@@ -95,8 +96,8 @@ public class SpaceController {
 
     @GetMapping("/get")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<Space> getSpaceByID(@RequestParam("id") long id, HttpServletRequest request) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<Space> getSpaceByID(@RequestParam("id") String id, HttpServletRequest request) {
+        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
 
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
@@ -109,8 +110,8 @@ public class SpaceController {
      * @param request 浏览器请求
      */
     @GetMapping("/get/vo")
-    public BaseResult<SpaceVO> getSpaceVOByID(@RequestParam("id") long id, HttpServletRequest request) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<SpaceVO> getSpaceVOByID(@RequestParam("id") String id, HttpServletRequest request) {
+        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
         Space Space = spaceService.getById(id);
         SpaceVO spaceVO = spaceService.getSpaceVO(Space, request);
         User loginUser = userService.getLoginUser(request);

@@ -216,7 +216,7 @@ const editSpaceRole = async (value, record) => {
 
 
 //删除
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   if (!id) {
     return
   }

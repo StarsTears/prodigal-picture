@@ -1,5 +1,11 @@
 <template>
-  <div v-if="dataList.length === 0" class="empty-state">
+  <div v-if="loading" class="skeleton-grid">
+    <div v-for="i in 8" :key="i" class="skeleton-card">
+      <a-skeleton-image style="width: 100%; height: 180px" />
+      <a-skeleton active :paragraph="{ rows: 1 }" :title="false" style="padding: 8px 10px" />
+    </div>
+  </div>
+  <div v-else-if="dataList.length === 0" class="empty-state">
     <a-empty :image="Empty.PRESENTED_IMAGE_SIMPLE" description="暂无图片" />
   </div>
   <Waterfall v-else
@@ -107,6 +113,18 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 </script>
 
 <style scoped>
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.skeleton-card {
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-card);
+}
+
 .empty-state {
   display: flex;
   justify-content: center;

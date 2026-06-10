@@ -15,9 +15,9 @@ public class PictureGetDTO implements Serializable {
     /**
      * 图片id
      */
-    private Long id;
+    private String id;
     /**
      * 空间id
      */
-    private Long spaceId;
+    private String spaceId;
 }

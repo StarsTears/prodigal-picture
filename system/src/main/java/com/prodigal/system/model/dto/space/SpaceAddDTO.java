@@ -20,7 +20,7 @@ public class SpaceAddDTO implements Serializable {
     /**
      * 空间所属人
      */
-    private Long userId;
+    private String userId;
     /**
      * 空间名称
      */

@@ -48,7 +48,7 @@ import {message} from "ant-design-vue";
 
 interface Props {
   picture?: API.PictureVO;
-  spaceId?: number;
+  spaceId?: string;
   onSuccess?: (newPicture: API.PictureVO) => void;
 }
 

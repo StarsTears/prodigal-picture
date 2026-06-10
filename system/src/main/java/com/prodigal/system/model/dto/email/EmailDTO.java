@@ -41,7 +41,7 @@ public class EmailDTO implements Serializable {
      * 收件人
      */
     private String to;
-    private Long receiveUserId;
+    private String receiveUserId;
     /**
      * 主题
      */

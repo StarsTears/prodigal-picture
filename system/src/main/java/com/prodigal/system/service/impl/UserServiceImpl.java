@@ -54,7 +54,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private EmailService emailService;
 
     @Override
-    public long register(RegisterDTO registerDto) {
+    public String register(RegisterDTO registerDto) {
         if (registerDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -146,7 +146,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (currentUser == null || currentUser.getId() == null) {
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
         }
-        Long userId = currentUser.getId();
+        String userId = currentUser.getId();
         currentUser = this.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
@@ -166,7 +166,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Long createUser(UserAddDTO userAddDto) {
+    public String createUser(UserAddDTO userAddDto) {
         ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
@@ -218,16 +218,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         switch (sortField) {
-            case "userAccount":
+            case "user_account":
                 wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getCreateTime);
                 break;
-            case "userName":
+            case "user_name":
                 wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserName);
                 break;
-            case "userProfile":
+            case "user_profile":
                 wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserProfile);
                 break;
-            case "userRole":
+            case "user_role":
                 wrapper.orderBy(StrUtil.isNotEmpty(userQueryDto.getSortField()), sortOrder.equals("ascend"), User::getUserRole);
                 break;
             default:

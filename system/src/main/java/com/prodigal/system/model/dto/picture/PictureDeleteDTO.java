@@ -15,5 +15,5 @@ public class PictureDeleteDTO extends DeleteRequest {
     /**
      * 空间id
      */
-    private Long spaceId;
+    private String spaceId;
 }

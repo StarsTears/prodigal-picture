@@ -1,5 +1,6 @@
 package com.prodigal.system.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
@@ -37,7 +38,7 @@ public class UserController {
 
     @PostMapping("/add")
     @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Long> addUser(@Valid @RequestBody UserAddDTO userAddDto) {
+    public BaseResult<String> addUser(@Valid @RequestBody UserAddDTO userAddDto) {
         return ResultUtils.success(userService.createUser(userAddDto));
     }
 
@@ -49,8 +50,8 @@ public class UserController {
      */
     @GetMapping("/get")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<User> getUserByID(@RequestParam("id") long id) {
-        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<User> getUserByID(@RequestParam("id") String id) {
+        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
         User user = userService.getById(id);
         ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND);
         return ResultUtils.success(user);
@@ -58,7 +59,7 @@ public class UserController {
 
     @GetMapping("/get/vo")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<UserVO> getUserVOByID(@RequestParam("id") long id) {
+    public BaseResult<UserVO> getUserVOByID(@RequestParam("id") String id) {
         BaseResult<User> res = getUserByID(id);
         User user = res.getData();
         return ResultUtils.success(userService.getUserVO(user));

@@ -18,7 +18,7 @@ public class CreatePictureOutPaintingTaskDTO implements Serializable {
      * 图片ID
      */
     @NotNull(message = "图片ID不能为空")
-    private Long pictureId;
+    private String pictureId;
     /**
      * 扩图参数
      */

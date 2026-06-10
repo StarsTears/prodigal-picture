@@ -6,33 +6,44 @@
 <!--        <img src="@/assets/logo.jpg" alt="logo" class="search-logo" />-->
         <a-input-search
           v-model:value="searchParams.searchText"
-          placeholder="input search text"
-          enter-button="Search"
+          placeholder="搜索图片"
+          enter-button="搜索"
           size="large"
+          allow-clear
           @search="doSearch"
           class="logo-search"
         />
       </div>
-      <!--标签分类筛选-->
-      <!--    <div label="颜色" name="picColor">-->
-      <!--      <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>-->
-      <!--    </div>-->
-      <a-tabs v-model:active-key="selectCategory" @change="doSearch">
-        <a-tab-pane key="all" tab="全部" />
-        <a-tab-pane v-for="category in categoryList" :key="category" :tab="category" />
-      </a-tabs>
-      <div class="tag-bar">
-        <span style="margin-right: 8px">标签:</span>
+      <!--热门搜索-->
+      <div class="hot-search-bar">
+        <span class="hot-label">热门搜索：</span>
         <a-space :size="[0, 8]" wrap>
-          <a-checkable-tag
-            v-for="(tag, index) in tagList"
-            :key="tag"
-            v-model:checked="selectTagList[index]"
-            @change="doSearch"
-          >
-            {{ tag }}
-          </a-checkable-tag>
+          <a-tag v-for="kw in hotKeywords" :key="kw" @click="searchHotKeyword(kw)">{{ kw }}</a-tag>
         </a-space>
+      </div>
+      <!--分类筛选-->
+      <div class="category-bar">
+        <span
+          :class="['category-pill', { active: selectCategory === 'all' }]"
+          @click="selectCategory = 'all'; doSearch()"
+        >全部</span>
+        <span
+          v-for="category in categoryList"
+          :key="category"
+          :class="['category-pill', { active: selectCategory === category }]"
+          @click="selectCategory = category; doSearch()"
+        >{{ category }}</span>
+      </div>
+      <div class="tag-bar">
+        <a-checkable-tag
+          v-for="(tag, index) in tagList"
+          :key="tag"
+          v-model:checked="selectTagList[index]"
+          class="filter-tag"
+          @change="doSearch"
+        >
+          {{ tag }}
+        </a-checkable-tag>
       </div>
     </div>
     <!-- 占位元素 -->
@@ -180,6 +191,17 @@ const categoryList = ref<string[]>([])
 const selectCategory = ref<string>('all')
 const tagList = ref<string[]>([])
 const selectTagList = ref<boolean[]>([])
+
+const hotKeywords = computed(() => tagList.value.slice(0, 8))
+const searchHotKeyword = (keyword: string) => {
+  if (searchParams.searchText === keyword) {
+    searchParams.searchText = ''
+  } else {
+    searchParams.searchText = keyword
+  }
+  doSearch()
+}
+
 // 获取数据
 const doSearch = () => {
   homeLoading.value = true
@@ -313,6 +335,23 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   max-width: 700px;
 }
 
+.logo-search :deep(.ant-input-affix-wrapper) {
+  height: 46px;
+  border-radius: 24px 0 0 24px;
+  border-color: var(--border-color-strong);
+  padding: 0 11px;
+}
+
+.logo-search :deep(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 0 !important;
+  height: auto;
+  font-size: 16px;
+}
+
+.logo-search :deep(.ant-input-affix-wrapper .ant-input-clear-icon) {
+  font-size: 14px;
+}
+
 .logo-search :deep(.ant-input) {
   border-radius: 24px 0 0 24px !important;
   height: 46px;
@@ -320,6 +359,8 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   border-color: var(--border-color-strong);
 }
 
+.logo-search :deep(.ant-input-affix-wrapper:hover),
+.logo-search :deep(.ant-input-affix-wrapper:focus-within),
 .logo-search :deep(.ant-input:hover),
 .logo-search :deep(.ant-input:focus) {
   border-color: #4096ff;
@@ -355,5 +396,83 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   justify-content: center;
   align-items: center;
   height: 300px;
+}
+
+.hot-search-bar {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.hot-label {
+  margin-right: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.hot-search-bar :deep(.ant-tag) {
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: var(--bg-image-placeholder);
+  border-color: var(--border-color);
+}
+
+/* 分类 pill 按钮 */
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.category-pill {
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  background: var(--bg-image-placeholder);
+  border: 1px solid var(--border-color);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.category-pill:hover {
+  color: var(--text-primary);
+  border-color: #4096ff;
+}
+
+.category-pill.active {
+  color: #fff;
+  background: #4096ff;
+  border-color: #4096ff;
+}
+
+/* 标签栏 */
+.tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.filter-tag {
+  margin: 0 !important;
+  border-radius: 12px;
+  padding: 2px 12px;
+  font-size: 12px;
+  transition: all 0.25s ease;
+}
+
+.filter-tag:not(.ant-tag-checkable-checked) {
+  color: var(--text-secondary);
+  background: var(--bg-image-placeholder);
+  border-color: var(--border-color);
+}
+
+.filter-tag.ant-tag-checkable-checked {
+  color: #4096ff;
+  background: rgba(64, 150, 255, 0.1);
+  border-color: #4096ff;
 }
 </style>

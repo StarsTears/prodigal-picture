@@ -20,7 +20,7 @@ const confirmLoading = ref<boolean>(false);
 interface Props{
   loading ?: boolean
   open ?: boolean
-  spaceId ?: number
+  spaceId ?: string
 }
 const props = withDefaults(defineProps<Props>(), {
   loading: () => false,

@@ -60,7 +60,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     @Resource
     @Lazy
     private DynamicShardingManager dynamicShardingManager;
-    private Map<Long, Object> lockMap = new ConcurrentHashMap<>();
+    private Map<String, Object> lockMap = new ConcurrentHashMap<>();
 
     /**
      * 校验
@@ -104,7 +104,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     }
 
     @Override
-    public long addSpace(SpaceAddDTO spaceAddDto, User loginUser) {
+    public String addSpace(SpaceAddDTO spaceAddDto, User loginUser) {
         ThrowUtils.throwIf(spaceAddDto == null, ErrorCode.PARAMS_ERROR);
 
         //空间名称为空，给其赋默认值
@@ -123,7 +123,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         this.fillSpaceBySpaceLevel(space);
         //校验
         this.validSpace(space, true);
-        Long userId = loginUser.getId();
+        String userId = loginUser.getId();
         space.setUserId(userId);
         //权限校验
         if (space.getSpaceLevel() != SpaceLevelEnum.COMMON.getValue() && !userService.isAdmin(loginUser)) {
@@ -131,7 +131,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         }
         Object lock = lockMap.computeIfAbsent(userId, key -> new Object());
         synchronized (lock) {
-            Long newSpaceId = transactionTemplate.execute(status -> {
+            String newSpaceId = transactionTemplate.execute(status -> {
                 try {
                     //判断该空间是否存在
                     boolean exists = this.lambdaQuery()
@@ -159,7 +159,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                     lockMap.remove(userId);
                 }
             });
-            return Optional.ofNullable(newSpaceId).orElse(-1L);
+            return Optional.ofNullable(newSpaceId).orElse("-1");
         }
     }
 
@@ -174,7 +174,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         //数据校验
         this.validSpace(space, false);
         //判断空间是否存在
-        Long id = spaceEditDto.getId();
+        String id = spaceEditDto.getId();
         Space oldSpace = this.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         //验证权限
@@ -187,7 +187,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
     }
 
     @Override
-    public void deleteSpace(Long spaceId, User loginUser) {
+    public void deleteSpace(String spaceId, User loginUser) {
         //图片应只能管理员/本人删除
         //查询该图片是否存在
         Space space = this.getById(spaceId);
@@ -203,7 +203,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                                                         .eq(Picture::getSpaceId, spaceId)
                                                         .select(Picture::getId).list();
             if (CollUtil.isNotEmpty(pictureList)) {
-                List<Long> pictureIds = pictureList.stream().map(Picture::getId).collect(Collectors.toList());
+                List<String> pictureIds = pictureList.stream().map(Picture::getId).collect(Collectors.toList());
                 boolean result = pictureService.removeByIds(pictureIds);
                 ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
             }
@@ -218,8 +218,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         //根据Picture信息 脱敏后返回给前端
         SpaceVO spaceVO = SpaceVO.objToVO(space);
         //根据userID 获取UserVO
-        Long userId = space.getUserId();
-        if (userId != null && userId > 0) {
+        String userId = space.getUserId();
+        if (userId != null && !"0".equals(userId)) {
             UserVO userVO = userService.getUserVO(userService.getById(userId));
             spaceVO.setUser(userVO);
         }
@@ -236,10 +236,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         //转换VO
         List<SpaceVO> pictureVOList = spaceList.stream().map(SpaceVO::objToVO).collect(Collectors.toList());
         //关联查询用户信息
-        Set<Long> userIDSet = spaceList.stream().map(Space::getUserId).collect(Collectors.toSet());
-        Map<Long, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
+        Set<String> userIDSet = spaceList.stream().map(Space::getUserId).collect(Collectors.toSet());
+        Map<String, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
         pictureVOList.forEach(e -> {
-            Long userId = e.getUserId();
+            String userId = e.getUserId();
             if (userIDUserListMap.containsKey(userId))
                 e.setUser(userService.getUserVO(userIDUserListMap.get(userId).get(0)));
         });
@@ -269,18 +269,18 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                 .eq(ObjUtil.isNotEmpty(spaceQueryDto.getSpaceLevel()), Space::getSpaceLevel, spaceQueryDto.getSpaceLevel());
 
         switch (sortField) {
-            case "spaceName":
+            case "space_name":
                 wrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), Space::getSpaceName);
                 break;
-            case "spaceType":
+            case "space_type":
                 wrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), Space::getSpaceType);
                 break;
-            case "spaceLevel":
+            case "space_level":
                 wrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), Space::getSpaceLevel);
                 break;
-            case "createTime":
+            case "create_time":
                 wrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), Space::getCreateTime);
-            case "editTime":
+            case "edit_time":
                 wrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), Space::getEditTime);
                 break;
             default:

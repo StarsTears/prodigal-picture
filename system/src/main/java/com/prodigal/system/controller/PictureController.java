@@ -14,6 +14,7 @@ import com.prodigal.system.api.imagesearch.ImageSearchDTO;
 import com.prodigal.system.api.imagesearch.ImageSearchResult;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
+import com.prodigal.system.constant.DictTypeConstant;
 import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
@@ -29,6 +30,8 @@ import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import com.prodigal.system.model.vo.PictureTagCategory;
 import com.prodigal.system.model.vo.PictureVO;
+import com.prodigal.system.model.entity.Dict;
+import com.prodigal.system.service.DictService;
 import com.prodigal.system.service.PictureService;
 import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
@@ -41,9 +44,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @program: prodigal-picture
@@ -64,6 +67,8 @@ public class PictureController {
 
     @Resource
     private SpaceUserAuthManager spaceUserAuthManager;
+    @Resource
+    private DictService dictService;
 
     /**
      * 图片上传
@@ -97,7 +102,7 @@ public class PictureController {
     @PostMapping("/get/download/url")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
     public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDTO pictureGetDto) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
         String tempDownloadUrl = pictureService.getTempDownloadUrl(pictureGetDto.getId(), pictureGetDto.getSpaceId());
         return ResultUtils.success(tempDownloadUrl);
     }
@@ -126,14 +131,14 @@ public class PictureController {
     @PostMapping("/search/picture")
     public BaseResult<List<ImageSearchResult>> searchImageByBaidu(@RequestBody ImageSearchDTO imageSearchDto) {
         ThrowUtils.throwIf(imageSearchDto == null, ErrorCode.PARAMS_ERROR);
-        Long pictureId = imageSearchDto.getPictureId();
-        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        String pictureId = imageSearchDto.getPictureId();
+        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), ErrorCode.PARAMS_ERROR);
 
-        Long spaceId = imageSearchDto.getSpaceId() == null ? 0L : imageSearchDto.getSpaceId();
+        String spaceId = imageSearchDto.getSpaceId() == null ? "0" : imageSearchDto.getSpaceId();
         // 构造 QueryWrapper
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", pictureId)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
 
         // 执行查询
         Picture oldPicture = pictureService.getOne(queryWrapper);
@@ -152,11 +157,11 @@ public class PictureController {
     @PostMapping("/delete")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResult<Boolean> deletePicture(@RequestBody PictureDeleteDTO pictureDeleteDto, HttpServletRequest request) {
-        if (pictureDeleteDto == null || pictureDeleteDto.getId() <= 0) {
+        if (pictureDeleteDto == null || pictureDeleteDto.getId() == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
-        Long spaceId = pictureDeleteDto.getSpaceId() == null ? 0 : pictureDeleteDto.getSpaceId();
+        String spaceId = pictureDeleteDto.getSpaceId() == null ? "0" : pictureDeleteDto.getSpaceId();
         pictureService.deletePicture(pictureDeleteDto.getId(), spaceId, loginUser);
         return ResultUtils.success(true);
     }
@@ -192,12 +197,12 @@ public class PictureController {
         //数据校验
         pictureService.validPicture(picture);
         //判断图片是否存在
-        Long id = pictureUpdateDto.getId();
-        Long spaceId = pictureUpdateDto.getSpaceId() == null ? 0 : pictureUpdateDto.getSpaceId();
+        String id = pictureUpdateDto.getId();
+        String spaceId = pictureUpdateDto.getSpaceId() == null ? "0" : pictureUpdateDto.getSpaceId();
         // 构造 QueryWrapper
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
 
         // 执行查询
         Picture oldPicture = pictureService.getOne(queryWrapper);
@@ -209,7 +214,7 @@ public class PictureController {
         // 构造 UpdateWrapper
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", picture.getId()) // 指定主键条件，批量更新则使用 in 传递多条
-                .eq("spaceId", spaceId);      // 补充条件 spaceId=xxx
+                .eq("space_id", spaceId);      // 补充条件 spaceId=xxx
 
         // 执行更新
         boolean result = pictureService.update(picture, updateWrapper);
@@ -252,19 +257,19 @@ public class PictureController {
     @PostMapping("/get")
     @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
     public BaseResult<Picture> getPictureByID(@RequestBody PictureGetDTO pictureGetDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
-        Long id = pictureGetDto.getId();
-        Long spaceId = pictureGetDto.getSpaceId() == null ? 0L : pictureGetDto.getSpaceId();
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        String id = pictureGetDto.getId();
+        String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
         // 构造 QueryWrapper
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
         //执行查询
         Picture picture = pictureService.getOne(queryWrapper);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         //空间权限校验
         spaceId = picture.getSpaceId();
-        if (spaceId != 0L) {
+        if (!"0".equals(spaceId)) {
             User loginUser = userService.getLoginUser(request);
             pictureService.checkPicturePermission(loginUser, picture);
         }
@@ -278,21 +283,21 @@ public class PictureController {
      * @param request       浏览器请求
      */
     @PostMapping("/get/vo")
-    public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDTO pictureGetDto,Boolean isView, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() <= 0, ErrorCode.PARAMS_ERROR);
+    public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDTO pictureGetDto,@RequestParam("isView") Boolean isView, HttpServletRequest request) {
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
         isView = isView==null?false:isView;
-        Long id = pictureGetDto.getId();
-        Long spaceId = pictureGetDto.getSpaceId() == null ? 0L : pictureGetDto.getSpaceId();
+        String id = pictureGetDto.getId();
+        String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
         // 构造 QueryWrapper
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
         //执行查询
         Picture picture = pictureService.getOne(queryWrapper);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
         Space space = null;
         spaceId = picture.getSpaceId();
-        if (spaceId != 0) {
+        if (!"0".equals(spaceId)) {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
             ThrowUtils.throwIf(!hasPermission, ErrorCode.USER_NOT_PERMISSION);
             space = spaceService.getById(spaceId);
@@ -309,7 +314,7 @@ public class PictureController {
                 picture.setViewQuantity(picture.getViewQuantity() + 1);
                 UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
                 updateWrapper.eq("id", id)         // 根据主键 id 查询
-                        .eq("spaceId", spaceId); // 附加 spaceId 条件
+                        .eq("space_id", spaceId); // 附加 spaceId 条件
                 // 执行更新
                 boolean result = pictureService.update(picture, updateWrapper);
             }
@@ -363,7 +368,7 @@ public class PictureController {
         long size = pictureQueryDto.getPageSize() == 0 ? 20 : pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
-        Long spaceId = pictureQueryDto.getSpaceId();
+        String spaceId = pictureQueryDto.getSpaceId();
         if (spaceId == null) {
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryDto.setNullSpaceId(true);
@@ -403,8 +408,8 @@ public class PictureController {
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
         // 限制爬虫
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
-        Long spaceId = pictureQueryDto.getSpaceId();
-        if (spaceId == null) {
+        String spaceId = pictureQueryDto.getSpaceId();
+        if (StrUtil.isBlank(spaceId)) {
             //普通用户查看公共图库(已过审)
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             pictureQueryDto.setNullSpaceId(true);
@@ -428,8 +433,12 @@ public class PictureController {
     @GetMapping("/tag_category")
     public BaseResult<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();
-        List<String> tagList = Arrays.asList("热门", "学习", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意");
-        List<String> categoryList = Arrays.asList("模板", "素材", "壁纸", "电商", "表情包", "海报");
+        List<String> tagList = dictService.listByType(DictTypeConstant.PIC_TAG).stream()
+                .map(Dict::getDictValue)
+                .collect(Collectors.toList());
+        List<String> categoryList = dictService.listByType(DictTypeConstant.PIC_CATEGORY).stream()
+                .map(Dict::getDictValue)
+                .collect(Collectors.toList());
         pictureTagCategory.setTagList(tagList);
         pictureTagCategory.setCategoryList(categoryList);
         return ResultUtils.success(pictureTagCategory);

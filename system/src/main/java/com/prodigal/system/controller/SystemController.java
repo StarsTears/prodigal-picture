@@ -45,8 +45,8 @@ public class SystemController {
     @PostMapping("/register")
     public BaseResult<String> register(@Valid @RequestBody RegisterDTO registerDto) {
         ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAMS_ERROR);
-        long register = userService.register(registerDto);
-        return ResultUtils.success(String.valueOf(register));
+        String register = userService.register(registerDto);
+        return ResultUtils.success(register);
     }
 
     @RateLimit(maxRequests = 5, window = 60)

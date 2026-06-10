@@ -15,7 +15,7 @@ public class UserVO implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 账号
@@ -54,7 +54,7 @@ public class UserVO implements Serializable {
     /**
      * 邀请用户ID
      */
-    private Long inviteUser;
+    private String inviteUser;
 
     /**
      * 分享码

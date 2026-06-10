@@ -37,7 +37,7 @@ const progress: UploadProps['progress'] = {
 
 interface Props {
   picture?: API.PictureVO
-  spaceId ?:number
+  spaceId ?:string
   onSuccess?: (newPicture: API.PictureVO) => void;
 }
 

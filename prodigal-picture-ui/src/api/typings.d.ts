@@ -39,6 +39,13 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListDict_ = {
+    code?: number
+    data?: Dict[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultListImageSearchResult_ = {
     code?: number
     data?: ImageSearchResult[]
@@ -102,9 +109,16 @@ declare namespace API {
     status?: boolean
   }
 
+  type BaseResultListString_ = {
+    code?: number
+    data?: string[]
+    msg?: string
+    status?: boolean
+  }
+
   type BaseResultLong_ = {
     code?: number
-    data?: number
+    data?: string
     msg?: string
     status?: boolean
   }
@@ -237,7 +251,7 @@ declare namespace API {
 
   type CreatePictureOutPaintingTaskDTO = {
     parameters?: Parameters
-    pictureId?: number
+    pictureId?: string
   }
 
   type deleteCacheUsingPOSTParams = {
@@ -253,7 +267,25 @@ declare namespace API {
   }
 
   type DeleteRequest = {
+    id?: string
+  }
+
+  type Dict = {
+    createTime?: string
+    dictKey?: string
+    dictType?: string
+    dictValue?: string
     id?: number
+    sortOrder?: number
+    updateTime?: string
+  }
+
+  type DictDTO = {
+    dictKey?: string
+    dictType?: string
+    dictValue?: string
+    id?: number
+    sortOrder?: number
   }
 
   type EmailAddDTO = {
@@ -289,7 +321,7 @@ declare namespace API {
     attachments?: string[]
     html?: boolean
     id?: string
-    receiveUserId?: number
+    receiveUserId?: string
     status?: number
     subject?: string
     to?: string
@@ -317,20 +349,20 @@ declare namespace API {
   type EmailVO = {
     attachments?: string
     createTime?: string
-    createUserId?: number
+    createUserId?: string
     html?: boolean
     id?: string
-    receiveUserId?: number
+    receiveUserId?: string
     receiveUserVO?: UserVO
     sendTime?: string
-    sendUserId?: number
+    sendUserId?: string
     status?: number
     subject?: string
     to?: string
     txt?: string
     type?: number
     updateTime?: string
-    updateUserId?: number
+    updateUserId?: string
   }
 
   type getEmailByIdUsingGETParams = {
@@ -355,27 +387,27 @@ declare namespace API {
 
   type getSpaceByIDUsingGETParams = {
     /** id */
-    id?: number
+    id?: string
   }
 
   type getSpaceVOByIDUsingGETParams = {
     /** id */
-    id?: number
+    id?: string
   }
 
   type getUserByIDUsingGETParams = {
     /** id */
-    id?: number
+    id?: string
   }
 
   type getUserVOByIDUsingGETParams = {
     /** id */
-    id?: number
+    id?: string
   }
 
   type ImageSearchDTO = {
-    pictureId?: number
-    spaceId?: number
+    pictureId?: string
+    spaceId?: string
   }
 
   type ImageSearchResult = {
@@ -483,7 +515,7 @@ declare namespace API {
     category?: string
     createTime?: string
     editTime?: string
-    id?: number
+    id?: string
     introduction?: string
     isDelete?: number
     name?: string
@@ -497,51 +529,51 @@ declare namespace API {
     reviewMessage?: string
     reviewStatus?: number
     reviewTime?: string
-    reviewerId?: number
+    reviewerId?: string
     shareQuantity?: number
     sourceUrl?: string
-    spaceId?: number
+    spaceId?: string
     tags?: string
     thumbnailUrl?: string
     updateTime?: string
     url?: string
-    userId?: number
+    userId?: string
     viewQuantity?: number
   }
 
   type PictureDeleteDTO = {
-    id?: number
-    spaceId?: number
+    id?: string
+    spaceId?: string
   }
 
   type PictureEditByBatchDTO = {
     category?: string
     nameRule?: string
-    pictureIdList?: number[]
-    spaceId?: number
+    pictureIdList?: string[]
+    spaceId?: string
     tags?: string[]
   }
 
   type PictureEditDTO = {
     category?: string
-    id?: number
+    id?: string
     introduction?: string
     name?: string
-    spaceId?: number
+    spaceId?: string
     tags?: string[]
-    userId?: number
+    userId?: string
   }
 
   type PictureGetDTO = {
-    id?: number
-    spaceId?: number
+    id?: string
+    spaceId?: string
   }
 
   type PictureQueryDTO = {
     category?: string
     current?: number
     endEditTime?: string
-    id?: number
+    id?: string
     introduction?: string
     name?: string
     nullSpaceId?: boolean
@@ -554,21 +586,21 @@ declare namespace API {
     picWidth?: number
     reviewMessage?: string
     reviewStatus?: number
-    reviewerId?: number
+    reviewerId?: string
     searchText?: string
     sortField?: string
     sortOrder?: string
-    spaceId?: number
+    spaceId?: string
     startEditTime?: string
     tags?: string[]
-    userId?: number
+    userId?: string
   }
 
   type PictureReviewDTO = {
-    id?: number
+    id?: string
     reviewMessage?: string
     reviewStatus?: number
-    spaceId?: number
+    spaceId?: string
   }
 
   type PictureTagCategory = {
@@ -578,10 +610,10 @@ declare namespace API {
 
   type PictureUpdateDTO = {
     category?: string
-    id?: number
+    id?: string
     introduction?: string
     name?: string
-    spaceId?: number
+    spaceId?: string
     tags?: string[]
   }
 
@@ -597,16 +629,16 @@ declare namespace API {
 
   type PictureUploadDTO = {
     fileUrl?: string
-    id?: number
+    id?: string
     picName?: string
-    spaceId?: number
+    spaceId?: string
   }
 
   type PictureVO = {
     category?: string
     createTime?: string
     editTime?: string
-    id?: number
+    id?: string
     introduction?: string
     name?: string
     permissionList?: string[]
@@ -617,13 +649,13 @@ declare namespace API {
     picSize?: number
     picWidth?: number
     shareQuantity?: number
-    spaceId?: number
+    spaceId?: string
     tags?: string[]
     thumbnailUrl?: string
     updateTime?: string
     url?: string
     user?: UserVO
-    userId?: number
+    userId?: string
     viewQuantity?: number
   }
 
@@ -643,7 +675,7 @@ declare namespace API {
   type Space = {
     createTime?: string
     editTime?: string
-    id?: number
+    id?: string
     isDelete?: number
     maxCount?: number
     maxSize?: number
@@ -653,20 +685,20 @@ declare namespace API {
     totalCount?: number
     totalSize?: number
     updateTime?: string
-    userId?: number
+    userId?: string
   }
 
   type SpaceAddDTO = {
     spaceLevel?: number
     spaceName?: string
     spaceType?: number
-    userId?: number
+    userId?: string
   }
 
   type SpaceCategoryAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
-    spaceId?: number
+    spaceId?: string
   }
 
   type SpaceCategoryAnalyzeVO = {
@@ -676,7 +708,7 @@ declare namespace API {
   }
 
   type SpaceEditDTO = {
-    id?: number
+    id?: string
     spaceName?: string
   }
 
@@ -689,14 +721,14 @@ declare namespace API {
 
   type SpaceQueryDTO = {
     current?: number
-    id?: number
+    id?: string
     pageSize?: number
     sortField?: string
     sortOrder?: string
     spaceLevel?: number
     spaceName?: string
     spaceType?: number
-    userId?: number
+    userId?: string
   }
 
   type SpaceRankAnalyzeDTO = {
@@ -706,7 +738,7 @@ declare namespace API {
   type SpaceSizeAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
-    spaceId?: number
+    spaceId?: string
   }
 
   type SpaceSizeAnalyzeVO = {
@@ -717,7 +749,7 @@ declare namespace API {
   type SpaceTagAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
-    spaceId?: number
+    spaceId?: string
   }
 
   type SpaceTagAnalyzeVO = {
@@ -726,7 +758,7 @@ declare namespace API {
   }
 
   type SpaceUpdateDTO = {
-    id?: number
+    id?: string
     maxCount?: number
     maxSize?: number
     spaceLevel?: number
@@ -736,7 +768,7 @@ declare namespace API {
   type SpaceUsageAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
-    spaceId?: number
+    spaceId?: string
   }
 
   type SpaceUsageAnalyzeVO = {
@@ -750,26 +782,26 @@ declare namespace API {
 
   type SpaceUser = {
     createTime?: string
-    id?: number
-    spaceId?: number
+    id?: string
+    spaceId?: string
     spaceRole?: string
     updateTime?: string
-    userId?: number
+    userId?: string
   }
 
   type SpaceUserAddDTO = {
-    id?: number
-    spaceId?: number
+    id?: string
+    spaceId?: string
     spaceRole?: string
-    userId?: number
+    userId?: string
   }
 
   type SpaceUserAnalyzeDTO = {
     queryAll?: boolean
     queryPublic?: boolean
-    spaceId?: number
+    spaceId?: string
     timeDimension?: string
-    userId?: number
+    userId?: string
   }
 
   type SpaceUserAnalyzeVO = {
@@ -778,36 +810,36 @@ declare namespace API {
   }
 
   type SpaceUserEditDTO = {
-    id?: number
+    id?: string
     spaceRole?: string
   }
 
   type SpaceUserQueryDTO = {
     current?: number
-    id?: number
+    id?: string
     pageSize?: number
     sortField?: string
     sortOrder?: string
-    spaceId?: number
+    spaceId?: string
     spaceRole?: string
-    userId?: number
+    userId?: string
   }
 
   type SpaceUserVO = {
     createTime?: string
-    id?: number
+    id?: string
     space?: SpaceVO
-    spaceId?: number
+    spaceId?: string
     spaceRole?: string
     updateTime?: string
     user?: UserVO
-    userId?: number
+    userId?: string
   }
 
   type SpaceVO = {
     createTime?: string
     editTime?: string
-    id?: number
+    id?: string
     maxCount?: number
     maxSize?: number
     permissionList?: string[]
@@ -818,7 +850,7 @@ declare namespace API {
     totalSize?: number
     updateTime?: string
     user?: UserVO
-    userId?: number
+    userId?: string
   }
 
   type TaskMetrics = {
@@ -834,16 +866,16 @@ declare namespace API {
 
   type uploadPictureUsingPOSTParams = {
     fileUrl?: string
-    id?: number
+    id?: string
     picName?: string
-    spaceId?: number
+    spaceId?: string
   }
 
   type User = {
     createTime?: string
     editTime?: string
-    id?: number
-    inviteUser?: number
+    id?: string
+    inviteUser?: string
     isDelete?: number
     shareCode?: string
     updateTime?: string
@@ -868,7 +900,7 @@ declare namespace API {
 
   type UserQueryDTO = {
     current?: number
-    id?: number
+    id?: string
     pageSize?: number
     sortField?: string
     sortOrder?: string
@@ -880,7 +912,7 @@ declare namespace API {
   }
 
   type UserUpdateDTO = {
-    id?: number
+    id?: string
     userAccount?: string
     userAvatar?: string
     userEmail?: string
@@ -892,8 +924,8 @@ declare namespace API {
   type UserVO = {
     createTime?: string
     editTime?: string
-    id?: number
-    inviteUser?: number
+    id?: string
+    inviteUser?: string
     shareCode?: string
     updateTime?: string
     userAccount?: string

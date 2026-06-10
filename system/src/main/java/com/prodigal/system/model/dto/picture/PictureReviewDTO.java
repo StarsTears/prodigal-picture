@@ -17,11 +17,11 @@ public class PictureReviewDTO implements Serializable {
      * id
      */
     @NotNull(message = "id不能为空")
-    private Long id;
+    private String id;
     /**
      * 空间id
      */
-    private Long spaceId;
+    private String spaceId;
     /**
      * 审核状态
      */

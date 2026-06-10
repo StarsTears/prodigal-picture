@@ -25,7 +25,7 @@ public interface PictureService extends IService<Picture> {
 
     int uploadPictureByBatch(PictureUploadByBatchDTO pictureUploadByBatchDto, User loginUser);
 
-    String getTempDownloadUrl(Long id, Long spaceId);
+    String getTempDownloadUrl(String id, String spaceId);
 
     void editPicture(PictureEditDTO pictureEditDto, User loginUser);
 
@@ -47,15 +47,15 @@ public interface PictureService extends IService<Picture> {
 
     void fillReviewParams(Picture picture, User loginUser);
 
-    void deletePicture(long pictureId,long spaceId, User loginUser);
+    void deletePicture(String pictureId, String spaceId, User loginUser);
 
     void clearPictureFile(Picture oldPicture);
 
     List<Picture> selectDeletedPictures(Date date);
 
-    int deletePicturesByPictureIdsAndSpaceId(List<Long> pictureIds, Long spaceId);
+    int deletePicturesByPictureIdsAndSpaceId(List<String> pictureIds, String spaceId);
 
-    int deleteDeletedPictures(Date date, List<Long> spaceIds);
+    int deleteDeletedPictures(Date date, List<String> spaceIds);
 
     void checkPicturePermission(User loginUser, Picture picture);
 

@@ -24,12 +24,12 @@ public class PictureEditByBatchDTO implements Serializable {
      * 图片id 集合
      */
     @NotEmpty(message = "图片ID列表不能为空")
-    private List<Long> pictureIdList;
+    private List<String> pictureIdList;
     /**
      * 空间 id
      */
     @NotNull(message = "空间ID不能为空")
-    private Long spaceId;
+    private String spaceId;
     /**
      * 分类
      */

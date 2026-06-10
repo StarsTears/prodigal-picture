@@ -190,6 +190,18 @@ const router = createRouter({
       }],
     },
     {
+      path:'/admin/dictManager',
+      name:'字典管理',
+      component: () => import('@/layouts/BasicLayout.vue'),
+      meta:{
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
+      },
+      children:[{
+        path: '',
+        component:()=>import('../views/admin/DictManageView.vue'),
+      }]
+    },
+    {
       path:'/admin/emailManager',
       name:'邮件管理',
       component: () => import('@/layouts/BasicLayout.vue'),

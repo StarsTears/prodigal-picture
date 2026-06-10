@@ -21,17 +21,17 @@ public class SpaceUserVO implements Serializable {
      * id
      */
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private String id;
 
     /**
      * 空间 id
      */
-    private Long spaceId;
+    private String spaceId;
 
     /**
      * 用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 空间角色：viewer/editor/admin

@@ -1,7 +1,5 @@
 package com.prodigal.system.model.dto.spaceuser;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
@@ -18,19 +16,19 @@ public class SpaceUserAddDTO implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 空间 id
      */
     @NotNull(message = "空间ID不能为空")
-    private Long spaceId;
+    private String spaceId;
 
     /**
      * 用户 id
      */
     @NotNull(message = "用户ID不能为空")
-    private Long userId;
+    private String userId;
 
     /**
      * 空间角色：viewer/editor/admin

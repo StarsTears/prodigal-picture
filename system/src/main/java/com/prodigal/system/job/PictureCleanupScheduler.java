@@ -61,12 +61,12 @@ public class PictureCleanupScheduler {
         if (!toDeletePictures.isEmpty()) {
             log.info("Found {} pictures to delete.", toDeletePictures.size());
 
-            Map<Long, List<Picture>> pictureList = toDeletePictures.stream().collect(Collectors.groupingBy(Picture::getSpaceId));
-            for (Map.Entry<Long, List<Picture>> entry : pictureList.entrySet()) {
-                Long spaceId = entry.getKey();
+            Map<String, List<Picture>> pictureList = toDeletePictures.stream().collect(Collectors.groupingBy(Picture::getSpaceId));
+            for (Map.Entry<String, List<Picture>> entry : pictureList.entrySet()) {
+                String spaceId = entry.getKey();
                 List<Picture> pictures = entry.getValue();
 
-                List<Long> pictureIds = pictures.stream().map(Picture::getId).collect(Collectors.toList());
+                List<String> pictureIds = pictures.stream().map(Picture::getId).collect(Collectors.toList());
                 //获取 COS key
                 List<String> urls = pictures.stream().map(Picture::getUrl).collect(Collectors.toList());
                 List<String> originUrls = pictures.stream().map(Picture::getOriginUrl).collect(Collectors.toList());

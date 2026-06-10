@@ -16,7 +16,7 @@ rules:
         actualDataNodes: prodigal-picture.picture
         tableStrategy:
           standard:
-            shardingColumn: spaceId
+            shardingColumn: space_id
             shardingAlgorithmName: picture-sharding-algorithm
     shardingAlgorithms:
       picture-sharding-algorithm:

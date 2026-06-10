@@ -55,7 +55,7 @@ public class DynamicShardingManager {
      */
     public void createSpacePictureTable(Space space){
         if (space.getSpaceType() == SpaceTypeEnum.TEAM.getValue() && space.getSpaceLevel() == SpaceLevelEnum.FLAGSHIP.getValue()){
-            Long spaceId = space.getId();
+            String spaceId = space.getId();
             String tableName = "picture_"+spaceId;
             //创建新表
             String createSql = "CREATE TABLE IF NOT EXISTS `"+tableName+"` LIKE `picture`";
@@ -136,7 +136,7 @@ public class DynamicShardingManager {
      */
     private Set<String> fetchAllPictureTableNames() {
         //查询所有 旗舰版的团队空间
-        Set<Long> spaceIds = spaceService.lambdaQuery()
+        Set<String> spaceIds = spaceService.lambdaQuery()
                 .eq(Space::getSpaceType, SpaceTypeEnum.TEAM.getValue())
                 .eq(Space::getSpaceLevel, SpaceLevelEnum.FLAGSHIP.getValue())
                 .list()

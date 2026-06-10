@@ -17,8 +17,8 @@
 
           <div v-if="loginUserStore.loginUser.id">
             <a-flex >
-              <BellOutlined @click="doNotice"  style="margin: 25px 10px;color: grey"/>
-              <a-button shape="circle" type="text" style="margin: 18px 4px" @click="themeStore.toggle">
+              <BellFilled @click="doNotice"  style="margin: 25px 10px;color: #1677ff;font-size: 18px;cursor: pointer"/>
+              <a-button shape="circle" type="text" style="margin: 18px 12px 18px 4px" @click="themeStore.toggle" aria-label="切换主题">
                 <template #icon>
                   <svg v-if="themeStore.darkMode" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="5"/>
@@ -72,7 +72,7 @@
            :confirm-loading="confirmLoading"
            @ok="handleOk"
            footer=""
-           style="width: 720px;"
+           style="max-width: 720px; width: 90%;"
   >
     <h4>{{ userDetailText }}</h4>
     <a-form :model="userDetail"
@@ -166,16 +166,15 @@
 <script lang="ts" setup>
 import {computed, h, reactive, ref, watch} from 'vue';
 import {
-  HomeOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
-  EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
-  BellOutlined,MailOutlined,KeyOutlined
+  HomeOutlined, LogoutOutlined, UserOutlined,
+  EyeOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
+  BellFilled,KeyOutlined,
 } from '@ant-design/icons-vue';
 import {type FormInstance, MenuProps, message, notification, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
 import {editUserUsingPost, updateUserUsingPost, changePasswordUsingPost} from "@/api/userController";
 import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
-import ACCESS_ENUM from "@/access/accessEnum";
 import EmailDrawView from "@/views/email/EmailDrawView.vue";
 import { useThemeStore } from "@/stores/themeStore";
 import { useSSE } from "@/composables/useSSE";
@@ -209,31 +208,6 @@ const originItems = [
     icon: h(HomeOutlined),
     label: '首页',
     title: '首页',
-  }, {
-    key: '/picture/add_picture',
-    icon: h(UploadOutlined),
-    label: '创建图片',
-    title: '创建图片',
-  }, {
-    key: '/admin/pictureManager',
-    icon: h(PictureOutlined),
-    label: '图片管理',
-    title: '图片管理',
-  }, {
-    key: '/admin/spaceManager',
-    icon: h(FolderOutlined),
-    label: '空间管理',
-    title: '空间管理',
-  }, {
-    key: '/admin/emailManager',
-    icon: h(MailOutlined),
-    label: '邮件管理',
-    title: '邮件管理',
-  }, {
-    key: '/admin/userManager',
-    icon: h(UserOutlined),
-    label: '用户管理',
-    title: '用户管理',
   },
   {
     key: "/email/notice",
@@ -248,22 +222,7 @@ const originItems = [
   },
 ];
 
-/**
- * 过滤菜单
- * @param menus
- */
-const filterMenu = (menus = [] as MenuProps[`items`]) => {
-  return menus?.filter(menu => {
-    if (menu.key.startsWith('/admin')) {
-      let loginUser = loginUserStore.loginUser;
-      if (!loginUser || !loginUser.userRole?.includes(ACCESS_ENUM.ADMIN || ACCESS_ENUM.SUPER_ADMIN)) {
-        return false;
-      }
-    }
-    return true;
-  })
-}
-const items = computed<MenuProps['items']>(() => filterMenu(originItems));
+const items = computed<MenuProps['items']>(() => originItems);
 
 
 const router = useRouter();

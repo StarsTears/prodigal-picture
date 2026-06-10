@@ -217,7 +217,7 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   if (!id){
     return
   }

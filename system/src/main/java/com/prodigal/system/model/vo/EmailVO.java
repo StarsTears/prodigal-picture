@@ -42,7 +42,7 @@ public class EmailVO implements Serializable {
      * 接收人
      */
     private String to;
-    private Long receiveUserId;
+    private String receiveUserId;
 
     private UserVO receiveUserVO;
     /**
@@ -55,7 +55,7 @@ public class EmailVO implements Serializable {
      * 创建人
      * 关联 user 表
      */
-    private Long createUserId;
+    private String createUserId;
     /**
      * 创建时间
      */
@@ -64,7 +64,7 @@ public class EmailVO implements Serializable {
     /**
      * 发送人
      */
-    private Long sendUserId;
+    private String sendUserId;
 
     /**
      * 发送时间
@@ -73,7 +73,7 @@ public class EmailVO implements Serializable {
     /**
      * 修改人
      */
-    private Long updateUserId;
+    private String updateUserId;
     /**
      * 更新时间
      */

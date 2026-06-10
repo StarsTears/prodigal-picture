@@ -283,7 +283,7 @@ const doView = (record: API.EmailVO) => {
 }
 
 //---------------------------------发送邮件------------------------
-const doSend = async (id: number) => {
+const doSend = async (id: string) => {
   const res = await sendEmailByIdUsingPost({
     emailId: id
   })
@@ -296,7 +296,7 @@ const doSend = async (id: number) => {
 };
 
 //---------------------------------删除数据------------------------
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   const res = await deleteEmailUsingPost({emailId: id})
   if (res.code === 0) {
     message.success('删除成功')

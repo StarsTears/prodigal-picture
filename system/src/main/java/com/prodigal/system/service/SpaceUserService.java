@@ -18,7 +18,7 @@ public interface SpaceUserService extends IService<SpaceUser> {
 
     void validSpaceUser(SpaceUser spaceUser, boolean add);
 
-    long addSpaceUser(SpaceUserAddDTO spaceUserAddDTO);
+    String addSpaceUser(SpaceUserAddDTO spaceUserAddDTO);
 
     SpaceUserVO getSpaceUserVO(SpaceUser spaceUser, HttpServletRequest request);
 

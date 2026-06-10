@@ -1,7 +1,5 @@
 package com.prodigal.system.model.dto.user;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import jakarta.validation.constraints.Email;

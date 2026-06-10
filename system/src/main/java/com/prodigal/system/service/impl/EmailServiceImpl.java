@@ -137,8 +137,8 @@ public class EmailServiceImpl implements EmailService {
         if (EmailTypeEnum.NOTICE.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
             List<String> emailList = userService.getBaseMapper()
                     .selectObjs(new QueryWrapper<User>()
-                            .select("userEmail")
-                            .eq("isDelete", 0))
+                            .select("user_email")
+                            .eq("is_delete", 0))
                     .stream()
                     .map(obj -> (String) obj)
                     .collect(Collectors.toList());
@@ -234,7 +234,7 @@ public class EmailServiceImpl implements EmailService {
         Query query = fillParamsByCriteria(queryEmailDTO);
         long total = mongoTemplate.count(query, Email.class, "email");
 
-        query.with(Sort.by(Sort.Direction.DESC, "createTime"));
+        query.with(Sort.by(Sort.Direction.DESC, "create_time"));
         long skip = (long) (current - 1) * pageSize;
         query.skip(skip).limit(pageSize);
         List<Email> emailList = mongoTemplate.find(query, Email.class);
@@ -259,11 +259,11 @@ public class EmailServiceImpl implements EmailService {
         //转换VO
         List<EmailVO> emailVOList = emailList.stream().map(EmailVO::objToVO).collect(Collectors.toList());
         //获取UserVO
-        Set<Long> userIDSet = emailList.stream().map(Email::getReceiveUserId).collect(Collectors.toSet());
+        Set<String> userIDSet = emailList.stream().map(Email::getReceiveUserId).collect(Collectors.toSet());
 
-        Map<Long, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
+        Map<String, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
         emailVOList.forEach(e -> {
-            Long receiveUserId = e.getReceiveUserId();
+            String receiveUserId = e.getReceiveUserId();
             if (userIDUserListMap.containsKey(receiveUserId))
                 e.setReceiveUserVO(userService.getUserVO(userIDUserListMap.get(receiveUserId).get(0)));
         });

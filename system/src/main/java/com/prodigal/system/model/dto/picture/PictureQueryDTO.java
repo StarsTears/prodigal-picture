@@ -22,7 +22,7 @@ public class PictureQueryDTO extends PageRequest implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 图片名称
@@ -77,7 +77,7 @@ public class PictureQueryDTO extends PageRequest implements Serializable {
     /**
      * 用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 审核状态
@@ -92,11 +92,11 @@ public class PictureQueryDTO extends PageRequest implements Serializable {
     /**
      * 审核人 id
      */
-    private Long reviewerId;
+    private String reviewerId;
     /**
      * 空间 id
      */
-    private Long spaceId;
+    private String spaceId;
 
     /**
      * 是否只查询 spaceId 为 null 的数据

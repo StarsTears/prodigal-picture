@@ -15,7 +15,7 @@ public class SpaceAnalyzeDTO implements Serializable {
     /**
      * 空间ID
      */
-    private Long spaceId;
+    private String spaceId;
     /**
      * 是否查询公共空间
      */

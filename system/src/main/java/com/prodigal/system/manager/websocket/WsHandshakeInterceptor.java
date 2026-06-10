@@ -74,7 +74,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
                 log.error("图片不存在，拒绝握手");
                 return false;
             }
-            Long spaceId = picture.getSpaceId();
+            String spaceId = picture.getSpaceId();
             Space space = null;
             if (spaceId != null) {
                 space = spaceService.getById(spaceId);
@@ -95,7 +95,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
             // 设置 attributes
             attributes.put("user", loginUser);
             attributes.put("userId", loginUser.getId());
-            attributes.put("pictureId", Long.valueOf(pictureId)); // 记得转换为 Long 类型
+            attributes.put("pictureId", pictureId); // 已经是 String 类型
         }
         return true;//建立连接
     }

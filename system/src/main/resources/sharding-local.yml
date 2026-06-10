@@ -19,7 +19,7 @@ rules:
         tableStrategy:
           standard:
             # 分片键
-            shardingColumn: spaceId
+            shardingColumn: space_id
             # 分片算法
             shardingAlgorithmName: picture-sharding-algorithm
     shardingAlgorithms:

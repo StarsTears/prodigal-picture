@@ -19,7 +19,7 @@ public class UserUpdateDTO implements Serializable {
      * id
      */
     @NotNull(message = "id不能为空")
-    private Long id;
+    private String id;
 
     /**
      * 账号

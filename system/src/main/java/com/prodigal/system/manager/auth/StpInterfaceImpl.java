@@ -78,14 +78,14 @@ public class StpInterfaceImpl implements StpInterface {
         if (loginUser == null){
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
         }
-        Long userId = loginUser.getId();
+        String userId = loginUser.getId();
         //从上下文中获取 SpaceUser 信息
         SpaceUser spaceUser = authContext.getSpaceUser();
         if (spaceUser!=null){
             return spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole());
         }
         //如果有 spaceUserId,必然是团队空间,通过数据库查询 spaceUser 对象
-        Long spaceUserId = authContext.getSpaceUserId();
+        String spaceUserId = authContext.getSpaceUserId();
         if (spaceUserId!=null) {
             spaceUser = spaceUserService.getById(spaceUserId);
             if (spaceUser == null){
@@ -102,10 +102,10 @@ public class StpInterfaceImpl implements StpInterface {
             return spaceUserAuthManager.getPermissionsByRole(loginSpaceUser.getSpaceRole());
         }
         //如果没有spaceUserId,尝试通过spaceId 或者 pictureId 获取 space对象处理
-        Long spaceId = authContext.getSpaceId();
+        String spaceId = authContext.getSpaceId();
         if (spaceId == null){
             //如果没有 soaceId ,尝试通过 pictureId 获取 picture 对象和 space对象处理
-            Long pictureId = authContext.getPictureId();
+            String pictureId = authContext.getPictureId();
             //图片Id 也没有，则默认通过权限校验
             if (pictureId == null){
                 return ADMIN_PERMISSIONS;
@@ -201,7 +201,7 @@ public class StpInterfaceImpl implements StpInterface {
             authRequest = BeanUtil.toBean(paramMap, SpaceUserAuthContext.class);
         }
         // 根据请求路径区分 id 字段的含义
-        Long id = authRequest.getId();
+        String id = authRequest.getId();
         if (ObjUtil.isNotNull(id)) {
             String requestUri = request.getRequestURI();
             String partUri = requestUri.replace(contextPath + "/", "");

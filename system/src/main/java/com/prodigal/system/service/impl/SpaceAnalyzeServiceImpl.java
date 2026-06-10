@@ -57,7 +57,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             this.checkSpaceAnalyzeAuth(spaceUsageAnalyzeDto, loginUser);
             //统计图库的使用空间
             QueryWrapper<Picture> wrapper = new QueryWrapper<>();
-            wrapper.select("picSize");
+            wrapper.select("pic_size");
             //补充查询范围
             this.fillAnalyzeQueryWrapper(spaceUsageAnalyzeDto, wrapper);
             List<Object> pictureObjList = pictureService.getBaseMapper().selectObjs(wrapper);
@@ -77,8 +77,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             return spaceUsageAnalyzeVO;
         } else {
             //查询私有空间 权限校验：仅登录用户可访问
-            Long spaceId = spaceUsageAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || spaceId <= 0, ErrorCode.PARAMS_ERROR);
+            String spaceId = spaceUsageAnalyzeDto.getSpaceId();
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), ErrorCode.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
             //校验权限:仅空间所有者或管理员可访问
@@ -114,7 +114,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
 //        QueryWrapper<Picture> wrapper = Wrappers.lambdaQuery();
         QueryWrapper<Picture> wrapper = new QueryWrapper<>();
         this.fillAnalyzeQueryWrapper(spaceCategoryAnalyzeDto, wrapper);
-        wrapper.select("category","count(*) as count", "sum(picSize) as totalSize")
+        wrapper.select("category","count(*) as count", "sum(pic_size) as totalSize")
                 .groupBy("category");
 
 
@@ -172,7 +172,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         this.fillAnalyzeQueryWrapper(spaceSizeAnalyzeDto, wrapper);
 
         //查询符合条件的图片大小
-        wrapper.select("picSize");
+        wrapper.select("pic_size");
         List<Long> sizeList = pictureService.getBaseMapper().selectObjs(wrapper)
                 .stream()
                 .map(obj -> ((Number) obj).longValue())
@@ -202,8 +202,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         this.checkSpaceAnalyzeAuth(spaceUserAnalyzeDto, loginUser);
         //构造查询条件
         QueryWrapper<Picture> wrapper = new QueryWrapper<>();
-        Long userId = spaceUserAnalyzeDto.getUserId();
-        wrapper.eq(ObjUtil.isNotNull(userId), "userId", userId);
+        String userId = spaceUserAnalyzeDto.getUserId();
+        wrapper.eq(ObjUtil.isNotNull(userId), "user_id", userId);
         this.fillAnalyzeQueryWrapper(spaceUserAnalyzeDto, wrapper);
         //时间维度
         String timeDimension = spaceUserAnalyzeDto.getTimeDimension();
@@ -247,8 +247,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问空间排行");
         //构造查询条件
         QueryWrapper<Space> wrapper = new QueryWrapper<>();
-        wrapper.select("id", "spaceName", "spaceLevel","totalSize", "totalCount")
-                        .orderByDesc("totalSize")
+        wrapper.select("id", "space_name", "space_level","total_size", "total_count")
+                        .orderByDesc("total_size")
                         .last("LIMIT "+ spaceRankAnalyzeDto.getTopN()); //取前N 名
         return spaceService.list(wrapper);
     }
@@ -267,8 +267,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问公共图库");
         } else {
             // 私有空间权限校验
-            Long spaceId = spaceAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || spaceId <= 0, ErrorCode.PARAMS_ERROR);
+            String spaceId = spaceAnalyzeDto.getSpaceId();
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), ErrorCode.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
             spaceService.checkSpacePermission(space, loginUser);
@@ -286,12 +286,12 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             return;
         }
         if (spaceAnalyzeDto.isQueryPublic()) {
-            queryWrapper.eq("spaceId", 0);
+            queryWrapper.eq("space_id", "0");
             return;
         }
-        Long spaceId = spaceAnalyzeDto.getSpaceId();
+        String spaceId = spaceAnalyzeDto.getSpaceId();
         if (spaceId != null) {
-            queryWrapper.eq("spaceId", spaceId);
+            queryWrapper.eq("space_id", spaceId);
             return;
         }
         throw new BusinessException(ErrorCode.PARAMS_ERROR, "未指定查询范围");

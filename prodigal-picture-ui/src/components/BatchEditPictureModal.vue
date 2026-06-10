@@ -46,7 +46,7 @@ import {reactive} from "vue";
 //定义组件属性
 interface Props {
   pictureList: API.PictureVO[];
-  spaceId: number;
+  spaceId: string;
   onSuccess: () => void;
 }
 

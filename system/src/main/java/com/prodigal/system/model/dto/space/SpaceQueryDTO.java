@@ -1,7 +1,5 @@
 package com.prodigal.system.model.dto.space;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.prodigal.system.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,7 +18,7 @@ public class SpaceQueryDTO extends PageRequest implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 空间类型：0-私有 1-团队
@@ -41,5 +39,5 @@ public class SpaceQueryDTO extends PageRequest implements Serializable {
     /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 }

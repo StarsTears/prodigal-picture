@@ -19,11 +19,11 @@ public class PictureEditDTO implements Serializable {
      * id
      */
     @NotNull(message = "id不能为空")
-    private Long id;
+    private String id;
     /**
      * userid
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 图片名称
@@ -48,5 +48,5 @@ public class PictureEditDTO implements Serializable {
     /**
      * 空间 id
      */
-    private Long spaceId;
+    private String spaceId;
 }

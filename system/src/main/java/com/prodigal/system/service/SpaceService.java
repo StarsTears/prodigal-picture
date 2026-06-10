@@ -22,11 +22,11 @@ public interface SpaceService extends IService<Space> {
     void validSpace(Space space, boolean add);
 
 
-    long addSpace(SpaceAddDTO spaceAddDto, User loginUser);
+    String addSpace(SpaceAddDTO spaceAddDto, User loginUser);
 
     void editSpace(SpaceEditDTO spaceEditDto, User loginUser);
 
-    void deleteSpace(Long spaceId, User loginUser);
+    void deleteSpace(String spaceId, User loginUser);
 
     SpaceVO getSpaceVO(Space space, HttpServletRequest request);
 

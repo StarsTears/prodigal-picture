@@ -89,11 +89,11 @@ public class FileController {
      * @param response 响应对象
      */
     @GetMapping("/download")
-    public void downloadFile(Long pictureId, Long spaceId, HttpServletResponse response) throws IOException {
-        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
-        Long sid = spaceId == null ? 0L : spaceId;
+    public void downloadFile(String pictureId, String spaceId, HttpServletResponse response) throws IOException {
+        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), ErrorCode.PARAMS_ERROR);
+        String sid = spaceId == null ? "0" : spaceId;
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", pictureId).eq("spaceId", sid);
+        queryWrapper.eq("id", pictureId).eq("space_id", sid);
         Picture picture = pictureService.getOne(queryWrapper);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
 

@@ -17,7 +17,7 @@ public class Picture implements Serializable {
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     /**
      * 图片 url
@@ -92,7 +92,7 @@ public class Picture implements Serializable {
     /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 创建时间
@@ -125,7 +125,7 @@ public class Picture implements Serializable {
     /**
      * 审核人 id
      */
-    private Long reviewerId;
+    private String reviewerId;
 
     /**
      * 审核时间
@@ -134,7 +134,7 @@ public class Picture implements Serializable {
     /**
      * 空间ID
      */
-    private Long spaceId;
+    private String spaceId;
 
     /**
      *  查看次数

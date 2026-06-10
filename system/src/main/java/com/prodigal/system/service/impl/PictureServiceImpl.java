@@ -129,8 +129,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         ThrowUtils.throwIf(loginUser == null, ErrorCode.USER_NOT_AUTHORIZED);
 
         //校验空间ID是否存在；存在→私有空间；不存在→公开空间
-        Long spaceId = pictureUploadDto.getSpaceId();
-        if (spaceId != null && spaceId !=0) {
+        String spaceId = pictureUploadDto.getSpaceId();
+        if (spaceId != null && !"0".equals(spaceId)) {
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
 //            //判断当前用户有无权限上传图片到该空间
@@ -143,7 +143,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
 
         //判断新增还是修改
-        Long pictureID = pictureUploadDto.getId();
+        String pictureID = pictureUploadDto.getId();
 
         //校验图片是否存在
         if (pictureID != null) {
@@ -173,7 +173,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             用户上传的到公有
          */
         String uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_PUBLIC_PREFIX, loginUser.getId());
-        if (spaceId != null && spaceId !=0) {
+        if (spaceId != null && !"0".equals(spaceId)) {
             uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_SPACE_PREFIX, loginUser.getId());
         }
 
@@ -209,7 +209,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setUserId(loginUser.getId());
 //        picture.setSpaceId(spaceId);
         // 设置空间ID;将公共空间的空间ID设置为0
-        picture.setSpaceId(spaceId !=null ? spaceId : 0L);
+        picture.setSpaceId(spaceId !=null ? spaceId : "0");
         //补充审核参数
         this.fillReviewParams(picture, loginUser);
         //如果pictureID 不为空则进行更新
@@ -220,9 +220,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //开启事物
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", pictureID) // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
-        Long finalSpaceId = spaceId;
-        Long finalPictureID = pictureID;
+                .eq("space_id", spaceId); // 附加 spaceId 条件
+        String finalSpaceId = spaceId;
+        String finalPictureID = pictureID;
         transactionTemplate.execute(status -> {
             boolean result= true;
             if (finalPictureID != null){
@@ -232,7 +232,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             }
 //            boolean result = this.saveOrUpdate(picture);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
-            if (finalSpaceId != null && finalSpaceId != 0) {
+            if (finalSpaceId != null && !"0".equals(finalSpaceId)) {
                 boolean update = spaceService.lambdaUpdate()
                         .eq(Space::getId, finalSpaceId)
                         .setSql("totalSize = totalSize +" + picture.getPicSize())
@@ -344,11 +344,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
 
     @Override
-    public String getTempDownloadUrl(Long id, Long spaceId){
-       spaceId = spaceId == null ? 0L : spaceId;
+    public String getTempDownloadUrl(String id, String spaceId){
+       spaceId = spaceId == null ? "0" : spaceId;
         // 校验图片存在
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", id).eq("spaceId", spaceId);
+        queryWrapper.eq("id", id).eq("space_id", spaceId);
         Picture picture = this.getOne(queryWrapper);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
         // 返回服务端代理下载 URL，用户无法看到 COS bucket/region 信息
@@ -367,12 +367,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //数据校验
         this.validPicture(picture);
         //判断图片是否存在
-        Long id = pictureEditDto.getId();
-        Long spaceId=pictureEditDto.getSpaceId()==null?0:pictureEditDto.getSpaceId();
+        String id = pictureEditDto.getId();
+        String spaceId=pictureEditDto.getSpaceId()==null?"0":pictureEditDto.getSpaceId();
         // 构造 QueryWrapper
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
 
         // 执行查询
         Picture oldPicture = this.getOne(queryWrapper);
@@ -392,7 +392,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
         boolean result = this.update(picture,updateWrapper);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
     }
@@ -407,8 +407,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Transactional(rollbackFor = Exception.class)
     public void editPictureByBatch(PictureEditByBatchDTO pictureEditByBatchDto, User loginUser) {
         //获取所有参数
-        List<Long> pictureIdList = pictureEditByBatchDto.getPictureIdList();
-        Long spaceId = pictureEditByBatchDto.getSpaceId();
+        List<String> pictureIdList = pictureEditByBatchDto.getPictureIdList();
+        String spaceId = pictureEditByBatchDto.getSpaceId();
         String category = pictureEditByBatchDto.getCategory();
         List<String> tags = pictureEditByBatchDto.getTags();
 
@@ -474,10 +474,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     @Transactional(rollbackFor = Exception.class)
     public void batchEditPictureMetaData(PictureEditByBatchDTO pictureEditByBatchDto, User loginUser) {
-        Long spaceId = pictureEditByBatchDto.getSpaceId();
+        String spaceId = pictureEditByBatchDto.getSpaceId();
         String category = pictureEditByBatchDto.getCategory();
         List<String> tags = pictureEditByBatchDto.getTags();
-        List<Long> pictureIdList = pictureEditByBatchDto.getPictureIdList();
+        List<String> pictureIdList = pictureEditByBatchDto.getPictureIdList();
         //参数校验
         //查询该空间下的图片
         //3、图片查询(仅需要的字段)
@@ -545,12 +545,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //关键字查询(名称，简介)
         if (StrUtil.isNotBlank(pictureQueryDto.getSearchText())) {
             wrapper.and(e -> e.like(Picture::getName, pictureQueryDto.getSearchText())
-                    .or().like(Picture::getIntroduction, pictureQueryDto.getSearchText()));
+                    .or().like(Picture::getIntroduction, pictureQueryDto.getSearchText())
+                    .or().like(Picture::getTags, "\"" + pictureQueryDto.getSearchText() + "\""));
         }
         wrapper.eq(true, Picture::getIsDelete, 0)
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getSpaceId()), Picture::getSpaceId, pictureQueryDto.getSpaceId())
 //                .isNull(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId) //公共图库的空间ID 为 0
-                .eq(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId,0L) //公共图库的空间ID 为 0
+                .eq(pictureQueryDto.isNullSpaceId(), Picture::getSpaceId,"0") //公共图库的空间ID 为 0
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getId()), Picture::getId, pictureQueryDto.getId())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getUserId()), Picture::getUserId, pictureQueryDto.getUserId())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getName()), Picture::getName, pictureQueryDto.getName())
@@ -579,27 +580,27 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             case "category":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getCategory);
                 break;
-            case "picHeight":
+            case "pic_height":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getPicHeight);
                 break;
-            case "picWidth":
+            case "pic_width":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getPicWidth);
                 break;
-            case "picSize":
+            case "pic_size":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getPicSize);
                 break;
-            case "picScale":
+            case "pic_scale":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getPicScale);
                 break;
-            case "picFormat":
+            case "pic_format":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getPicFormat);
                 break;
-            case "createTime":
+            case "create_time":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getCreateTime);
-            case "editTime":
+            case "edit_time":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getEditTime);
                 break;
-            case "viewQuantity":
+            case "view_quantity":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getViewQuantity);
                 break;
             default:
@@ -657,8 +658,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //根据Picture信息 脱敏后返回给前端
         PictureVO pictureVO = PictureVO.objToVO(picture);
         //根据userID 获取UserVO
-        Long userId = picture.getUserId();
-        if (userId != null && userId > 0) {
+        String userId = picture.getUserId();
+        if (userId != null && !"0".equals(userId)) {
             UserVO userVO = userService.getUserVO(userService.getById(userId));
             pictureVO.setUser(userVO);
         }
@@ -681,10 +682,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //转换VO
         List<PictureVO> pictureVOList = pictureList.stream().map(PictureVO::objToVO).collect(Collectors.toList());
         //获取UserVO
-        Set<Long> userIDSet = pictureList.stream().map(Picture::getUserId).collect(Collectors.toSet());
-        Map<Long, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
+        Set<String> userIDSet = pictureList.stream().map(Picture::getUserId).collect(Collectors.toSet());
+        Map<String, List<User>> userIDUserListMap = userService.listByIds(userIDSet).stream().collect(Collectors.groupingBy(User::getId));
         pictureVOList.forEach(e -> {
-            Long userId = e.getUserId();
+            String userId = e.getUserId();
             if (userIDUserListMap.containsKey(userId))
                 e.setUser(userService.getUserVO(userIDUserListMap.get(userId).get(0)));
         });
@@ -757,7 +758,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Override
     public void doPictureReview(PictureReviewDTO pictureReviewDto, User loginUser) {
         //1、校验数据能否审核
-        Long id = pictureReviewDto.getId();
+        String id = pictureReviewDto.getId();
         Integer reviewStatus = pictureReviewDto.getReviewStatus();
         PictureReviewStatusEnum pictureReviewStatusEnum = PictureReviewStatusEnum.getEnumByValue(reviewStatus);
         if (id == null || pictureReviewStatusEnum == null || PictureReviewStatusEnum.REVIEWING.equals(pictureReviewStatusEnum)) {
@@ -765,10 +766,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
         //2、获取旧图片信息
         // 构造 QueryWrapper
-        Long spaceId=pictureReviewDto.getSpaceId()==null?0:pictureReviewDto.getSpaceId();
+        String spaceId=pictureReviewDto.getSpaceId()==null?"0":pictureReviewDto.getSpaceId();
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", id)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
 
         Picture oldPicture = this.getOne(queryWrapper);
 
@@ -787,7 +788,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         // 构造 UpdateWrapper
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id) // 指定主键条件，批量更新则使用 in 传递多条
-                .eq("spaceId", spaceId);      // 补充条件 spaceId=xxx
+                .eq("space_id", spaceId);      // 补充条件 spaceId=xxx
 
         // 执行更新
         boolean result = this.update(updatePicture, updateWrapper);
@@ -815,12 +816,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     }
 
     @Override
-    public void deletePicture(long pictureId,long spaceId, User loginUser) {
+    public void deletePicture(String pictureId, String spaceId, User loginUser) {
         //图片应只能管理员/本人删除
         //查询该图片是否存在
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", pictureId)         // 根据主键 id 查询
-                .eq("spaceId", spaceId); // 附加 spaceId 条件
+                .eq("space_id", spaceId); // 附加 spaceId 条件
 
         Picture picture = this.getOne(queryWrapper);
 //        Picture picture = this.getById(pictureId);
@@ -839,7 +840,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 //            boolean result = this.removeById(pictureId);
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
 //            spaceId = picture.getSpaceId();
-            if (spaceId != 0) {
+            if (!"0".equals(spaceId)) {
                 boolean update = spaceService.lambdaUpdate().eq(Space::getId, spaceId)
                         .setSql("totalCount = totalCount -1")
                         .setSql("totalSize = totalSize -" + picture.getPicSize())
@@ -889,10 +890,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         LambdaQueryWrapper<Space> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Space::getIsDelete, 0);
         List<Space> spaceList = spaceService.list(wrapper);
-        List<Long> spaceIds = spaceList.stream()
+        List<String> spaceIds = spaceList.stream()
                                         .map(Space::getId)
                                         .collect(Collectors.toList());
-        spaceIds.add(0L);
+        spaceIds.add("0");
         if (date == null){
             date = DateUtil.offsetWeek(new Date(), -1);
         }
@@ -906,7 +907,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @return
      */
     @Override
-    public int deletePicturesByPictureIdsAndSpaceId(List<Long> pictureIds, Long spaceId){
+    public int deletePicturesByPictureIdsAndSpaceId(List<String> pictureIds, String spaceId){
         return pictureMapper.deletePicturesByPictureIdsAndSpaceId(pictureIds,spaceId);
     }
 
@@ -917,7 +918,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @return
      */
     @Override
-    public int deleteDeletedPictures(Date date, List<Long> spaceIds){
+    public int deleteDeletedPictures(Date date, List<String> spaceIds){
         if (date == null){
             date = DateUtil.offsetWeek(new Date(), -1);
         }
@@ -926,7 +927,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     @Override
     public void checkPicturePermission(User loginUser, Picture picture) {
-        Long spaceId = picture.getSpaceId();
+        String spaceId = picture.getSpaceId();
         if (spaceId == null) {
             // 公共图库，仅本人或管理员可操作
             if (!picture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
@@ -949,7 +950,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Override
     public CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDTO createPictureOutPaintingTaskDto, User loginUser) {
         //1、获取图片信息
-        Long pictureId = createPictureOutPaintingTaskDto.getPictureId();
+        String pictureId = createPictureOutPaintingTaskDto.getPictureId();
         Picture picture = Optional.ofNullable(this.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR));
         //2、权限校验
 //        this.checkPicturePermission(loginUser, picture);

@@ -51,9 +51,9 @@ public class SpaceUserController {
      */
     @PostMapping("/add")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
-    public BaseResult<Long> addSpaceUser(@Valid @RequestBody SpaceUserAddDTO spaceUserAddDTO, HttpServletRequest request) {
+    public BaseResult<String> addSpaceUser(@Valid @RequestBody SpaceUserAddDTO spaceUserAddDTO, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
-        long spaceId = spaceUserService.addSpaceUser(spaceUserAddDTO);
+        String spaceId = spaceUserService.addSpaceUser(spaceUserAddDTO);
 
         return ResultUtils.success(spaceId);
     }
@@ -68,7 +68,7 @@ public class SpaceUserController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<Boolean> deleteSpaceUser(@Valid @RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
-        Long id = deleteRequest.getId();
+        String id = deleteRequest.getId();
         //判断是否存在
         SpaceUser oldSpaceUser = spaceUserService.getById(id);
         ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
@@ -109,8 +109,8 @@ public class SpaceUserController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<SpaceUser> getSpaceUser(@RequestBody SpaceUserQueryDTO spaceUserQueryDTO, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserQueryDTO == null, ErrorCode.PARAMS_ERROR);
-        Long spaceId = spaceUserQueryDTO.getSpaceId();
-        Long userId = spaceUserQueryDTO.getUserId();
+        String spaceId = spaceUserQueryDTO.getSpaceId();
+        String userId = spaceUserQueryDTO.getUserId();
         ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
 
         SpaceUser spaceUser = spaceUserService.getOne(spaceUserService.getQueryWrapper(spaceUserQueryDTO));

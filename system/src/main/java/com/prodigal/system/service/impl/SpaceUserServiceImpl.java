@@ -46,8 +46,8 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
     public void validSpaceUser(SpaceUser spaceUser, boolean add) {
         ThrowUtils.throwIf(spaceUser == null, ErrorCode.PARAMS_ERROR);
         // 创建时，空间 id 和用户 id 必填
-        Long spaceId = spaceUser.getSpaceId();
-        Long userId = spaceUser.getUserId();
+        String spaceId = spaceUser.getSpaceId();
+        String userId = spaceUser.getUserId();
         if (add) {
             ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
             User user = userService.getById(userId);
@@ -64,7 +64,7 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
     }
 
     @Override
-    public long addSpaceUser(SpaceUserAddDTO spaceUserAddDTO) {
+    public String addSpaceUser(SpaceUserAddDTO spaceUserAddDTO) {
         // 参数校验
         ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
         SpaceUser spaceUser = new SpaceUser();
@@ -81,15 +81,15 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         // 对象转封装类
         SpaceUserVO spaceUserVO = SpaceUserVO.objToVO(spaceUser);
         // 关联查询用户信息
-        Long userId = spaceUser.getUserId();
-        if (userId != null && userId > 0) {
+        String userId = spaceUser.getUserId();
+        if (userId != null && !"0".equals(userId)) {
             User user = userService.getById(userId);
             UserVO userVO = userService.getUserVO(user);
             spaceUserVO.setUser(userVO);
         }
         // 关联查询空间信息
-        Long spaceId = spaceUser.getSpaceId();
-        if (spaceId != null && spaceId > 0) {
+        String spaceId = spaceUser.getSpaceId();
+        if (spaceId != null && !"0".equals(spaceId)) {
             Space space = spaceService.getById(spaceId);
             SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
             spaceUserVO.setSpace(spaceVO);
@@ -106,17 +106,17 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         // 对象列表 => 封装对象列表
         List<SpaceUserVO> spaceUserVOList = spaceUserList.stream().map(SpaceUserVO::objToVO).collect(Collectors.toList());
         // 1. 收集需要关联查询的用户 ID 和空间 ID
-        Set<Long> userIdSet = spaceUserList.stream().map(SpaceUser::getUserId).collect(Collectors.toSet());
-        Set<Long> spaceIdSet = spaceUserList.stream().map(SpaceUser::getSpaceId).collect(Collectors.toSet());
+        Set<String> userIdSet = spaceUserList.stream().map(SpaceUser::getUserId).collect(Collectors.toSet());
+        Set<String> spaceIdSet = spaceUserList.stream().map(SpaceUser::getSpaceId).collect(Collectors.toSet());
         // 2. 批量查询用户和空间
-        Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
+        Map<String, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
                                                                 .collect(Collectors.groupingBy(User::getId));
-        Map<Long, List<Space>> spaceIdSpaceListMap = spaceService.listByIds(spaceIdSet).stream()
+        Map<String, List<Space>> spaceIdSpaceListMap = spaceService.listByIds(spaceIdSet).stream()
                                                                 .collect(Collectors.groupingBy(Space::getId));
         // 3. 填充 SpaceUserVO 的用户和空间信息
         spaceUserVOList.forEach(spaceUserVO -> {
-            Long userId = spaceUserVO.getUserId();
-            Long spaceId = spaceUserVO.getSpaceId();
+            String userId = spaceUserVO.getUserId();
+            String spaceId = spaceUserVO.getSpaceId();
             // 填充用户信息
             User user = null;
             if (userIdUserListMap.containsKey(userId)) {
@@ -141,14 +141,14 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
             return queryWrapper;
         }
         // 从对象中取值
-        Long id = spaceUserQueryDTO.getId();
-        Long spaceId = spaceUserQueryDTO.getSpaceId();
-        Long userId = spaceUserQueryDTO.getUserId();
+        String id = spaceUserQueryDTO.getId();
+        String spaceId = spaceUserQueryDTO.getSpaceId();
+        String userId = spaceUserQueryDTO.getUserId();
         String spaceRole = spaceUserQueryDTO.getSpaceRole();
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "spaceId", spaceId);
-        queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
-        queryWrapper.eq(ObjUtil.isNotEmpty(spaceRole), "spaceRole", spaceRole);
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "space_id", spaceId);
+        queryWrapper.eq(ObjUtil.isNotEmpty(userId), "user_id", userId);
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceRole), "space_role", spaceRole);
         return queryWrapper;
     }
 }

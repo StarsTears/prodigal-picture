@@ -90,8 +90,8 @@ public class EmailSendConsumer {
                 } else {
                     List<String> emailList = userService.getBaseMapper()
                             .selectObjs(new QueryWrapper<User>()
-                                    .select("userEmail")
-                                    .eq("isDelete", 0))
+                                    .select("user_email")
+                                    .eq("is_delete", 0))
                             .stream()
                             .map(obj -> (String) obj)
                             .toList();

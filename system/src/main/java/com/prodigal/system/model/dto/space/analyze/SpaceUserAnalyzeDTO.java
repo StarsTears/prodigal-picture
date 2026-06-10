@@ -16,7 +16,7 @@ public class SpaceUserAnalyzeDTO extends SpaceAnalyzeDTO{
     /**
      * 用户ID
      */
-    private Long userId;
+    private String userId;
     /**
      * 时间维度 day week month year
      */

@@ -16,14 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SseEmitterManager {
 
     /** key: userId, value: 该用户的 SSE 连接 */
-    private static final Map<Long, SseEmitter> EMITTERS = new ConcurrentHashMap<>();
+    private static final Map<String, SseEmitter> EMITTERS = new ConcurrentHashMap<>();
 
     /**
      * 创建并注册一个新的 SSE 连接
      * @param userId 用户ID
      * @param timeoutMs 超时时间（毫秒）
      */
-    public SseEmitter createEmitter(Long userId, long timeoutMs) {
+    public SseEmitter createEmitter(String userId, long timeoutMs) {
         SseEmitter emitter = new SseEmitter(timeoutMs);
         EMITTERS.put(userId, emitter);
 
@@ -47,7 +47,7 @@ public class SseEmitterManager {
     /**
      * 向指定用户推送事件
      */
-    public void sendToUser(Long userId, String eventName, Object data) {
+    public void sendToUser(String userId, String eventName, Object data) {
         SseEmitter emitter = EMITTERS.get(userId);
         if (emitter != null) {
             try {
@@ -62,7 +62,7 @@ public class SseEmitterManager {
     /**
      * 移除用户的连接
      */
-    public void removeEmitter(Long userId) {
+    public void removeEmitter(String userId) {
         SseEmitter emitter = EMITTERS.remove(userId);
         if (emitter != null) {
             emitter.complete();

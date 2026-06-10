@@ -17,7 +17,7 @@ import java.util.List;
 * @description 针对表【user(用户)】的数据库操作Service
 */
 public interface UserService extends IService<User> {
-    long register(RegisterDTO registerDto);
+    String register(RegisterDTO registerDto);
 
     UserVO login(LoginDTO loginDto, HttpServletRequest request);
 
@@ -25,7 +25,7 @@ public interface UserService extends IService<User> {
 
     boolean logout(HttpServletRequest request);
 
-    Long createUser(UserAddDTO userAddDto);
+    String createUser(UserAddDTO userAddDto);
 
     LambdaQueryWrapper<User> getQueryWrapper(UserQueryDTO userQueryDto);
 

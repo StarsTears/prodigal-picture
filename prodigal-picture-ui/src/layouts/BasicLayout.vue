@@ -1,49 +1,43 @@
 <template>
   <div id="basicLayout">
     <a-layout style="min-height: 100vh">
-      <a-layout-header class="header" >
+      <a-layout-header class="header">
         <GlobalHeader/>
       </a-layout-header>
-      <!--  水印    -->
-      <!--      <a-watermark content="Prodigal Picture">-->
-      <!--        <div style="height: 500px"/>-->
-      <!--      </a-watermark>-->
+
       <a-layout>
-        <GlobalSider v-if="showSider" class="sider"/>
-        <a-layout-content class="content" :style="{ marginLeft: showSider ? siderWidth + 'px' : '0' }">
-          <RouterView :siderWidth="siderWidth"/>
+        <GlobalSider v-if="showSider" class="sider" v-model:collapsed="siderCollapsed"/>
+        <a-layout-content class="content" :style="{ marginLeft: showSider && !siderCollapsed ? '200px' : '0' }">
+          <RouterView :siderWidth="showSider && !siderCollapsed ? 200 : 0"/>
         </a-layout-content>
       </a-layout>
       <a-layout-footer class="footer">
-        Prodigal Picture | Copyright 20001-2026  All Rights Reserved.
+        Prodigal Picture | Copyright 2024-2026 All Rights Reserved.
       </a-layout-footer>
     </a-layout>
+    <div v-if="showSider" class="sider-float-toggle" @click="siderCollapsed = !siderCollapsed" :title="siderCollapsed ? '展开菜单' : '收起菜单'">
+      <MenuFoldOutlined v-if="!siderCollapsed" />
+      <MenuUnfoldOutlined v-else />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import GlobalHeader from "@/components/GlobalHeader.vue";
 import GlobalSider from "@/components/GlobalSider.vue";
-import {ref, watchEffect,computed} from "vue";
+import {ref, computed} from "vue";
 import {useLoginUserStore} from "@/stores/loginUserStore";
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons-vue';
 export default {
   name: "BasicLayout",
-  components: {GlobalHeader,GlobalSider},
+  components: {GlobalHeader, GlobalSider, MenuFoldOutlined, MenuUnfoldOutlined},
   setup() {
-    const siderWidth = ref(200);
     const loginUserStore = useLoginUserStore();
     const showSider = computed(() => loginUserStore?.loginUser?.id !== undefined);
-    // 监听登录状态变化，更新侧边栏宽度
-    watchEffect(() => {
-      if (loginUserStore?.loginUser?.id != undefined && loginUserStore?.loginUser?.id) {
-        siderWidth.value = 200; // 用户登录后，设置左边距为200px
-      } else {
-        siderWidth.value = 0; // 用户未登录，设置左边距为0
-      }
-    });
+    const siderCollapsed = ref(false);
     return {
-      siderWidth,
-      showSider
+      siderCollapsed,
+      showSider,
     }
   }
 }
@@ -66,14 +60,15 @@ export default {
   position: fixed;
   top: 64px;
   height: 100vh;
-  z-index: 1000;
+  z-index: 999;
+  overflow-y: auto;
 }
 
 #basicLayout :deep(.ant-layout) {
   background: var(--bg-body);
 }
 
-#basicLayout :deep(.ant-menu-root){
+#basicLayout :deep(.ant-menu-root) {
   border-bottom: none !important;
   border-inline-end: none !important;
   background: transparent !important;
@@ -82,21 +77,40 @@ export default {
 #basicLayout .content {
   padding: 28px;
   background: var(--bg-content);
-  margin-bottom: 30px;
-  margin-top: 40px;
-  --sider-width: 200px;
-  margin-left: var(--sider-width);
-  transition: margin-left 0.3s;
+  margin-top: 64px;
+  min-height: calc(100vh - 64px - 52px);
+  transition: margin-left 0.2s ease;
 }
 
 #basicLayout .footer {
   background: var(--bg-footer);
   padding: 16px;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  left: 0;
   text-align: center;
-  z-index: 1000;
+}
+
+.sider-float-toggle {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 18px;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.2s;
+  border: 1px solid var(--border-color);
+}
+
+.sider-float-toggle:hover {
+  color: #4096ff;
+  background: rgba(64, 150, 255, 0.08);
+  box-shadow: 0 4px 16px rgba(64, 150, 255, 0.2);
 }
 </style>

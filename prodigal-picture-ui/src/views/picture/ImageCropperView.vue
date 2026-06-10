@@ -45,7 +45,7 @@ import {uploadPictureUsingPost} from "@/api/pictureController";
 interface Props {
   imageUrl?: string
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string
   space?: API.SpaceVO
   onSuccess?: (newPicture: API.PictureVO) => void
 }

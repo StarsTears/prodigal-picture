@@ -228,7 +228,7 @@ const doView = (record: API.UserVO) => {
 }
 
 // 删除
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   if (!id) return
   const res = await deleteUserUsingDelete({ id })
   if (res.code === 0) {

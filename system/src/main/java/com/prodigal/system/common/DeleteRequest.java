@@ -2,7 +2,6 @@ package com.prodigal.system.common;
 
 import lombok.Data;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -18,7 +17,6 @@ public class DeleteRequest implements Serializable {
      * id
      */
     @NotNull(message = "id不能为空")
-    @Min(value = 1, message = "id必须大于0")
-    private Long id;
+    private String id;
 
 }

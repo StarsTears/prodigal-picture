@@ -16,7 +16,7 @@ public class PictureUploadDTO implements Serializable {
     /**
      * id 用于修改
      */
-    private Long id;
+    private String id;
     /**
      * 文件地址
      */
@@ -28,6 +28,6 @@ public class PictureUploadDTO implements Serializable {
     /**
      * 空间 id
      */
-    private Long spaceId;
+    private String spaceId;
 
 }

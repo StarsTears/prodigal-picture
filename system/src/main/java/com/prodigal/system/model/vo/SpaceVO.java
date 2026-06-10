@@ -21,7 +21,7 @@ public class SpaceVO implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 空间类型：0-私有 1-团队
@@ -61,7 +61,7 @@ public class SpaceVO implements Serializable {
     /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 创建时间

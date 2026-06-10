@@ -29,7 +29,7 @@
               {{ picture.introduction ?? '-' }}
             </a-descriptions-item>
             <a-descriptions-item v-if="picture.spaceId" label="所属空间">
-              {{ picture.spaceId==0 ? '公共图库' :picture.spaceId }}
+              {{ picture.spaceId }}
             </a-descriptions-item>
             <a-descriptions-item label="分类">
               {{ picture.category ?? '默认' }}
