@@ -35,12 +35,6 @@ public class SystemController {
     private UserService userService;
     @Resource
     private EmailService emailService;
-
-    @GetMapping("/hello")
-    public BaseResult<String> hello() {
-        return BaseResult.<String>success().data("hello! Prodigal Picture");
-    }
-
     /**
      * 用户注册
      *
@@ -55,7 +49,7 @@ public class SystemController {
         return ResultUtils.success(String.valueOf(register));
     }
 
-    @RateLimit(maxRequests = 10, window = 60)
+    @RateLimit(maxRequests = 5, window = 60)
     @PostMapping("/login")
     public BaseResult<UserVO> login(@Valid @RequestBody LoginDTO loginDto, HttpServletRequest request) {
         ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);

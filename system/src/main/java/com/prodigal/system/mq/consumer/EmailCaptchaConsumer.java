@@ -68,7 +68,7 @@ public class EmailCaptchaConsumer {
         return String.format("""
                 <div style="max-width:480px;margin:0 auto;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;border-radius:8px;">
                     <div style="text-align:center;padding-bottom:24px;">
-                        <h2 style="color:#1a1a1a;margin:0;">Prodigal Picture</h2>
+                        <h2 style="color:#1a1a1a;margin:0;">%s</h2>
                     </div>
                     <div style="background:#fff;padding:32px;border-radius:8px;text-align:center;">
                         <p style="color:#666;margin:0 0 8px;">您的登录验证码</p>
@@ -78,6 +78,6 @@ public class EmailCaptchaConsumer {
                     <div style="text-align:center;padding-top:24px;">
                         <p style="color:#bbb;font-size:12px;margin:0;">此邮件由系统自动发送，请勿回复</p>
                     </div>
-                </div>""", code, CacheConstant.CODE_EXPIRE_MINUTES);
+                </div>""", GlobalConstant.PERSONAL, code, CacheConstant.CODE_EXPIRE_MINUTES);
     }
 }

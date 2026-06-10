@@ -24,8 +24,7 @@ import com.prodigal.system.model.enums.EmailTypeEnum;
 import com.prodigal.system.model.message.EmailCaptchaMessage;
 import com.prodigal.system.model.message.EmailSendMessage;
 import com.prodigal.system.model.vo.EmailVO;
-import com.prodigal.system.mq.producer.EmailCaptchaProducer;
-import com.prodigal.system.mq.producer.EmailSendProducer;
+import com.prodigal.system.mq.producer.EmailProducer;
 import com.prodigal.system.service.EmailService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.EmailValidatorUtils;
@@ -62,10 +61,9 @@ public class EmailServiceImpl implements EmailService {
     private UserService userService;
     @Autowired
     private StringRedisTemplate redisTemplate;
+
     @Resource
-    private EmailCaptchaProducer emailCaptchaProducer;
-    @Resource
-    private EmailSendProducer emailSendProducer;
+    private EmailProducer emailProducer;
 
     @Override
     public void sendVerificationCodeAsync(String email) {
@@ -85,7 +83,7 @@ public class EmailServiceImpl implements EmailService {
                     CacheConstant.CODE_EXPIRE_MINUTES,
                     TimeUnit.MINUTES
             );
-            emailCaptchaProducer.send(new EmailCaptchaMessage(email, code));
+            emailProducer.publishCaptcha(new EmailCaptchaMessage(email, code));
         } catch (Exception e) {
             redisTemplate.delete(codeKey);
             redisTemplate.delete(sendLockKey);
@@ -159,7 +157,7 @@ public class EmailServiceImpl implements EmailService {
         email = mongoTemplate.save(email);
 
         // 投递 MQ 异步发送
-        emailSendProducer.send(new EmailSendMessage(email.getId()));
+        emailProducer.publishNotify(new EmailSendMessage(email.getId()));
     }
 
     /**
@@ -185,7 +183,7 @@ public class EmailServiceImpl implements EmailService {
         mongoTemplate.save(email);
 
         // 投递 MQ 异步发送
-        emailSendProducer.send(new EmailSendMessage(email.getId()));
+        emailProducer.publishNotify(new EmailSendMessage(email.getId()));
     }
 
     Query fillParamsByCriteria(EmailQueryDTO queryEmailDTO) {
@@ -193,7 +191,15 @@ public class EmailServiceImpl implements EmailService {
 //        Criteria criteria = new Criteria();
         if (StrUtil.isNotBlank(queryEmailDTO.getTo())) {
             Pattern pattern = Pattern.compile("^.*" + queryEmailDTO.getTo() + ".*$", Pattern.CASE_INSENSITIVE);
-            query.addCriteria(Criteria.where("to").regex(pattern));
+            if (ObjectUtil.isEmpty(queryEmailDTO.getType())) {
+                // 未指定邮件类型：匹配收件人或公告（公告全员可见）
+                query.addCriteria(new Criteria().orOperator(
+                        Criteria.where("to").regex(pattern),
+                        Criteria.where("type").is(EmailTypeEnum.NOTICE.getValue())
+                ));
+            } else {
+                query.addCriteria(Criteria.where("to").regex(pattern));
+            }
         }
         //邮件状态
         if (ObjectUtil.isNotEmpty(queryEmailDTO.getStatus())) {

@@ -38,4 +38,6 @@ public interface UserService extends IService<User> {
     boolean isAdmin(User user);
 
     void resetPassword(ResetPasswordDTO dto);
+
+    void changePassword(ChangePasswordDTO dto, User loginUser);
 }

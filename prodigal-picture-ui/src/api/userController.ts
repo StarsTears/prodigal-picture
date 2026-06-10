@@ -98,3 +98,18 @@ export async function updateUserUsingPost(
     ...(options || {}),
   })
 }
+
+/** changePassword POST /api/user/change-password */
+export async function changePasswordUsingPost(
+  body: API.ChangePasswordDTO,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultBoolean_>('/api/user/change-password', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}

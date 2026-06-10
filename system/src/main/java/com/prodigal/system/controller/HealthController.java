@@ -1,5 +1,7 @@
 package com.prodigal.system.controller;
 
+import com.prodigal.system.common.BaseResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +18,11 @@ public class HealthController {
     @RequestMapping("/check")
     public String check() {
         return "OK";
+    }
+
+    @GetMapping("/hello")
+    public BaseResult<String> hello() {
+        return BaseResult.<String>success().data("hello! Prodigal Picture");
     }
 
 }

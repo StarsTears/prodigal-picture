@@ -912,4 +912,10 @@ declare namespace API {
     newPassword?: string
     checkPassword?: string
   }
+
+  type ChangePasswordDTO = {
+    oldPassword?: string
+    newPassword?: string
+    checkPassword?: string
+  }
 }

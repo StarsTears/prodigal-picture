@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -100,8 +99,6 @@ public class EmailSendConsumer {
                         log.warn("没有可发送的用户邮箱, emailId={}", emailId);
                         return;
                     }
-                    String allRecipients = String.join(",", emailList);
-                    email.setTo(allRecipients);
                     helper.setTo(emailList.toArray(new String[0]));
                 }
             } else {

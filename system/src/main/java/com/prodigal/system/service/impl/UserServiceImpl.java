@@ -294,6 +294,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void changePassword(ChangePasswordDTO dto, User loginUser) {
+        String newPassword = dto.getNewPassword();
+        ThrowUtils.throwIf(!newPassword.equals(dto.getCheckPassword()), ErrorCode.PASSWORD_NOT_MATCH);
+        ThrowUtils.throwIf(!matchPassword(dto.getOldPassword(), loginUser.getUserPassword()), ErrorCode.LOGIN_FAIL, "原密码错误");
+
+        User user = this.getById(loginUser.getId());
+        user.setUserPassword(getEncryptPassword(newPassword));
+        boolean updated = this.updateById(user);
+        if (!updated) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码修改失败");
+        }
+    }
+
     @Override
     public String getEncryptPassword(String password) {
         return passwordEncoder.encode(password);

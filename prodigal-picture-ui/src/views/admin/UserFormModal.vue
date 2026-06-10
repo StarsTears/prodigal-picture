@@ -31,6 +31,7 @@
                   :options="USER_ROLE_OPTIONS"
                   placeholder="请选择角色"
                   style="width: 100%"
+                  :disabled="isTargetSuperAdmin"
                   allow-clear/>
       </a-form-item>
       <a-form-item class="action-bar">
@@ -64,6 +65,7 @@ interface UserFormState {
 const formState = reactive<UserFormState>({});
 const open = ref(false);
 const isEdit = ref(false);
+const isTargetSuperAdmin = ref(false);
 let editingId: number | undefined;
 
 const resetForm = () => {
@@ -73,6 +75,7 @@ const resetForm = () => {
   formState.userAvatar = undefined;
   formState.userProfile = undefined;
   formState.userRole = undefined;
+  isTargetSuperAdmin.value = false;
 };
 
 const openModal = (editData?: API.UserVO) => {
@@ -80,6 +83,7 @@ const openModal = (editData?: API.UserVO) => {
   if (editData) {
     isEdit.value = true;
     editingId = editData.id;
+    isTargetSuperAdmin.value = editData.userRole === 'administrator';
     formState.userAccount = editData.userAccount;
     formState.userName = editData.userName;
     formState.userEmail = editData.userEmail;

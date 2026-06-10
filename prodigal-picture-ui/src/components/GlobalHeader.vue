@@ -107,17 +107,14 @@
         <a-textarea v-model:value="userDetail.userProfile" placeholder="简介"/>
       </a-form-item>
 
-      <a-form-item name="userRole" label="角色" class="collection-create-form_last-form-item">
-        <a-radio-group v-model:value="userDetail.userRole">
-          <a-radio v-if="showRole || userDetail.userRole === 'administrator'" value="administrator">超级管理员</a-radio>
-          <a-radio v-if="showRole || userDetail.userRole === 'admin'" value="admin">管理员</a-radio>
-          <a-radio v-if="showRole || userDetail.userRole === 'user'" value="user">普通用户</a-radio>
-        </a-radio-group>
-      </a-form-item>
     </a-form>
     <a-space wrap class="detail-footer">
       <a-button v-if="componentDisabled" :icon="h(EditOutlined)" type="default" @click="doEdit">
         修改
+      </a-button>
+      <a-button v-if="componentDisabled" type="default" @click="doOpenChangePassword">
+        <template #icon><KeyOutlined/></template>
+        修改密码
       </a-button>
       <a-space wrap v-if="!componentDisabled">
         <a-button :icon="h(SaveOutlined)" type="default" @click="doSave">
@@ -132,18 +129,40 @@
       </a-space>
     </a-space>
   </a-modal>
+
+  <!-- 修改密码 -->
+  <a-modal v-model:open="passwordModalOpen" title="修改密码" :footer="false" @cancel="closePasswordModal">
+    <a-form :model="passwordForm" layout="vertical" @finish="doChangePassword">
+      <a-form-item label="原密码" name="oldPassword"
+                   :rules="[{ required: true, message: '请输入原密码' }]">
+        <a-input-password v-model:value="passwordForm.oldPassword" placeholder="请输入原密码"/>
+      </a-form-item>
+      <a-form-item label="新密码" name="newPassword"
+                   :rules="[{ required: true, message: '请输入新密码' }, { min: 6, message: '密码不能小于 6 位' }]">
+        <a-input-password v-model:value="passwordForm.newPassword" placeholder="请输入新密码"/>
+      </a-form-item>
+      <a-form-item label="确认密码" name="checkPassword"
+                   :rules="[{ required: true, message: '请确认新密码' },
+                            { validator: validateChangePasswordCheck, trigger: 'blur' }]">
+        <a-input-password v-model:value="passwordForm.checkPassword" placeholder="请确认新密码"/>
+      </a-form-item>
+      <a-form-item class="action-bar">
+        <a-button type="primary" html-type="submit">确认修改</a-button>
+      </a-form-item>
+    </a-form>
+  </a-modal>
 </template>
 <script lang="ts" setup>
 import {computed, h, reactive, ref, watch} from 'vue';
 import {
   HomeOutlined, LogoutOutlined, UserOutlined, PictureOutlined, FolderOutlined,
   EyeOutlined, UploadOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
-  BellOutlined,MailOutlined
+  BellOutlined,MailOutlined,KeyOutlined
 } from '@ant-design/icons-vue';
 import {type FormInstance, MenuProps, message, notification, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
 import {useLoginUserStore} from "@/stores/loginUserStore";
-import {editUserUsingPost, updateUserUsingPost} from "@/api/userController";
+import {editUserUsingPost, updateUserUsingPost, changePasswordUsingPost} from "@/api/userController";
 import {helloUsingGet, logoutUsingPost} from "@/api/systemController";
 import ACCESS_ENUM from "@/access/accessEnum";
 import EmailDrawView from "@/views/email/EmailDrawView.vue";
@@ -296,10 +315,8 @@ const doShow = () => {
   componentDisabled.value = true
 };
 
-const showRole = ref<boolean>(false)
 const doEdit = () => {
   componentDisabled.value = false
-  showRole.value = true
 }
 
 //-------------------------------------邮箱校验--------------------------------------
@@ -327,12 +344,56 @@ const doSave = async () => {
   } else {
     message.error('修改失败,' + res.msg)
   }
-  showRole.value = false
 };
 const doCancel = () => {
   componentDisabled.value = true
   formRef.value?.resetFields();
   open.value = false
+}
+
+//-------------------------------------修改密码--------------------------------------
+const passwordModalOpen = ref(false)
+const passwordForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  checkPassword: '',
+})
+
+const doOpenChangePassword = () => {
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.checkPassword = ''
+  passwordModalOpen.value = true
+}
+
+const closePasswordModal = () => {
+  passwordModalOpen.value = false
+}
+
+const validateChangePasswordCheck = (_rule: any, value: string, callback: (error?: Error) => void) => {
+  if (value && value !== passwordForm.newPassword) {
+    callback(new Error('两次输入的密码不一致'))
+  } else {
+    callback()
+  }
+}
+
+const doChangePassword = async () => {
+  const res = await changePasswordUsingPost({
+    oldPassword: passwordForm.oldPassword,
+    newPassword: passwordForm.newPassword,
+    checkPassword: passwordForm.checkPassword,
+  })
+  if (res.code === 0) {
+    message.success('密码修改成功，请重新登录')
+    passwordModalOpen.value = false
+    // 退出登录
+    await logoutUsingPost()
+    loginUserStore.setLoginUser({ userName: '未登录' })
+    router.push('/login')
+  } else {
+    message.error('密码修改失败，' + res.msg)
+  }
 }
 
 /**
