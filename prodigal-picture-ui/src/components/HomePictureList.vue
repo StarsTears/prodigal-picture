@@ -6,7 +6,8 @@
              :list="dataList"
              :width="280"
              :breakpoints="breakpoints"
-             :gutter="12">
+             :gutter="12"
+             background-color="var(--bg-body)">
     <template #default="{ item }">
       <div class="picture-card" @click="doClickPicture(item)">
         <div class="image-wrapper" @dragstart="handleDragStart">
@@ -116,7 +117,7 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 .picture-card {
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: var(--bg-card);
   transition: box-shadow 0.3s ease;
   cursor: pointer;
 }
@@ -132,7 +133,7 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 .image-wrapper {
   position: relative;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--bg-image-placeholder);
 }
 
 .image-overlay {
@@ -179,7 +180,7 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 .caption-text {
   font-size: 13px;
   font-weight: 500;
-  color: #222;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -189,7 +190,7 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 
 .caption-author {
   font-size: 11px;
-  color: #999;
+  color: var(--text-secondary);
   white-space: nowrap;
   flex-shrink: 0;
 }

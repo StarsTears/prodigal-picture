@@ -122,9 +122,9 @@
           <a-descriptions-item label="创建时间">{{ viewingEmail.createTime ? dayjs(viewingEmail.createTime).format('YYYY-MM-DD HH:mm:ss') : '-' }}</a-descriptions-item>
           <a-descriptions-item label="更新时间">{{ viewingEmail.updateTime ? dayjs(viewingEmail.updateTime).format('YYYY-MM-DD HH:mm:ss') : '-' }}</a-descriptions-item>
         </a-descriptions>
-        <div style="margin-bottom: 8px;font-weight:500;color:#666">邮件内容</div>
-        <div v-if="viewingEmail.html" v-html="viewingEmail.txt" style="background:#fafafa;padding:16px;border-radius:6px;border:1px solid #f0f0f0;max-height:400px;overflow:auto;"></div>
-        <div v-else style="background:#fafafa;padding:16px;border-radius:6px;border:1px solid #f0f0f0;max-height:400px;overflow:auto;white-space:pre-wrap;">{{ viewingEmail.txt || '-' }}</div>
+        <div style="margin-bottom: 8px;font-weight:500;color:var(--text-secondary)">邮件内容</div>
+        <div v-if="viewingEmail.html" v-html="viewingEmail.txt" style="background:var(--bg-image-placeholder);padding:16px;border-radius:6px;border:1px solid var(--border-color);max-height:400px;overflow:auto;"></div>
+        <div v-else style="background:var(--bg-image-placeholder);padding:16px;border-radius:6px;border:1px solid var(--border-color);max-height:400px;overflow:auto;white-space:pre-wrap;">{{ viewingEmail.txt || '-' }}</div>
       </template>
     </a-drawer>
   </div>

@@ -1,12 +1,22 @@
 <template>
-  <router-view v-if="BasicLayout" :component="BasicLayout" />
+  <a-config-provider :theme="themeConfig">
+    <router-view v-if="BasicLayout" :component="BasicLayout" />
+  </a-config-provider>
 </template>
 <script setup lang="ts">
-import {onBeforeRouteLeave, onBeforeRouteUpdate, RouterLink, RouterView} from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, RouterLink, RouterView } from 'vue-router'
 import { useRoute } from 'vue-router';
+import { onMounted, computed } from "vue";
 import BasicLayout from '@/layouts/BasicLayout.vue';
 import FullScreenLayout from '@/layouts/FullScreenLayout.vue';
-import {computed} from "vue";
+import { useThemeStore } from '@/stores/themeStore';
+
+const themeStore = useThemeStore();
+const themeConfig = computed(() => ({ algorithm: themeStore.algorithm }));
+
+onMounted(() => {
+  themeStore.init();
+});
 
 const route = useRoute();
 const layoutComponent = computed(() => {

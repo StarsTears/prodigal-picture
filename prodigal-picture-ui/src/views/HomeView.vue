@@ -50,7 +50,7 @@
       <div class="loadingInfo">
         <a-spin v-if="homeLoading" size="large" />
         <div v-if="showBottomLine">
-          <a-divider v-if="dataList.length > 0" style="color: #666666">
+          <a-divider v-if="dataList.length > 0" style="color: var(--text-secondary)">
 <!--            🦖🦖🦖 这是我的底线~-->
             🍃🍃🍃这是我的底线~
           </a-divider>
@@ -263,7 +263,7 @@ const handleScrollDebounced = debounce(handleScroll, 200)
 <style scoped>
 /* 吸顶容器 */
 .sticky-header {
-  background: white;
+  background: var(--bg-header);
   transition: all 0.3s ease;
   padding: 0 20px;
   /*优化搜索框容器*/
@@ -280,7 +280,7 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   right: 0;
   z-index: 1000;
   padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--bg-header-sticky);
   backdrop-filter: blur(5px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   /*优化搜索栏与页面大小不一致*/
@@ -317,7 +317,7 @@ const handleScrollDebounced = debounce(handleScroll, 200)
   border-radius: 24px 0 0 24px !important;
   height: 46px;
   font-size: 16px;
-  border-color: #d9d9d9;
+  border-color: var(--border-color-strong);
 }
 
 .logo-search :deep(.ant-input:hover),

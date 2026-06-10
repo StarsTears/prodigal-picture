@@ -20,17 +20,21 @@ export default {
 </script>
 
 <style scoped>
+#fullScreenLayout :deep(.ant-layout) {
+  background: var(--bg-body);
+}
+
 #fullScreenLayout .content {
-  background: linear-gradient(to right, #efefef, #ffffff);
+  background: var(--bg-content);
 }
 #fullScreenLayout .footer {
-  background: #efefef;
+  background: var(--bg-footer);
   padding: 16px;
   position: fixed;
   bottom: 0;
   right: 0;
   left: 0;
   text-align: center;
-  z-index: 1000; /* 确保footer在最上层 */
+  z-index: 1000;
 }
 </style>

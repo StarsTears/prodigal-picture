@@ -2,7 +2,7 @@
   <div id="globalSider">
     <a-layout-sider v-if="loginUserStore.loginUser.id"
                     width="200"
-                    style="background: #fff"
+                    style="background: var(--bg-sider)"
                     breakpoint="lg"
                     collapsed-width="0"
     >
@@ -104,5 +104,8 @@ const handleMenuClick = ({key}) => {
 <style>
   #globalSider .ant-layout-sider{
     background: none;
+  }
+  #globalSider .ant-menu {
+    background: transparent;
   }
 </style>

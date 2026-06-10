@@ -1,0 +1,114 @@
+/* ========================================
+   Theme CSS Variables — Light (default)
+   ======================================== */
+
+html {
+  --bg-body: #ffffff;
+  --bg-header: #ffffff;
+  --bg-header-sticky: rgba(255, 255, 255, 0.96);
+  --bg-sider: #ffffff;
+  --bg-content: linear-gradient(to right, #efefef, #ffffff);
+  --bg-footer: #efefef;
+  --bg-card: #ffffff;
+  --bg-image-placeholder: #f5f5f5;
+  --bg-login-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+  --text-primary: #222222;
+  --text-secondary: #999999;
+  --text-tertiary: #bbbbbb;
+
+  --border-color: #eeeeee;
+  --border-color-strong: #d9d9d9;
+
+  --skeleton-gradient: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+
+  color-scheme: light;
+}
+
+html {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+}
+
+body {
+  background-color: var(--bg-body);
+}
+
+/* ========================================
+   Theme CSS Variables — Dark overrides
+   ======================================== */
+
+html.dark {
+  --bg-body: #141414;
+  --bg-header: #1d1d1d;
+  --bg-header-sticky: rgba(29, 29, 29, 0.96);
+  --bg-sider: #1d1d1d;
+  --bg-content: linear-gradient(to right, #1a1a1a, #141414);
+  --bg-footer: #1a1a1a;
+  --bg-card: #1d1d1d;
+  --bg-image-placeholder: #262626;
+  --bg-login-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+
+  --text-primary: rgba(255, 255, 255, 0.85);
+  --text-secondary: rgba(255, 255, 255, 0.45);
+  --text-tertiary: rgba(255, 255, 255, 0.25);
+
+  --border-color: #303030;
+  --border-color-strong: #434343;
+
+  --skeleton-gradient: linear-gradient(90deg, #262626 25%, #333333 50%, #262626 75%);
+
+  color-scheme: dark;
+}
+
+/* ========================================
+   Smooth transition during toggle
+   ======================================== */
+
+html.transitioning,
+html.transitioning *,
+html.transitioning *::before,
+html.transitioning *::after {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* ========================================
+   Dark mode image adaptation
+   ======================================== */
+
+html.dark img {
+  filter: brightness(0.9);
+}
+
+html.dark .picture-card img,
+html.dark .card-cover img {
+  filter: brightness(0.85);
+}
+
+/* ========================================
+   Dark mode — antd tag / tab overrides
+   ======================================== */
+
+html.dark .ant-checkable-tag {
+  background-color: transparent;
+  border-color: var(--border-color-strong);
+  color: var(--text-secondary);
+}
+
+html.dark .ant-checkable-tag.ant-tag-checkable-checked {
+  background-color: #1677ff;
+  border-color: #1677ff;
+  color: #fff;
+}
+
+html.dark .ant-tabs {
+  color: var(--text-primary);
+}
+
+html.dark .ant-tabs-tab {
+  color: var(--text-secondary);
+}
+
+html.dark .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #1677ff;
+}

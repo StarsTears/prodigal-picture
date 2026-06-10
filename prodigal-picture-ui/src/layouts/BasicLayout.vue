@@ -52,46 +52,51 @@ export default {
 <style scoped>
 #basicLayout .header {
   padding-inline: 20px;
-  background: white;
+  background: var(--bg-header);
   color: unset;
   margin-bottom: 1px;
   position: fixed;
-  z-index: 1000; /* 确保header在最上层 */
+  z-index: 1000;
 }
 
 #basicLayout .sider {
-  background: #ffffff;
+  background: var(--bg-sider);
   padding-top: 20px;
-  border-right: 0.5px solid #eee;
+  border-right: 0.5px solid var(--border-color);
   position: fixed;
   top: 64px;
   height: 100vh;
-  z-index: 1000; /* 确保sider在最上层 */
+  z-index: 1000;
+}
+
+#basicLayout :deep(.ant-layout) {
+  background: var(--bg-body);
 }
 
 #basicLayout :deep(.ant-menu-root){
   border-bottom: none !important;
   border-inline-end: none !important;
+  background: transparent !important;
 }
 
 #basicLayout .content {
   padding: 28px;
-  background: linear-gradient(to right, #efefef, #ffffff);
+  background: var(--bg-content);
   margin-bottom: 30px;
   margin-top: 40px;
-  --sider-width: 200px; /* 默认未登录时的左边距 */
+  --sider-width: 200px;
   margin-left: var(--sider-width);
-  transition: margin-left 0.3s; /* 平滑过渡动画 */
+  transition: margin-left 0.3s;
 }
 
 #basicLayout .footer {
-  background: #efefef;
+  background: var(--bg-footer);
   padding: 16px;
   position: fixed;
   bottom: 0;
   right: 0;
   left: 0;
   text-align: center;
-  z-index: 1000; /* 确保footer在最上层 */
+  z-index: 1000;
 }
 </style>

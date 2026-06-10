@@ -13,7 +13,7 @@
               <div class="card-cover">
                 <img :alt="picture.name" :src="picture.thumbnailUrl ?? picture.url"
                      loading="lazy"
-                     style="height: 180px;object-fit: cover;background: #f0f0f0;"/>
+                     style="height: 180px;object-fit: cover;background: var(--bg-image-placeholder);"/>
 <!--                <div class="card-description" v-if="hoveringRefs[index].value">-->
 <!--                  {{ picture.name }}-->
 <!--                  <a-flex>-->
@@ -190,7 +190,7 @@ const doDelete = async (picture) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: var(--skeleton-gradient);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
 }

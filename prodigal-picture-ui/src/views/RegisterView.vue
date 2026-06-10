@@ -106,13 +106,13 @@ const handleSubmit = async (values: any) => {
   left: 0;
   right: 0;
   bottom: 0; /* 撑满整个视口 */
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-login-gradient);
 }
 
 #registerView {
   max-width: 360px;
   margin: 0 auto;
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   padding: 40px;
@@ -126,13 +126,13 @@ const handleSubmit = async (values: any) => {
 
 .desc {
   text-align: center;
-  color: #bbb;
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .tips {
   margin-bottom: 16px;
-  color: #bbb;
+  color: var(--text-tertiary);
   font-size: 13px;
   text-align: right;
 }

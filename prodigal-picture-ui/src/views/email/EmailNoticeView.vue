@@ -164,7 +164,7 @@ onMounted(() => {
 }
 
 .card-meta {
-  color: #999;
+  color: var(--text-secondary);
   font-size: 12px;
   margin-bottom: 8px;
 }
@@ -176,7 +176,7 @@ onMounted(() => {
 
 .card-content {
   flex: 1;
-  color: #555;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.7;
   white-space: pre-wrap;
@@ -197,7 +197,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -211,7 +211,7 @@ onMounted(() => {
   line-height: 1.9;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #333;
+  color: var(--text-primary);
   max-height: 500px;
   overflow-y: auto;
 }

@@ -121,7 +121,7 @@ const showDetail = (email: API.EmailVO) => {
   transition: background 0.2s;
 }
 .notice-item:hover {
-  background: #fafafa;
+  background: var(--bg-image-placeholder);
 }
 .notice-subject {
   font-size: 14px;
@@ -134,11 +134,11 @@ const showDetail = (email: API.EmailVO) => {
 }
 .notice-time {
   font-size: 12px;
-  color: #999;
+  color: var(--text-secondary);
 }
 .notice-txt {
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,7 +148,7 @@ const showDetail = (email: API.EmailVO) => {
   line-height: 1.9;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #333;
+  color: var(--text-primary);
   max-height: 400px;
   overflow-y: auto;
 }

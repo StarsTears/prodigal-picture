@@ -320,8 +320,8 @@
 }
 
 .arch-box {
-  background: #fff;
-  border: 1px solid #d9d9d9;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color-strong);
   border-radius: 6px;
   padding: 6px 14px;
   font-size: 13px;
