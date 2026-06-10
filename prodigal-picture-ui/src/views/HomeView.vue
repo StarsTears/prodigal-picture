@@ -38,29 +38,15 @@
     <!-- 占位元素 -->
     <div v-if="isSticky" class="sticky-placeholder" />
     <!--图片列表-->
-    <div v-if="homeLoading" class="loading-spinner">
-      <a-spin size="large" tip="加载中..." />
-    </div>
-    <div v-else>
-      <!-- 图片列表 -->
-      <HomePictureList
-        :dataList="dataList"
-        :loading="true"
-        :showView="true"
-        :showShare="true"
-        :showSearch="true"
-      />
-<!--      <PictureList-->
-<!--        :dataList="dataList"-->
-<!--        :loading="homeLoading"-->
-<!--        :showView="true"-->
-<!--        :showLike="true"-->
-<!--        :showCollect="true"-->
-<!--        :showShare="true"-->
-<!--        :showSearch="true"-->
-<!--      />-->
+    <HomePictureList
+      :dataList="dataList"
+      :loading="homeLoading"
+      :showView="true"
+      :showShare="true"
+      :showSearch="true"
+    />
 
-      <!-- 加载信息 -->
+    <!-- 加载信息 -->
       <div class="loadingInfo">
         <a-spin v-if="homeLoading" size="large" />
         <div v-if="showBottomLine">
@@ -71,7 +57,6 @@
           <a-empty v-else :image="Empty.PRESENTED_IMAGE_SIMPLE" />
         </div>
       </div>
-    </div>
   </div>
 </template>
 <script setup lang="ts">
