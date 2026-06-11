@@ -3,7 +3,6 @@ package com.prodigal.system.controller;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.model.dto.dict.DictDTO;
 import com.prodigal.system.model.entity.Dict;
 import com.prodigal.system.service.DictService;
@@ -30,21 +29,21 @@ public class DictController {
     }
 
     @PostMapping("/add")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> add(@RequestBody DictDTO dto) {
         dictService.add(dto);
         return ResultUtils.success(true);
     }
 
     @PostMapping("/update")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> update(@RequestBody DictDTO dto) {
         dictService.update(dto);
         return ResultUtils.success(true);
     }
 
     @PostMapping("/delete")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> delete(@RequestBody DictDTO dto) {
         dictService.delete(dto.getId());
         return ResultUtils.success(true);

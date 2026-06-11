@@ -6,6 +6,7 @@ import com.prodigal.system.config.MailConfig;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.EmailMqConstant;
 import com.prodigal.system.constant.GlobalConstant;
+import com.prodigal.system.constant.SseEventConstant;
 import com.prodigal.system.manager.sse.SseEmitterManager;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
@@ -122,6 +123,8 @@ public class EmailSendConsumer {
 
             // SSE 通知收件人刷新
             notifyRecipients(email);
+            // SSE 通知发送者
+            notifySender(email);
         } catch (MessagingException | UnsupportedEncodingException e) {
             log.error("邮件发送失败, emailId={}", emailId, e);
             throw new RuntimeException("邮件发送失败: " + e.getMessage(), e);
@@ -133,9 +136,11 @@ public class EmailSendConsumer {
      */
     private void notifyRecipients(Email email) {
         if (StrUtil.isBlank(email.getTo())) {
+            log.info("SSE notifyRecipients 跳过，收件人为空, emailId={}", email.getId());
             return;
         }
         String[] emails = email.getTo().split(",");
+        log.info("SSE 开始通知收件人, emailId={}, 收件人数={}", email.getId(), emails.length);
         for (String recipientEmail : emails) {
             String trimmed = recipientEmail.trim();
             if (StrUtil.isBlank(trimmed)) {
@@ -147,10 +152,29 @@ public class EmailSendConsumer {
                     .one();
             if (recipient != null) {
                 Map<String, Object> data = new java.util.HashMap<>();
-                data.put("type", "email_sent");
+                data.put("type", SseEventConstant.EMAIL_SENT);
                 data.put("message", "您收到一封新的通知邮件");
-                sseEmitterManager.sendToUser(recipient.getId(), "email_sent", data);
+                log.info("SSE 推送 email_sent, userId={}, email={}", recipient.getId(), trimmed);
+                sseEmitterManager.sendToUser(recipient.getId(), SseEventConstant.EMAIL_SENT, data);
+            } else {
+                log.warn("收件人不存在于用户表, email={}", trimmed);
             }
         }
+    }
+
+    /**
+     * SSE 通知发送者邮件已发送成功
+     */
+    private void notifySender(Email email) {
+        if (StrUtil.isBlank(email.getSendUserId())) {
+            log.info("SSE notifySender 跳过，sendUserId 为空, emailId={}", email.getId());
+            return;
+        }
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("type", SseEventConstant.EMAIL_SEND_SUCCESS);
+        data.put("message", "邮件发送成功");
+        data.put("emailId", email.getId());
+        log.info("SSE 推送 email_send_success, sendUserId={}, emailId={}", email.getSendUserId(), email.getId());
+        sseEmitterManager.sendToUser(email.getSendUserId(), SseEventConstant.EMAIL_SEND_SUCCESS, data);
     }
 }

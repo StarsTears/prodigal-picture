@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
@@ -43,7 +42,7 @@ public class FileController {
      * @return 文件路径
      */
     @PostMapping("/test/upload")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<String> testUploadFile(@RequestPart MultipartFile multipartFile) {
         //文件目录
         String filename = multipartFile.getOriginalFilename();
@@ -57,7 +56,7 @@ public class FileController {
             //返回访问地址
             return ResultUtils.success(filepath);
         } catch (IOException e) {
-            log.error("file upload error,filepath:{}={}", filepath, e);
+            log.error("file upload error,filepath:{}", filepath, e);
             throw new RuntimeException(e);
         } finally {
             //删除临时文件
@@ -76,7 +75,7 @@ public class FileController {
      * @param response 响应对象
      */
     @GetMapping("/test/download")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
         ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
         streamFileToResponse(filepath, filepath.substring(filepath.lastIndexOf('/') + 1), response);
@@ -118,7 +117,7 @@ public class FileController {
                     "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8").replace("+", "%20"));
             cosManager.streamToOutput(cosKey, response.getOutputStream());
         } catch (IOException e) {
-            log.error("file download error, key:{}={}", cosKey, e);
+            log.error("file download error, key:{}", cosKey, e);
             throw new RuntimeException(e);
         }
     }
@@ -129,7 +128,7 @@ public class FileController {
      * @return 临时下载地址
      */
     @GetMapping("/test/get/temp/url")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<String> testGetTempURL(@RequestParam("filepath") String filepath) {
         ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
         String tempUrl = cosManager.generateTempUrl(filepath);

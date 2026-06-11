@@ -4,7 +4,7 @@
            :title="isEdit ? '编辑邮件' : '新增邮件'"
            :footer="false"
            @cancel="closeModal">
-    <a-form layout="vertical" :model="emailForm" @finish="handleSubmit">
+    <a-form ref="formRef" layout="vertical" :model="emailForm">
       <a-form-item label="主题" name="subject">
         <a-input v-model:value="emailForm.subject" placeholder="输入邮件主题" allow-clear/>
       </a-form-item>
@@ -27,8 +27,13 @@
       <a-form-item label="内容" name="txt">
         <a-textarea v-model:value="emailForm.txt" placeholder="输入邮件内容" :rows="6" allow-clear/>
       </a-form-item>
+      <a-form-item v-if="!isEdit" name="sendNow" style="margin-bottom: 8px">
+        <a-checkbox v-model:checked="emailForm.sendNow">直接发送</a-checkbox>
+      </a-form-item>
       <a-form-item class="action-bar">
-        <a-button type="primary" html-type="submit">{{ isEdit ? '保存' : '创建' }}</a-button>
+        <a-button type="primary" @click="handleSubmit(emailForm.sendNow)">
+          {{ isEdit ? '保存' : (emailForm.sendNow ? '直接发送' : '存为草稿') }}
+        </a-button>
       </a-form-item>
     </a-form>
   </a-modal>
@@ -52,9 +57,11 @@ interface EmailFormState {
   type?: number
   to?: string[]
   txt?: string
+  sendNow?: boolean
 }
 
 const emailForm = reactive<EmailFormState>({})
+const formRef = ref()
 const open = ref<boolean>(false);
 const isEdit = ref(false);
 let editingId: string | undefined;
@@ -84,6 +91,7 @@ const resetForm = () => {
   emailForm.type = undefined;
   emailForm.to = undefined;
   emailForm.txt = undefined;
+  emailForm.sendNow = false;
 };
 
 const openModal = (editData?: API.EmailVO) => {
@@ -109,7 +117,12 @@ const closeModal = () => {
   open.value = false;
 };
 
-const handleSubmit = async () => {
+const handleSubmit = async (sendNow: boolean) => {
+  try {
+    await formRef.value?.validate();
+  } catch {
+    return;
+  }
   const toStr = Array.isArray(emailForm.to) ? emailForm.to.join(',') : (emailForm.to || '');
 
   if (isEdit.value && editingId) {
@@ -133,13 +146,14 @@ const handleSubmit = async () => {
       to: toStr,
       subject: emailForm.subject,
       txt: emailForm.txt,
+      sendNow,
     });
     if (res.code === 0 && res.data) {
-      message.success('创建成功');
+      message.success(sendNow ? '邮件正在发送中...' : '草稿保存成功');
       props?.onReload?.();
       open.value = false;
     } else {
-      message.error('创建失败-' + res.msg);
+      message.error((sendNow ? '发送' : '保存') + '失败-' + res.msg);
     }
   }
 }

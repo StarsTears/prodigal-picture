@@ -69,6 +69,9 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceUserAddDTO, spaceUser);
+        if (spaceUserAddDTO.getSpaceRole() != null) {
+            spaceUser.setSpaceRole(spaceUserAddDTO.getSpaceRole().getValue());
+        }
         this.validSpaceUser(spaceUser, true);
         // 数据库操作
         boolean result = this.save(spaceUser);
@@ -144,7 +147,7 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         String id = spaceUserQueryDTO.getId();
         String spaceId = spaceUserQueryDTO.getSpaceId();
         String userId = spaceUserQueryDTO.getUserId();
-        String spaceRole = spaceUserQueryDTO.getSpaceRole();
+        String spaceRole = spaceUserQueryDTO.getSpaceRole() != null ? spaceUserQueryDTO.getSpaceRole().getValue() : null;
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "space_id", spaceId);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "user_id", userId);

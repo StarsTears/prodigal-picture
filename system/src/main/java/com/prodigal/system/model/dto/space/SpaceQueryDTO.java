@@ -1,6 +1,8 @@
 package com.prodigal.system.model.dto.space;
 
 import com.prodigal.system.common.PageRequest;
+import com.prodigal.system.model.enums.SpaceLevelEnum;
+import com.prodigal.system.model.enums.SpaceTypeEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -23,7 +25,7 @@ public class SpaceQueryDTO extends PageRequest implements Serializable {
     /**
      * 空间类型：0-私有 1-团队
      */
-    private Integer spaceType;
+    private SpaceTypeEnum spaceType;
 
 
     /**
@@ -34,7 +36,7 @@ public class SpaceQueryDTO extends PageRequest implements Serializable {
     /**
      * 空间级别：0-普通版 1-专业版 2-旗舰版
      */
-    private Integer spaceLevel;
+    private SpaceLevelEnum spaceLevel;
 
     /**
      * 创建用户 id

@@ -57,10 +57,10 @@
           </a-tooltip>
         </template>
         <template v-else-if="column.dataIndex === 'type'">
-          <a-tag :color="record.type === 0 ? 'blue' : 'orange'">{{ EMAIL_TYPE_MAP[record.type] }}</a-tag>
+          <a-tag :color="record.type === 0 ? 'blue' : 'orange'">{{ EMAIL_TYPE_MAP[record.type] || '-' }}</a-tag>
         </template>
         <template v-else-if="column.dataIndex === 'status'">
-          <a-tag :color="statusColorMap[record.status]">{{ EMAIL_STATUS_MAP[record.status] }}</a-tag>
+          <a-tag :color="statusColorMap[record.status]">{{ EMAIL_STATUS_MAP[record.status] || '-' }}</a-tag>
         </template>
         <template v-else-if="column.dataIndex === 'to'">
           <a-tooltip placement="topLeft">
@@ -87,10 +87,10 @@
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
             <a-button size="small" :icon="h(EyeOutlined)" @click="doView(record)">查看</a-button>
-            <a-button size="small" type="primary" :icon="h(EditOutlined)" :disabled="record.status === 2" @click="doEdit(record)">
+            <a-button size="small" type="primary" :icon="h(EditOutlined)" :disabled="record.status !== 0" @click="doEdit(record)">
               编辑
             </a-button>
-            <a-button v-if="record.status !== 2" size="small" type="primary" ghost :icon="h(SendOutlined)" @click="doSend(record.id)">
+            <a-button v-if="record.status === 0" size="small" type="primary" ghost :icon="h(SendOutlined)" @click="doSend(record.id)">
               发送
             </a-button>
             <a-popconfirm okText="确定" cancelText="取消" title="确定删除？" @confirm="doDelete(record.id)">
@@ -288,7 +288,7 @@ const doSend = async (id: string) => {
     emailId: id
   })
   if (res.code === 0) {
-    message.success('邮件发送成功')
+    message.success('邮件正在发送中...')
     fetchData()
   } else {
     message.error('邮件发送失败，' + res.msg)

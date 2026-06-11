@@ -291,6 +291,7 @@ declare namespace API {
   type EmailAddDTO = {
     attachments?: string[]
     html?: boolean
+    sendNow?: boolean
     subject?: string
     to?: string
     txt?: string
@@ -301,7 +302,6 @@ declare namespace API {
     attachments?: string[]
     html?: boolean
     id?: string
-    status?: number
     subject?: string
     to?: string
     txt?: string

@@ -15,7 +15,6 @@ import com.prodigal.system.api.imagesearch.ImageSearchResult;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.DictTypeConstant;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
@@ -114,7 +113,7 @@ public class PictureController {
      * @param request                 浏览器请求
      */
     @PostMapping("/upload/batch")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchDTO pictureUploadByBatchDto, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureUploadByBatchDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
@@ -173,7 +172,7 @@ public class PictureController {
      * @param request          浏览器请求
      */
     @PostMapping("/review")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> doPictureReview(@Valid @RequestBody PictureReviewDTO pictureReviewDto, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureReviewDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
@@ -188,7 +187,7 @@ public class PictureController {
      * @param request          浏览器请求
      */
     @PostMapping("/update")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updatePicture(@Valid @RequestBody PictureUpdateDTO pictureUpdateDto, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureUpdateDto == null, ErrorCode.PARAMS_ERROR);
         Picture picture = new Picture();
@@ -255,7 +254,7 @@ public class PictureController {
      * @param request       浏览器请求
      */
     @PostMapping("/get")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Picture> getPictureByID(@RequestBody PictureGetDTO pictureGetDto, HttpServletRequest request) {
         ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
         String id = pictureGetDto.getId();
@@ -335,7 +334,7 @@ public class PictureController {
      * @param request         浏览器请求
      */
     @PostMapping("/list/page")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Page<Picture>> listPictureByPage(@RequestBody PictureQueryDTO pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize();
@@ -366,11 +365,11 @@ public class PictureController {
     public BaseResult<Page<PictureVO>> listPictureVOByPage(@RequestBody PictureQueryDTO pictureQueryDto, HttpServletRequest request) {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize() == 0 ? 20 : pictureQueryDto.getPageSize();
-        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
         String spaceId = pictureQueryDto.getSpaceId();
         if (spaceId == null) {
-            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
             pictureQueryDto.setNullSpaceId(true);
         } else {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
@@ -405,13 +404,13 @@ public class PictureController {
     @PostMapping("/list/page/vo/cache")
     public BaseResult<Page<PictureVO>> listPictureVOByPageCache(@RequestBody PictureQueryDTO pictureQueryDto, HttpServletRequest request) {
         long size = pictureQueryDto.getPageSize();
-        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+        pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
         // 限制爬虫
         ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
         String spaceId = pictureQueryDto.getSpaceId();
         if (StrUtil.isBlank(spaceId)) {
             //普通用户查看公共图库(已过审)
-            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
             pictureQueryDto.setNullSpaceId(true);
         } else {
             User loginUser = userService.getLoginUser(request);
@@ -427,9 +426,6 @@ public class PictureController {
     }
 
 
-    /**
-     * TODO:数据量不大，可以暂时预设 [后面数据量大了，再改为从注册中心获取]
-     */
     @GetMapping("/tag_category")
     public BaseResult<PictureTagCategory> listPictureTagCategory() {
         PictureTagCategory pictureTagCategory = new PictureTagCategory();

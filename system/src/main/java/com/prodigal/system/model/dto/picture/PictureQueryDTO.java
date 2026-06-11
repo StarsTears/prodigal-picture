@@ -1,6 +1,7 @@
 package com.prodigal.system.model.dto.picture;
 
 import com.prodigal.system.common.PageRequest;
+import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -82,7 +83,7 @@ public class PictureQueryDTO extends PageRequest implements Serializable {
     /**
      * 审核状态
      */
-    private Integer reviewStatus;
+    private PictureReviewStatusEnum reviewStatus;
 
     /**
      * 审核信息

@@ -1,5 +1,6 @@
 package com.prodigal.system.model.dto.space;
 
+import com.prodigal.system.model.enums.SpaceLevelEnum;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
@@ -27,7 +28,7 @@ public class SpaceUpdateDTO implements Serializable {
     /**
      * 空间级别：0-普通版 1-专业版 2-旗舰版
      */
-    private Integer spaceLevel;
+    private SpaceLevelEnum spaceLevel;
 
     /**
      * 空间图片的最大总大小

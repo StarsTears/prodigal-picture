@@ -6,7 +6,6 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.SpaceUserAuthManager;
@@ -55,7 +54,7 @@ public class SpaceController {
         return ResultUtils.success(spaceId);
     }
     @PostMapping("/update")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateSpace(@Valid @RequestBody SpaceUpdateDTO spaceUpdateDto, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUpdateDto == null, ErrorCode.PARAMS_ERROR);
         Space space = new Space();
@@ -95,7 +94,7 @@ public class SpaceController {
     }
 
     @GetMapping("/get")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Space> getSpaceByID(@RequestParam("id") String id, HttpServletRequest request) {
         ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
 
@@ -121,7 +120,7 @@ public class SpaceController {
     }
 
     @PostMapping("/list/page")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Page<Space>> listSpaceByPage(@RequestBody SpaceQueryDTO spaceQueryDto, HttpServletRequest request) {
         long current = spaceQueryDto.getCurrent();
         long size = spaceQueryDto.getPageSize();

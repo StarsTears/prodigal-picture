@@ -3,7 +3,6 @@ package com.prodigal.system.service.impl;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.UserConstant;
@@ -34,7 +33,6 @@ import org.springframework.util.DigestUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -182,7 +180,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String encryptPassword = this.getEncryptPassword(DEFAULT_PASSWORD);
         user.setUserPassword(encryptPassword);
         //设置默认角色
-        user.setUserRole(StringUtils.isEmpty(userAddDto.getUserRole()) ? UserConstant.DEFAULT_ROLE : userAddDto.getUserRole());
+        String userRoleStr = userAddDto.getUserRole() != null ? userAddDto.getUserRole().getRole() : UserRoleEnum.USER.getRole();
+        user.setUserRole(userRoleStr);
         user.setShareCode(generateShareCode());
         boolean save = this.save(user);
         ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
@@ -202,20 +201,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .like(StrUtil.isNotBlank(userQueryDto.getUserName()), User::getUserName, userQueryDto.getUserName())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserAccount()), User::getUserAccount, userQueryDto.getUserAccount())
                 .like(StrUtil.isNotBlank(userQueryDto.getUserProfile()), User::getUserProfile, userQueryDto.getUserProfile());
-        String userRoleStr = StrUtil.isNotBlank(userQueryDto.getUserRole()) && userQueryDto.getUserRole().startsWith(",") ?
-                userQueryDto.getUserRole().substring(1) :
-                userQueryDto.getUserRole();
-        if (StrUtil.isNotBlank(userRoleStr)) {
-            if (userRoleStr.contains(",")) {
-                List<String> userRoles = Arrays.stream(userRoleStr.split(",")).collect(Collectors.toList());
-                wrapper.and(e -> {
-                    for (String userRole : userRoles) {
-                        e.eq(User::getUserRole, userRole).or();
-                    }
-                });
-            } else {
-                wrapper.eq(User::getUserRole, userRoleStr);
-            }
+        if (userQueryDto.getUserRole() != null) {
+            wrapper.eq(User::getUserRole, userQueryDto.getUserRole().getRole());
         }
         switch (sortField) {
             case "user_account":
@@ -267,7 +254,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return false;
         }
         List<String> roles = StrUtil.split(user.getUserRole(), ',');
-        return roles.contains(UserConstant.ADMIN_ROLE) || roles.contains(UserConstant.SUPER_ADMIN_ROLE);
+        return roles.contains(UserRoleEnum.ADMIN.getRole()) || roles.contains(UserRoleEnum.ADMINISTRATOR.getRole());
     }
 
     @Transactional(rollbackFor = Exception.class)

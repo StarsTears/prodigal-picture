@@ -74,7 +74,7 @@ export async function listNoticeByPageUsingPost(
 
 /** sendEmail POST /api/email/send */
 export async function sendEmailUsingPost(body: API.EmailSendDTO, options?: { [key: string]: any }) {
-  return request<API.BaseResultBoolean_>('/api/email/send', {
+  return request<API.BaseResultString_>('/api/email/send', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export async function sendEmailByIdUsingPost(
   options?: { [key: string]: any }
 ) {
   const { emailId: param0, ...queryParams } = params
-  return request<API.BaseResultBoolean_>(`/api/email/send/${param0}`, {
+  return request<API.BaseResultString_>(`/api/email/send/${param0}`, {
     method: 'POST',
     params: { ...queryParams },
     ...(options || {}),

@@ -112,13 +112,15 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
             spaceAddDto.setSpaceName("默认空间");
         }
         if (spaceAddDto.getSpaceLevel() == null) {
-            spaceAddDto.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
+            spaceAddDto.setSpaceLevel(SpaceLevelEnum.COMMON);
         }
         if (spaceAddDto.getSpaceType() == null) {
-            spaceAddDto.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
+            spaceAddDto.setSpaceType(SpaceTypeEnum.PRIVATE);
         }
         Space space = new Space();
         BeanUtils.copyProperties(spaceAddDto, space);
+        space.setSpaceLevel(spaceAddDto.getSpaceLevel() != null ? spaceAddDto.getSpaceLevel().getValue() : null);
+        space.setSpaceType(spaceAddDto.getSpaceType() != null ? spaceAddDto.getSpaceType().getValue() : null);
         //填充数据
         this.fillSpaceBySpaceLevel(space);
         //校验
@@ -143,7 +145,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
                     boolean result = this.save(space);
                     ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
                     //如果是团队空间，则新增一条 空间成员信息
-                    if (SpaceTypeEnum.TEAM.getValue() == spaceAddDto.getSpaceType()){
+                    if (SpaceTypeEnum.TEAM.equals(spaceAddDto.getSpaceType())){
                         SpaceUser spaceUser = new SpaceUser();
                         spaceUser.setUserId(userId);
                         spaceUser.setSpaceId(space.getId());
@@ -264,9 +266,11 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space> implements
         wrapper.eq(true, Space::getIsDelete, 0)
                 .eq(ObjUtil.isNotEmpty(spaceQueryDto.getId()), Space::getId, spaceQueryDto.getId())
                 .eq(ObjUtil.isNotEmpty(spaceQueryDto.getUserId()), Space::getUserId, spaceQueryDto.getUserId())
-                .eq(ObjUtil.isNotEmpty(spaceQueryDto.getSpaceType()), Space::getSpaceType, spaceQueryDto.getSpaceType())
+                .eq(spaceQueryDto.getSpaceType() != null, Space::getSpaceType,
+                    spaceQueryDto.getSpaceType() != null ? spaceQueryDto.getSpaceType().getValue() : null)
                 .eq(StrUtil.isNotBlank(spaceQueryDto.getSpaceName()), Space::getSpaceName, spaceQueryDto.getSpaceName())
-                .eq(ObjUtil.isNotEmpty(spaceQueryDto.getSpaceLevel()), Space::getSpaceLevel, spaceQueryDto.getSpaceLevel());
+                .eq(spaceQueryDto.getSpaceLevel() != null, Space::getSpaceLevel,
+                    spaceQueryDto.getSpaceLevel() != null ? spaceQueryDto.getSpaceLevel().getValue() : null);
 
         switch (sortField) {
             case "space_name":

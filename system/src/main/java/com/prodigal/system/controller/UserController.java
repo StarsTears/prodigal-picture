@@ -6,7 +6,6 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
@@ -15,6 +14,7 @@ import com.prodigal.system.model.dto.user.UserAddDTO;
 import com.prodigal.system.model.dto.user.UserQueryDTO;
 import com.prodigal.system.model.dto.user.UserUpdateDTO;
 import com.prodigal.system.model.entity.User;
+import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.UserService;
 import jakarta.annotation.Resource;
@@ -37,7 +37,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/add")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<String> addUser(@Valid @RequestBody UserAddDTO userAddDto) {
         return ResultUtils.success(userService.createUser(userAddDto));
     }
@@ -49,7 +49,7 @@ public class UserController {
      * @return 用户信息（脱敏）
      */
     @GetMapping("/get")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator"})
     public BaseResult<User> getUserByID(@RequestParam("id") String id) {
         ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
         User user = userService.getById(id);
@@ -58,7 +58,7 @@ public class UserController {
     }
 
     @GetMapping("/get/vo")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<UserVO> getUserVOByID(@RequestParam("id") String id) {
         BaseResult<User> res = getUserByID(id);
         User user = res.getData();
@@ -69,11 +69,11 @@ public class UserController {
      * 删除用户
      */
     @DeleteMapping("/delete")
-    @PermissionCheck(mustRole = UserConstant.SUPER_ADMIN_ROLE)
+    @PermissionCheck(mustRole = "administrator")
     public BaseResult<Boolean> deleteUser(@Valid @RequestBody DeleteRequest deleteRequest) {
         ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
         User targetUser = userService.getById(deleteRequest.getId());
-        if (targetUser != null && UserConstant.SUPER_ADMIN_ROLE.equals(targetUser.getUserRole())) {
+        if (targetUser != null && UserRoleEnum.ADMINISTRATOR.getRole().equals(targetUser.getUserRole())) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
         }
         boolean removeById = userService.removeById(deleteRequest.getId());
@@ -84,16 +84,19 @@ public class UserController {
      * 更新用户信息(管理员)
      */
     @PostMapping("/update")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDto) {
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         // 不允许修改超级管理员的角色
         User targetUser = userService.getById(userUpdateDto.getId());
-        if (targetUser != null && UserConstant.SUPER_ADMIN_ROLE.equals(targetUser.getUserRole())) {
-            userUpdateDto.setUserRole(null);
-        }
         User user = new User();
         BeanUtils.copyProperties(userUpdateDto, user);
+        boolean isTargetSuperAdmin = targetUser != null && UserRoleEnum.ADMINISTRATOR.getRole().equals(targetUser.getUserRole());
+        if (isTargetSuperAdmin) {
+            user.setUserRole(null);
+        }else{
+            user.setUserRole(userUpdateDto.getUserRole().getRole());
+        }
         boolean update = userService.updateById(user);
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(update);
@@ -107,7 +110,7 @@ public class UserController {
         ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         User targetUser = userService.getById(userUpdateDto.getId());
-        boolean isTargetSuperAdmin = targetUser != null && UserConstant.SUPER_ADMIN_ROLE.equals(targetUser.getUserRole());
+        boolean isTargetSuperAdmin = targetUser != null && UserRoleEnum.ADMINISTRATOR.getRole().equals(targetUser.getUserRole());
         // 超级管理员：只有本人能修改自己的基础信息
         if (isTargetSuperAdmin && !loginUser.getId().equals(targetUser.getId())) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
@@ -115,12 +118,15 @@ public class UserController {
         if (!loginUser.getId().equals(userUpdateDto.getId()) && !userService.isAdmin(loginUser)) {
             throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
         }
+
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateDto, user);
         // 非管理员或目标为超级管理员时，不允许修改角色
         if (!userService.isAdmin(loginUser) || isTargetSuperAdmin) {
             userUpdateDto.setUserRole(null);
+        }else{
+            user.setUserRole(userUpdateDto.getUserRole().getRole());
         }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateDto, user);
         boolean update = userService.updateById(user);
         ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(update);
@@ -138,7 +144,7 @@ public class UserController {
     }
 
     @PostMapping("/list/page/vo")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDTO userQueryDto) {
         ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR);
         long current = userQueryDto.getCurrent();

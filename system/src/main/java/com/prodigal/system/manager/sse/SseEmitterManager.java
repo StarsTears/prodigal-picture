@@ -49,13 +49,16 @@ public class SseEmitterManager {
      */
     public void sendToUser(String userId, String eventName, Object data) {
         SseEmitter emitter = EMITTERS.get(userId);
-        if (emitter != null) {
-            try {
-                emitter.send(SseEmitter.event().name(eventName).data(data));
-            } catch (IOException e) {
-                EMITTERS.remove(userId);
-                log.error("SSE 推送失败, userId={}", userId, e);
-            }
+        if (emitter == null) {
+            log.warn("SSE 推送跳过，用户未连接, userId={}, event={}", userId, eventName);
+            return;
+        }
+        try {
+            emitter.send(SseEmitter.event().name(eventName).data(data));
+            log.info("SSE 推送成功, userId={}, event={}, data={}", userId, eventName, data);
+        } catch (IOException e) {
+            EMITTERS.remove(userId);
+            log.error("SSE 推送失败, userId={}, event={}", userId, eventName, e);
         }
     }
 

@@ -47,7 +47,7 @@ public class EmailVO implements Serializable {
     private UserVO receiveUserVO;
     /**
      * 状态：
-     *  0:自建(草稿) 1:提交 2：已发
+     *  0:草稿 1:发送中 2:已发
      */
     private Integer status;
 

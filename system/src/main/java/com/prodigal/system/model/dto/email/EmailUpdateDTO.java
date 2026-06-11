@@ -1,5 +1,6 @@
 package com.prodigal.system.model.dto.email;
 
+import com.prodigal.system.model.enums.EmailTypeEnum;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class EmailUpdateDTO implements Serializable {
     @NotBlank(message = "邮件ID不能为空")
     private String id;
 
-    private Integer type;
+    private EmailTypeEnum type;
 
     /** 收件人（逗号分隔） */
     private String to;
@@ -30,8 +31,6 @@ public class EmailUpdateDTO implements Serializable {
     private String txt;
 
     private boolean isHtml;
-
-    private Integer status;
 
     private List<String> attachments;
 }

@@ -6,7 +6,6 @@ import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.PageRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
@@ -53,9 +52,9 @@ public class EmailController {
      */
     @RateLimit(maxRequests = 3, window = 60)
     @PostMapping("/send/captcha")
-    public BaseResult sendVerificationCode(@Valid @RequestBody EmailRequest request) {
+    public BaseResult<String> sendVerificationCode(@Valid @RequestBody EmailRequest request) {
         emailService.sendVerificationCodeAsync(request.getEmail());
-        return BaseResult.success().msg("验证码已发送，请查收邮箱!");
+        return ResultUtils.success("验证码已发送，请查收邮箱!");
     }
     /**
      * 新增邮件草稿
@@ -65,11 +64,14 @@ public class EmailController {
      * @return
      */
     @PostMapping("/add")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<String> addEmail(@Valid @RequestBody EmailAddDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         String messageId = emailService.addEmail(emailDto, loginUser);
+        if (emailDto.isSendNow()) {
+            return ResultUtils.success("邮件正在发送中...");
+        }
         return ResultUtils.success(messageId);
     }
 
@@ -81,7 +83,7 @@ public class EmailController {
      * @return
      */
     @PostMapping("/update")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateEmail(@Valid @RequestBody EmailUpdateDTO emailDto, HttpServletRequest request) {
         ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
@@ -130,8 +132,8 @@ public class EmailController {
         EmailQueryDTO queryEmailDTO = new EmailQueryDTO();
         queryEmailDTO.setCurrent(pageRequest.getCurrent());
         queryEmailDTO.setPageSize(pageRequest.getPageSize());
-        queryEmailDTO.setType(EmailTypeEnum.NOTICE.getValue());
-        queryEmailDTO.setStatus(EmailStatusEnum.SENT.getValue());
+        queryEmailDTO.setType(EmailTypeEnum.NOTICE);
+        queryEmailDTO.setStatus(EmailStatusEnum.SENT);
         Page<Email> emailPage = emailService.listEmail(queryEmailDTO, null);
         Page<EmailVO> emailVOPage = emailService.getEmailVOPage(emailPage, null);
         return ResultUtils.success(emailVOPage);
@@ -145,22 +147,22 @@ public class EmailController {
      * @return
      */
     @PostMapping("/send")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> sendEmail(@Valid @RequestBody EmailSendDTO sendEmailDTO, HttpServletRequest request) {
+    @PermissionCheck(mustRole = {"admin", "administrator"})
+    public BaseResult<String> sendEmail(@Valid @RequestBody EmailSendDTO sendEmailDTO, HttpServletRequest request) {
         ThrowUtils.throwIf(sendEmailDTO == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.sendEmailByMimeMessage(sendEmailDTO, loginUser);
-        return ResultUtils.success(true);
+        return ResultUtils.success("邮件正在发送中...");
     }
 
     @PostMapping("/send/{emailId}")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
-    public BaseResult<Boolean> sendEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
+    @PermissionCheck(mustRole = {"admin", "administrator"})
+    public BaseResult<String> sendEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
         ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.sendMessageById(emailId, loginUser);
 
-        return ResultUtils.success(true);
+        return ResultUtils.success("邮件正在发送中...");
     }
 
 }

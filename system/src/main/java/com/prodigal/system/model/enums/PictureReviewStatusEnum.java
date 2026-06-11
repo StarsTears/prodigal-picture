@@ -1,5 +1,7 @@
 package com.prodigal.system.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import org.springframework.util.ObjectUtils;
 
@@ -23,9 +25,15 @@ public enum PictureReviewStatusEnum {
         this.value = value;
     }
 
+    @JsonValue
+    public int getValue() {
+        return value;
+    }
+
     /**
      * 根据value 获取枚举值
      */
+    @JsonCreator
     public static PictureReviewStatusEnum getEnumByValue(Integer value) {
         if (ObjectUtils.isEmpty(value)){
             return null;
@@ -35,7 +43,7 @@ public enum PictureReviewStatusEnum {
                 return userRoleEnum;
             }
         }
-        return null;
+        throw new IllegalArgumentException("无效的审核状态: " + value + "，有效值: [0=待审核, 1=审核通过, 2=已拒绝]");
     }
 
 }

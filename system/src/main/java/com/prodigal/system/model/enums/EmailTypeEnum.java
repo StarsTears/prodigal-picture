@@ -1,6 +1,8 @@
 package com.prodigal.system.model.enums;
 
 import cn.hutool.core.util.ObjUtil;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 import java.util.Objects;
@@ -23,9 +25,15 @@ public enum EmailTypeEnum {
         this.value = value;
     }
 
+    @JsonValue
+    public int getValue() {
+        return value;
+    }
+
     /**
      * 根据value 获取枚举值
      */
+    @JsonCreator
     public static EmailTypeEnum getEnumByValue(Integer value) {
         if (ObjUtil.isEmpty(value)){
             return null;
@@ -35,6 +43,6 @@ public enum EmailTypeEnum {
                 return emailTypeEnum;
             }
         }
-        return null;
+        throw new IllegalArgumentException("无效的邮件类型: " + value + "，有效值: [0=公告, 1=告警]");
     }
 }

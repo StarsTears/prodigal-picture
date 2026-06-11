@@ -6,7 +6,6 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.annotation.SaSpaceCheckPermission;
@@ -127,7 +126,7 @@ public class SpaceUserController {
 
     @PostMapping("/list/page")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Page<SpaceUserVO>> listSpaceUserVOByPage(@RequestBody SpaceUserQueryDTO spaceUserQueryDTO, HttpServletRequest request) {
         long current = spaceUserQueryDTO.getCurrent();
         long size = spaceUserQueryDTO.getPageSize();

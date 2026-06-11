@@ -1,6 +1,8 @@
 package com.prodigal.system.model.dto.email;
 
 import com.prodigal.system.common.PageRequest;
+import com.prodigal.system.model.enums.EmailStatusEnum;
+import com.prodigal.system.model.enums.EmailTypeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,11 +23,11 @@ public class EmailQueryDTO extends PageRequest implements Serializable {
     /**
      * 邮件类型
      */
-    private Integer type;
+    private EmailTypeEnum type;
     /**
-     *  状态：0:自建(草稿) 1:提交 2：已发
+     *  状态：0:草稿 1:发送中 2:已发
      */
-    private Integer status;
+    private EmailStatusEnum status;
 
     /**
      * 收件人

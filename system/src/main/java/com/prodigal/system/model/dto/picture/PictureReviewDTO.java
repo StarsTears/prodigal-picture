@@ -1,5 +1,6 @@
 package com.prodigal.system.model.dto.picture;
 
+import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotNull;
@@ -26,7 +27,7 @@ public class PictureReviewDTO implements Serializable {
      * 审核状态
      */
     @NotNull(message = "审核状态不能为空")
-    private Integer reviewStatus;
+    private PictureReviewStatusEnum reviewStatus;
 
     /**
      * 审核信息

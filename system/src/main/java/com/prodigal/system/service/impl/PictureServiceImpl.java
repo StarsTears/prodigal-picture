@@ -15,7 +15,6 @@ import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDTO;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.FilePathConstant;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
@@ -32,6 +31,7 @@ import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.PictureReviewStatusEnum;
+import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.PictureService;
@@ -177,7 +177,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_SPACE_PREFIX, loginUser.getId());
         }
 
-        if (loginUser.getUserRole().contains(UserConstant.SUPER_ADMIN_ROLE)) {
+        if (loginUser.getUserRole().contains(UserRoleEnum.ADMINISTRATOR.getRole())) {
             uploadPrefix = String.format("%s/%S", FilePathConstant.PICTURE_PRIVATE_PREFIX, "super");
         }
         //通过数据源判断使用的上传模板（file、url）
@@ -562,7 +562,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getPicWidth()), Picture::getPicWidth, pictureQueryDto.getPicWidth())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getPicSize()), Picture::getPicSize, pictureQueryDto.getPicSize())
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getPicScale()), Picture::getPicScale, pictureQueryDto.getPicScale())
-                .eq(ObjUtil.isNotEmpty(pictureQueryDto.getReviewStatus()), Picture::getReviewStatus, pictureQueryDto.getReviewStatus())
+                .eq(pictureQueryDto.getReviewStatus() != null, Picture::getReviewStatus,
+                        pictureQueryDto.getReviewStatus() != null ? pictureQueryDto.getReviewStatus().getValue() : null)
                 .eq(ObjUtil.isNotEmpty(pictureQueryDto.getReviewerId()), Picture::getReviewerId, pictureQueryDto.getReviewerId())
                 .like(StrUtil.isNotBlank(pictureQueryDto.getReviewMessage()), Picture::getReviewMessage, pictureQueryDto.getReviewMessage())
                 .ge(ObjUtil.isNotEmpty(pictureQueryDto.getStartEditTime()), Picture::getEditTime, pictureQueryDto.getStartEditTime())
@@ -759,8 +760,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     public void doPictureReview(PictureReviewDTO pictureReviewDto, User loginUser) {
         //1、校验数据能否审核
         String id = pictureReviewDto.getId();
-        Integer reviewStatus = pictureReviewDto.getReviewStatus();
-        PictureReviewStatusEnum pictureReviewStatusEnum = PictureReviewStatusEnum.getEnumByValue(reviewStatus);
+        PictureReviewStatusEnum pictureReviewStatusEnum = pictureReviewDto.getReviewStatus();
         if (id == null || pictureReviewStatusEnum == null || PictureReviewStatusEnum.REVIEWING.equals(pictureReviewStatusEnum)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -775,12 +775,13 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
 //        Picture oldPicture = this.getById(pictureReviewDto.getId());
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        if (reviewStatus.equals(oldPicture.getReviewStatus())) {
+        if (pictureReviewStatusEnum.getValue() == oldPicture.getReviewStatus()) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "请勿重复审核后");
         }
         //更新审核状态
         Picture updatePicture = new Picture();
         BeanUtils.copyProperties(pictureReviewDto, updatePicture);
+        updatePicture.setReviewStatus(pictureReviewDto.getReviewStatus().getValue());
         updatePicture.setReviewerId(loginUser.getId());
         updatePicture.setReviewMessage(pictureReviewDto.getReviewMessage());
         updatePicture.setReviewTime(new Date());

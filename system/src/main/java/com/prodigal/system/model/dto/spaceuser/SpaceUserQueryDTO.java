@@ -1,6 +1,7 @@
 package com.prodigal.system.model.dto.spaceuser;
 
 import com.prodigal.system.common.PageRequest;
+import com.prodigal.system.model.enums.SpaceRoleEnum;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -33,5 +34,5 @@ public class SpaceUserQueryDTO extends PageRequest implements Serializable {
     /**
      * 空间角色：viewer/editor/admin
      */
-    private String spaceRole;
+    private SpaceRoleEnum spaceRole;
 }

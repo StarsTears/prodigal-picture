@@ -20,18 +20,18 @@ export const EMAIL_TYPE_OPTIONS = [
 //---------------------------邮件状态---------------------------------------------
 export const EMAIL_STATUS_ENUM = {
   DRAFT: 0,
-  PASS: 1,
+  SUBMITTED: 1,
   SENT: 2,
 }
 
 export const EMAIL_STATUS_MAP = {
   0: '草稿',
-  1: '提交',
+  1: '发送中',
   2: '已发',
 }
 
 export const EMAIL_STATUS_OPTIONS = [
   { label: '草稿', value: 0 },
-  { label: '提交', value: 1 },
+  { label: '发送中', value: 1 },
   { label: '已发', value: 2 },
 ]

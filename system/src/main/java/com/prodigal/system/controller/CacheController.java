@@ -3,7 +3,6 @@ package com.prodigal.system.controller;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.manager.CacheManager;
@@ -29,7 +28,7 @@ public class CacheController {
     @Resource
     private CacheManager cacheManager;
     @PostMapping("/delete")
-    @PermissionCheck(mustRole = {UserConstant.ADMIN_ROLE, UserConstant.SUPER_ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> deleteCache(@RequestParam("type") String type, @RequestParam("key") String key) {
         final List<String> types = Arrays.asList("local","caffeine","redis");
         if (!types.contains(type)){

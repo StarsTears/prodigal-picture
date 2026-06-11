@@ -1,5 +1,6 @@
 package com.prodigal.system.model.dto.user;
 
+import com.prodigal.system.model.enums.UserRoleEnum;
 import lombok.Data;
 
 import jakarta.validation.constraints.Email;
@@ -51,5 +52,5 @@ public class UserUpdateDTO implements Serializable {
     /**
      * 用户角色：user/admin
      */
-    private String userRole;
+    private UserRoleEnum userRole;
 }
