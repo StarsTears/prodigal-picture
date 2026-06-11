@@ -54,7 +54,7 @@
         * 目前仅支持开通普通版，如需升级空间，请联系
         <a-tooltip placement="topLeft">
           <template #title>prodigal.lang@qq.com</template>
-          <span style="color: #1677ff"> 程序员Lang </span>
+          <span style="color: #1677ff">  Lang </span>
         </a-tooltip>
 <!--        <a href="" target="_blank">程序员Lang</a>-->
       </a-typography-paragraph>

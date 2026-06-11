@@ -1,6 +1,7 @@
 package com.prodigal.system.config.rabbitmq;
 
 import com.prodigal.system.constant.EmailMqConstant;
+import com.prodigal.system.constant.PictureMqConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -93,6 +94,43 @@ public class EmailRabbitMQConfig {
                 .build();
         factory.setRetryTemplate(retryTemplate);
         factory.setErrorHandler(e -> log.warn("[send email] retry exhausted, error: {}", e.getMessage(), e));
+        return factory;
+    }
+
+    // ---------- 图片审核通知拓扑 ----------
+
+    @Bean
+    public Queue pictureReviewQueue() {
+        return new Queue(PictureMqConstant.PICTURE_REVIEW_QUEUE, true);
+    }
+
+    @Bean
+    public DirectExchange pictureReviewExchange() {
+        return new DirectExchange(PictureMqConstant.PICTURE_REVIEW_EXCHANGE, true, false);
+    }
+
+    @Bean
+    public Binding pictureReviewBinding(@Qualifier("pictureReviewQueue") Queue pictureReviewQueue,
+                                        @Qualifier("pictureReviewExchange") DirectExchange pictureReviewExchange) {
+        return BindingBuilder.bind(pictureReviewQueue)
+                .to(pictureReviewExchange)
+                .with(PictureMqConstant.PICTURE_REVIEW_ROUTING_KEY);
+    }
+
+    @Bean("pictureReviewRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory pictureReviewListenerContainerFactory(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(messageConverter);
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        RetryTemplate retryTemplate = new RetryTemplateBuilder()
+                .maxAttempts(3)
+                .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
+                .build();
+        factory.setRetryTemplate(retryTemplate);
+        factory.setErrorHandler(e -> log.warn("[picture review notify] retry exhausted, error: {}", e.getMessage(), e));
         return factory;
     }
 }

@@ -23,7 +23,7 @@
             <template #title>
               <a-space :size="8">
                 <span class="notice-subject">{{ email.subject || '(无主题)' }}</span>
-                <a-tag :color="email.type === 0 ? 'blue' : 'orange'" style="font-size: 11px; line-height: 18px">
+                <a-tag :color="EMAIL_TYPE_COLOR_MAP[email.type!]" style="font-size: 11px; line-height: 18px">
                   {{ EMAIL_TYPE_MAP[email.type!] }}
                 </a-tag>
               </a-space>
@@ -49,7 +49,7 @@
       <template v-if="currentNotice">
         <a-descriptions :column="1" bordered size="small" style="margin-bottom: 12px">
           <a-descriptions-item label="类型">
-            <a-tag :color="currentNotice.type === 0 ? 'blue' : 'orange'">
+            <a-tag :color="EMAIL_TYPE_COLOR_MAP[currentNotice.type!]">
               {{ EMAIL_TYPE_MAP[currentNotice.type!] }}
             </a-tag>
           </a-descriptions-item>
@@ -58,7 +58,8 @@
           </a-descriptions-item>
         </a-descriptions>
         <a-divider style="margin: 12px 0" />
-        <div class="detail-content">{{ currentNotice.txt }}</div>
+        <div v-if="currentNotice.html" class="detail-content" v-html="currentNotice.txt" />
+        <div v-else class="detail-content">{{ currentNotice.txt }}</div>
       </template>
     </a-modal>
   </a-drawer>
@@ -70,7 +71,7 @@ import { useLoginUserStore } from '@/stores/loginUserStore';
 import { listEmailByPageUsingPost } from '@/api/emailController';
 import { message } from 'ant-design-vue';
 import dayjs from 'dayjs';
-import { EMAIL_TYPE_MAP } from '@/constants/email';
+import { EMAIL_TYPE_MAP, EMAIL_TYPE_COLOR_MAP } from '@/constants/email';
 import logo from '@/assets/logo.svg';
 
 const open = ref(false);
@@ -101,7 +102,9 @@ const fetchData = async () => {
 
 const truncateText = (text: string | undefined, maxLen: number): string => {
   if (!text) return '';
-  return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+  // 预览时去除 HTML 标签显示纯文本
+  const plainText = text.replace(/<[^>]*>/g, '');
+  return plainText.length > maxLen ? plainText.slice(0, maxLen) + '...' : plainText;
 };
 
 const detailOpen = ref(false);

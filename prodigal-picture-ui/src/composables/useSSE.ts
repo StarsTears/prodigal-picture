@@ -1,6 +1,6 @@
 import { ref, onUnmounted } from 'vue'
 import { useLoginUserStore } from '@/stores/loginUserStore'
-import { SSE_EMAIL_SENT, SSE_EMAIL_SEND_SUCCESS } from '@/constants/sse'
+import { SSE_EMAIL_SENT, SSE_EMAIL_SEND_SUCCESS, SSE_PICTURE_REVIEWED } from '@/constants/sse'
 
 type SSECallback = (event: { type: string; message: string }) => void
 
@@ -41,6 +41,7 @@ export function useSSE() {
 
     eventSource.addEventListener(SSE_EMAIL_SENT, handleEvent)
     eventSource.addEventListener(SSE_EMAIL_SEND_SUCCESS, handleEvent)
+    eventSource.addEventListener(SSE_PICTURE_REVIEWED, handleEvent)
 
     eventSource.onerror = () => {
       connected.value = false

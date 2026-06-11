@@ -60,6 +60,7 @@ import { Empty } from 'ant-design-vue';
 import ShareModal from "@/components/ShareModal.vue";
 import { useLoginUserStore } from "@/stores/loginUserStore.ts";
 import { message } from "ant-design-vue";
+import { incrementShareQuantityUsingPost } from "@/api/pictureController";
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -101,6 +102,10 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   useLoginUserStore().checkLogin()
   picName.value = picture.name
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
+  // 分享次数+1
+  incrementShareQuantityUsingPost({ id: picture.id, spaceId: picture.spaceId }).then(() => {
+    picture.shareQuantity = (picture.shareQuantity || 0) + 1
+  })
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
   }

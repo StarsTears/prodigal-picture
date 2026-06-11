@@ -3,7 +3,7 @@
   <a-flex justify="space-between">
     <h2>空间管理</h2>
     <a-space>
-      <a-button type="primary" href="/space/add_space" target="_blank">+ 创建空间</a-button>
+      <a-button type="primary" @click="doCreateSpace">+ 创建空间</a-button>
 <!--      <a-button type="primary" ghost href="/space/analyze?queryPublic=1">分析公共图库</a-button>-->
 <!--      <a-button type="primary" ghost href="/space/analyze?queryAll=1">分析全空间</a-button>-->
       <router-link to="/space/analyze?queryPublic=1" class="space-analyze-btn">
@@ -80,14 +80,13 @@
       </template>
       <template v-if="column.key === 'action'">
         <a-space wrap>
-          <a-button size="small" :icon="h(BarChartOutlined)" :href="`/space/analyze?spaceId=${record.id}`" target="_blank">
+          <a-button size="small" type="primary" :icon="h(BarChartOutlined)" @click="doAnalyzeSpace(record)">
             分析
           </a-button>
           <a-button size="small"
                     type="primary"
                     :icon="h(EditOutlined)"
-                    :href="`/space/add_space?id=${record.id}`"
-                    target="_blank">
+                    @click="doEditSpace(record)">
             编辑
           </a-button>
           <a-popconfirm okText="确定"
@@ -107,6 +106,7 @@
 
 <script setup lang="ts">
 import {h,computed, onMounted, reactive, ref} from "vue";
+import {useRouter} from 'vue-router';
 import {DeleteOutlined, EditOutlined,BarChartOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import dayjs from "dayjs";
@@ -217,6 +217,20 @@ const doSearch = () => {
   searchParams.current = 1
   fetchData()
 }
+const router = useRouter()
+
+const doCreateSpace = () => {
+  router.push('/space/add_space')
+}
+
+const doAnalyzeSpace = (record: API.Space) => {
+  router.push(`/space/analyze?spaceId=${record.id}`)
+}
+
+const doEditSpace = (record: API.Space) => {
+  router.push(`/space/add_space?id=${record.id}`)
+}
+
 const doDelete = async (id: string) => {
   if (!id){
     return

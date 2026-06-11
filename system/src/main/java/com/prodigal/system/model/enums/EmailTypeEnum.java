@@ -15,7 +15,8 @@ import java.util.Objects;
 @Getter
 public enum EmailTypeEnum {
     NOTICE("公告",0),
-    alert("告警",1),
+    ALERT("告警",1),
+    NOTIFY("通知",2),
     ;
     private final String text;
     private final int value;
@@ -43,6 +44,6 @@ public enum EmailTypeEnum {
                 return emailTypeEnum;
             }
         }
-        throw new IllegalArgumentException("无效的邮件类型: " + value + "，有效值: [0=公告, 1=告警]");
+        throw new IllegalArgumentException("无效的邮件类型: " + value + "，有效值: [0=公告, 1=告警, 2=通知]");
     }
 }

@@ -16,12 +16,6 @@
       <a-col :sm="24" :md="8" :xl="6">
         <a-card title="图片信息">
           <a-descriptions :column="1">
-            <a-descriptions-item label="作者">
-              <a-space>
-                <a-avatar :size="24" :src="picture.user?.userAvatar"/>
-                <div>{{ picture.user?.userName }}</div>
-              </a-space>
-            </a-descriptions-item>
             <a-descriptions-item label="图片名称">
               {{ picture.name ?? '未命名' }}
             </a-descriptions-item>
@@ -110,7 +104,7 @@
 
 <script setup lang="ts">
 import {computed, onMounted, ref, h} from "vue";
-import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost, getTempDownloadUrlUsingPost} from "@/api/pictureController";
+import {deletePictureUsingPost, doPictureReviewUsingPost, getPictureVoByIdUsingPost, getTempDownloadUrlUsingPost, incrementShareQuantityUsingPost} from "@/api/pictureController";
 import {DeleteOutlined, EditOutlined, DownloadOutlined, CheckOutlined, SmileOutlined,ShareAltOutlined} from '@ant-design/icons-vue';
 import {message} from "ant-design-vue";
 import {downloadImage, formatSize, handleDragStart} from "@/utils/index";
@@ -225,6 +219,10 @@ const shareLink = ref<string>()
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.spaceId}/${picture.id}`
+  // 分享次数+1
+  incrementShareQuantityUsingPost({ id: picture.id, spaceId: picture.spaceId }).then(() => {
+    picture.shareQuantity = (picture.shareQuantity || 0) + 1
+  })
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
   }

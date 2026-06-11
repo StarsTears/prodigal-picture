@@ -187,6 +187,21 @@ export async function doPictureReviewUsingPost(
   })
 }
 
+/** incrementShareQuantity POST /api/picture/share */
+export async function incrementShareQuantityUsingPost(
+  body: API.PictureGetDTO,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultBoolean_>('/api/picture/share', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** searchImageByBaidu POST /api/picture/search/picture */
 export async function searchImageByBaiduUsingPost(
   body: API.ImageSearchDTO,

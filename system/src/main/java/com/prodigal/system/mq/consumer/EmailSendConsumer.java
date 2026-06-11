@@ -6,8 +6,7 @@ import com.prodigal.system.config.MailConfig;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.EmailMqConstant;
 import com.prodigal.system.constant.GlobalConstant;
-import com.prodigal.system.constant.SseEventConstant;
-import com.prodigal.system.manager.sse.SseEmitterManager;
+import com.prodigal.system.manager.sse.SseNotificationService;
 import com.prodigal.system.model.entity.Email;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.EmailStatusEnum;
@@ -30,7 +29,6 @@ import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 邮件发送异步消费者（公告/告警）
@@ -48,7 +46,7 @@ public class EmailSendConsumer {
     @Resource
     private UserService userService;
     @Resource
-    private SseEmitterManager sseEmitterManager;
+    private SseNotificationService sseNotificationService;
     @Autowired
     private StringRedisTemplate redisTemplate;
 
@@ -151,11 +149,7 @@ public class EmailSendConsumer {
                     .eq(User::getIsDelete, 0)
                     .one();
             if (recipient != null) {
-                Map<String, Object> data = new java.util.HashMap<>();
-                data.put("type", SseEventConstant.EMAIL_SENT);
-                data.put("message", "您收到一封新的通知邮件");
-                log.info("SSE 推送 email_sent, userId={}, email={}", recipient.getId(), trimmed);
-                sseEmitterManager.sendToUser(recipient.getId(), SseEventConstant.EMAIL_SENT, data);
+                sseNotificationService.notifyEmailSent(recipient.getId());
             } else {
                 log.warn("收件人不存在于用户表, email={}", trimmed);
             }
@@ -170,11 +164,6 @@ public class EmailSendConsumer {
             log.info("SSE notifySender 跳过，sendUserId 为空, emailId={}", email.getId());
             return;
         }
-        Map<String, Object> data = new java.util.HashMap<>();
-        data.put("type", SseEventConstant.EMAIL_SEND_SUCCESS);
-        data.put("message", "邮件发送成功");
-        data.put("emailId", email.getId());
-        log.info("SSE 推送 email_send_success, sendUserId={}, emailId={}", email.getSendUserId(), email.getId());
-        sseEmitterManager.sendToUser(email.getSendUserId(), SseEventConstant.EMAIL_SEND_SUCCESS, data);
+        sseNotificationService.notifyEmailSendSuccess(email.getSendUserId(), email.getId());
     }
 }

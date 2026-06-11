@@ -3,16 +3,25 @@
 export const EMAIL_TYPE_ENUM = {
   NOTICE: 0,
   ALERT: 1,
+  NOTIFY: 2,
 }
 
 export const EMAIL_TYPE_MAP = {
   0: '公告',
   1: '告警',
+  2: '通知',
+}
+
+export const EMAIL_TYPE_COLOR_MAP: Record<number, string> = {
+  0: 'blue',
+  1: 'orange',
+  2: 'green',
 }
 
 export const EMAIL_TYPE_OPTIONS = [
   { label: '公告', value: 0 },
   { label: '告警', value: 1 },
+  { label: '通知', value: 2 },
 ]
 
 

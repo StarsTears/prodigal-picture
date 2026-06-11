@@ -41,7 +41,10 @@
       </a-form-item>
       <!-- 按颜色搜索 -->
       <a-form-item label="颜色" name="picColor">
-        <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
+        <a-space>
+          <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
+          <a-button v-if="searchParams.picColor" size="small" type="link" @click="onClearColor">清除颜色</a-button>
+        </a-space>
       </a-form-item>
       <a-collapse v-model:active-key(v-model)="activeKey" ghost class="custom-collapse">
         <a-collapse-panel key="1">
@@ -92,6 +95,10 @@ const activeKey = ref([]);
 const searchParams = reactive<API.PictureQueryDTO>({})
 const onColorChange = (color: string) => {
   searchParams.picColor = color
+}
+const onClearColor = () => {
+  searchParams.picColor = undefined
+  doSearch()
 }
 //获取数据 调用父组件的搜索方法 onSearch
 const doSearch = () => {

@@ -32,10 +32,12 @@ import com.prodigal.system.model.entity.Space;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.PictureReviewStatusEnum;
 import com.prodigal.system.model.enums.UserRoleEnum;
+import com.prodigal.system.model.message.PictureReviewedMessage;
 import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.model.vo.UserVO;
 import com.prodigal.system.service.PictureService;
 import com.prodigal.system.mapper.PictureMapper;
+import com.prodigal.system.mq.producer.EmailProducer;
 import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.ColorSimilarUtils;
@@ -93,6 +95,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     @Resource
     private AliYunAiApi aliYunAiApi;
+
+    @Resource
+    private EmailProducer emailProducer;
 
     // 创建自定义线程池
     private ExecutorService threadPool = CustomThreadPool.createCustomThreadPool(10, 50, 120, TimeUnit.SECONDS);
@@ -601,10 +606,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             case "edit_time":
                 wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getEditTime);
                 break;
-            case "view_quantity":
-                wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getViewQuantity);
-                break;
             default:
+                wrapper.orderBy(StrUtil.isNotEmpty(pictureQueryDto.getSortField()), sortOrder.equals("ascend"), Picture::getViewQuantity);
                 break;
         }
         return wrapper;
@@ -796,6 +799,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
 //        boolean result = this.updateById(updatePicture);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+
+        // 审核完成后通过 MQ 异步通知上传者
+        emailProducer.publishPictureReviewed(new PictureReviewedMessage(
+                oldPicture.getId(),
+                StrUtil.isNotBlank(oldPicture.getName()) ? oldPicture.getName() : oldPicture.getId(),
+                oldPicture.getUserId(),
+                pictureReviewStatusEnum.getValue(),
+                pictureReviewDto.getReviewMessage()
+        ));
     }
 
     /**

@@ -87,13 +87,16 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             SpaceUsageAnalyzeVO spaceUsageAnalyzeVO = new SpaceUsageAnalyzeVO();
             spaceUsageAnalyzeVO.setUsedSize(space.getTotalSize());
             spaceUsageAnalyzeVO.setMaxSize(space.getMaxSize());
-            //直接返回给前端 百分比
-            double sizeUsageRatio = NumberUtil.round(space.getTotalSize() * 100.0 / space.getMaxSize(), 2).doubleValue();
+            double sizeUsageRatio = (space.getMaxSize() != null && space.getMaxSize() > 0)
+                    ? NumberUtil.round(space.getTotalSize() * 100.0 / space.getMaxSize(), 2).doubleValue()
+                    : 0;
             spaceUsageAnalyzeVO.setSizeUsageRatio(sizeUsageRatio);
 
             spaceUsageAnalyzeVO.setUsedCount(space.getTotalCount());
             spaceUsageAnalyzeVO.setMaxCount(space.getMaxCount());
-            double countUsageRatio = NumberUtil.round(space.getTotalCount() * 100.0 / space.getMaxCount(), 2).doubleValue();
+            double countUsageRatio = (space.getMaxCount() != null && space.getMaxCount() > 0)
+                    ? NumberUtil.round(space.getTotalCount() * 100.0 / space.getMaxCount(), 2).doubleValue()
+                    : 0;
             spaceUsageAnalyzeVO.setCountUsageRatio(countUsageRatio);
             return spaceUsageAnalyzeVO;
         }
@@ -209,17 +212,17 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         String timeDimension = spaceUserAnalyzeDto.getTimeDimension();
         switch (timeDimension) {
             case "day":
-                wrapper.select("DATE_FORMAT(createTime, '%Y-%m-%d') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y-%m-%d') as timeRange", "count(*) as count");
                 break;
                 case "week":
-//                  wrapper.select("DATE_FORMAT(createTime, '%Y-%u') as timeRange", "count(*) as count");
-                  wrapper.select("YEARWEEk(createTime) as timeRange", "count(*) as count");
+//                  wrapper.select("DATE_FORMAT(create_time, '%Y-%u') as timeRange", "count(*) as count");
+                  wrapper.select("YEARWEEK(create_time) as timeRange", "count(*) as count");
                     break;
             case "month":
-                wrapper.select("DATE_FORMAT(createTime, '%Y-%m') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y-%m') as timeRange", "count(*) as count");
                 break;
             case "year":
-                wrapper.select("DATE_FORMAT(createTime, '%Y') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y') as timeRange", "count(*) as count");
                 break;
             default:
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的时间维度："+ timeDimension);

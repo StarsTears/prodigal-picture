@@ -58,7 +58,7 @@
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
-            <a-button size="small" :icon="h(EyeOutlined)" @click="doView(record)">查看</a-button>
+            <a-button size="small" type="primary" ghost :icon="h(EyeOutlined)" @click="doView(record)">查看</a-button>
             <a-button size="small" type="primary" :icon="h(EditOutlined)" @click="doEdit(record)">编辑</a-button>
             <a-popconfirm v-if="record.userRole !== 'administrator'" okText="确定" cancelText="取消" title="确定删除？" @confirm="doDelete(record.id)">
               <a-button size="small" danger :icon="h(DeleteOutlined)">删除</a-button>

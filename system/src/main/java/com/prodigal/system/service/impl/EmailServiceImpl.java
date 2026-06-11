@@ -110,7 +110,7 @@ public class EmailServiceImpl implements EmailService {
 
         if (emailDto.isSendNow()) {
             // 告警类型必须指定收件人
-            if (EmailTypeEnum.alert.equals(emailDto.getType()) && StrUtil.isBlank(emailDto.getTo())) {
+            if (EmailTypeEnum.ALERT.equals(emailDto.getType()) && StrUtil.isBlank(emailDto.getTo())) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
             }
             // 公告类型：若未指定收件人，则查询全量用户邮箱
@@ -154,7 +154,7 @@ public class EmailServiceImpl implements EmailService {
 
         // 告警类型必须指定收件人
         EmailTypeEnum emailTypeEnum = emailDto.getType();
-        if (EmailTypeEnum.alert.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
+        if (EmailTypeEnum.ALERT.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
         }
 
@@ -201,7 +201,7 @@ public class EmailServiceImpl implements EmailService {
         }
         // 告警类型必须指定收件人
         EmailTypeEnum typeEnum = EmailTypeEnum.getEnumByValue(email.getType());
-        if (EmailTypeEnum.alert.equals(typeEnum) && StrUtil.isBlank(email.getTo())) {
+        if (EmailTypeEnum.ALERT.equals(typeEnum) && StrUtil.isBlank(email.getTo())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
         }
         // 更新状态为发送中

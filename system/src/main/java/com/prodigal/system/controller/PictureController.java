@@ -94,19 +94,6 @@ public class PictureController {
     }
 
     /**
-     * 获取图片临时下载地址（返回服务端代理下载 URL，不暴露 COS bucket/region）
-     * @param pictureGetDto 图片查询参数
-     * @return 下载 URL
-     */
-    @PostMapping("/get/download/url")
-    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
-    public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDTO pictureGetDto) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
-        String tempDownloadUrl = pictureService.getTempDownloadUrl(pictureGetDto.getId(), pictureGetDto.getSpaceId());
-        return ResultUtils.success(tempDownloadUrl);
-    }
-
-    /**
      * 抓取图片
      *
      * @param pictureUploadByBatchDto 接收请求参数
@@ -119,6 +106,19 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchDto, loginUser);
         return ResultUtils.success(uploadCount);
+    }
+
+    /**
+     * 获取图片临时下载地址（返回服务端代理下载 URL，不暴露 COS bucket/region）
+     * @param pictureGetDto 图片查询参数
+     * @return 下载 URL
+     */
+    @PostMapping("/get/download/url")
+    @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
+    public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDTO pictureGetDto) {
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        String tempDownloadUrl = pictureService.getTempDownloadUrl(pictureGetDto.getId(), pictureGetDto.getSpaceId());
+        return ResultUtils.success(tempDownloadUrl);
     }
 
     /**
@@ -325,6 +325,22 @@ public class PictureController {
             }
         }
         return ResultUtils.success(pictureVO);
+    }
+
+    /**
+     * 图片分享次数+1
+     */
+    @PostMapping("/share")
+    public BaseResult<Boolean> incrementShareQuantity(@RequestBody PictureGetDTO pictureGetDto) {
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        String id = pictureGetDto.getId();
+        String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id).eq("space_id", spaceId)
+                .setSql("share_quantity = share_quantity + 1");
+        boolean result = pictureService.update(updateWrapper);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(true);
     }
 
     /**

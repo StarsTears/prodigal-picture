@@ -11,7 +11,8 @@
       <a-typography-title :level="3">平台简介</a-typography-title>
       <a-typography-paragraph>
         Prodigal Picture 是一站式云图库管理平台，涵盖<strong>公共图库、私有空间、团队协作</strong>三大核心模块。
-        支持图片上传、多维检索、AI 扩图、批量编辑、空间分析等功能，满足个人到企业级团队的图片资产管理需求。
+        支持图片上传、多维检索、AI 扩图、审核流程、空间分析、邮件通知、SSE 实时推送等功能，
+        满足个人到企业级团队的图片资产管理需求。
       </a-typography-paragraph>
     </a-typography>
 
@@ -24,11 +25,13 @@
           <a-typography-paragraph>
             <ul class="tech-list">
               <li><strong>框架</strong>：Spring Boot 3.x</li>
-              <li><strong>数据库</strong>：MySQL 8.0 + MyBatis-Plus 3.5</li>
+              <li><strong>数据库</strong>：MySQL 8.0 + MyBatis-Plus 3.5 + MongoDB</li>
               <li><strong>缓存</strong>：Redis + Caffeine 二级缓存</li>
+              <li><strong>消息队列</strong>：RabbitMQ 异步邮件发送</li>
               <li><strong>存储</strong>：腾讯云 COS（万象数据处理）</li>
               <li><strong>权限</strong>：Sa-Token RBAC 多账号体系</li>
               <li><strong>分表</strong>：ShardingSphere 动态分表</li>
+              <li><strong>实时推送</strong>：SSE（Server-Sent Events）</li>
               <li><strong>文档</strong>：Knife4j 自动接口文档</li>
             </ul>
           </a-typography-paragraph>
@@ -39,10 +42,10 @@
           <a-typography-paragraph>
             <ul class="tech-list">
               <li><strong>框架</strong>：Vue 3 + TypeScript</li>
-              <li><strong>UI</strong>：Ant Design Vue</li>
+              <li><strong>UI</strong>：Ant Design Vue 4.x</li>
               <li><strong>状态</strong>：Pinia</li>
               <li><strong>构建</strong>：Vite</li>
-              <li><strong>通信</strong>：Axios + WebSocket</li>
+              <li><strong>通信</strong>：Axios + SSE</li>
             </ul>
           </a-typography-paragraph>
         </a-card>
@@ -57,7 +60,8 @@
         <ul>
           <li>本地图片上传、URL 抓取、批量导入</li>
           <li>上传自动解析格式/尺寸/色调，生成缩略图及 WebP 格式</li>
-          <li>管理员审核机制，分级审核自动通过</li>
+          <li>公共图库管理员审核机制（通过/拒绝 + 审核意见）</li>
+          <li>审核结果通过邮件 + SSE 实时通知上传者</li>
           <li>多维度检索：关键词、标签、分类、时间范围、颜色</li>
           <li>百度以图搜图、主色调相似度排序</li>
         </ul>
@@ -66,7 +70,6 @@
         <ul>
           <li>公共图库 / 私有空间 / 团队空间三种模式</li>
           <li>团队空间成员管理，RBAC 权限控制</li>
-          <li>WebSocket 多人实时协同编辑，编辑锁防冲突</li>
           <li>空间使用量统计分析</li>
         </ul>
       </a-collapse-panel>
@@ -82,12 +85,25 @@
           <li>用户上传排行 / 大小排行 / 时间趋势</li>
         </ul>
       </a-collapse-panel>
-      <a-collapse-panel key="5" header="更多">
+      <a-collapse-panel key="5" header="邮件系统">
         <ul>
+          <li>支持公告、告警、通知三种邮件类型</li>
+          <li>公告面向全站用户，告警/通知精准投递指定收件人</li>
+          <li>支持 HTML 富文本邮件内容</li>
+          <li>RabbitMQ 异步发送，削峰填谷不阻塞主流程</li>
+          <li>SSE 实时推送邮件到达通知，在线用户即时感知</li>
+          <li>MongoDB 持久化邮件记录，支持历史回溯</li>
+        </ul>
+      </a-collapse-panel>
+      <a-collapse-panel key="6" header="更多">
+        <ul>
+          <li>字典管理：管理员可维护系统枚举、配置项等键值数据</li>
+          <li>暗色/浅色主题一键切换</li>
+          <li>用户密码修改与重置</li>
           <li>全局统一异常处理与响应封装</li>
           <li>ShardingSphere 团队空间动态分表</li>
           <li>Redis + Caffeine 二级缓存加速首页</li>
-          <li>公告邮件系统（MongoDB + RabbitMQ 异步发送）</li>
+          <li>MQ 消费幂等保障（Redis 去重）</li>
           <li>Actuator + Prometheus 应用监控</li>
         </ul>
       </a-collapse-panel>
@@ -144,7 +160,8 @@
           <div class="arch-box small">AOP 切面</div>
           <div class="arch-box small">异常处理</div>
           <div class="arch-box small">定时任务</div>
-          <div class="arch-box small">MQ 消息</div>
+          <div class="arch-box small">RabbitMQ</div>
+          <div class="arch-box small">SSE 推送</div>
         </div>
       </div>
       <div class="arch-connector">

@@ -67,7 +67,8 @@
           </span>
         </div>
         <a-divider style="margin: 12px 0" />
-        <div class="detail-content">{{ currentNotice.txt }}</div>
+        <div v-if="currentNotice.html" class="detail-content" v-html="currentNotice.txt" />
+        <div v-else class="detail-content">{{ currentNotice.txt }}</div>
       </template>
     </a-modal>
   </div>
@@ -112,7 +113,9 @@ const fetchData = async () => {
 
 const truncateText = (text: string | undefined, maxLen: number): string => {
   if (!text) return '(无内容)';
-  return text.length > maxLen ? text.slice(0, maxLen) + '...' : text;
+  // 预览时去除 HTML 标签显示纯文本
+  const plainText = text.replace(/<[^>]*>/g, '');
+  return plainText.length > maxLen ? plainText.slice(0, maxLen) + '...' : plainText;
 };
 
 // 详情弹窗
