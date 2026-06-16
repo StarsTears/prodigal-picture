@@ -3,6 +3,13 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/prodigal-system.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/prodigal-system-%d{yyyy-MM-dd}.%i.log
+      max-file-size: 50MB
+      max-history: 7
 spring:
   #开放更大的上传文件大小
   servlet:
