@@ -153,6 +153,60 @@ public class CosManager {
         }
     }
 
+    private static final int COS_DELETE_BATCH_SIZE = 500;
+
+    /**
+     * 分批删除 COS 对象，每批最多 500 个 key
+     * @param keys 待删除的 key 列表
+     * @return 删除成功的 key 数量
+     */
+    public int deleteObjectsBatch(List<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return 0;
+        }
+        String prefix = cosClientConfig.getHost() + "/";
+        int totalDeleted = 0;
+
+        for (int i = 0; i < keys.size(); i += COS_DELETE_BATCH_SIZE) {
+            int end = Math.min(i + COS_DELETE_BATCH_SIZE, keys.size());
+            List<String> batch = keys.subList(i, end);
+
+            DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(cosClientConfig.getBucket());
+            List<DeleteObjectsRequest.KeyVersion> keyList = new ArrayList<>();
+            for (String key : batch) {
+                String strippedKey = key.startsWith(prefix) ? key.substring(prefix.length()) : key;
+                keyList.add(new DeleteObjectsRequest.KeyVersion(strippedKey));
+            }
+            deleteObjectsRequest.setKeys(keyList);
+
+            try {
+                DeleteObjectsResult result = cosClient.deleteObjects(deleteObjectsRequest);
+                List<String> deletedKeys = result.getDeletedObjects().stream()
+                        .map(DeleteObjectsResult.DeletedObject::getKey)
+                        .collect(Collectors.toList());
+                totalDeleted += deletedKeys.size();
+                log.info("COS batch {} deleted {}/{} keys", i / COS_DELETE_BATCH_SIZE, deletedKeys.size(), batch.size());
+                if (deletedKeys.size() < batch.size()) {
+                    log.warn("COS batch {} partially failed: attempted {}, deleted {}",
+                            i / COS_DELETE_BATCH_SIZE, batch.size(), deletedKeys.size());
+                }
+            } catch (MultiObjectDeleteException mde) {
+                List<DeleteObjectsResult.DeletedObject> deleted = mde.getDeletedObjects();
+                List<MultiObjectDeleteException.DeleteError> errors = mde.getErrors();
+                int deletedCount = deleted != null ? deleted.size() : 0;
+                totalDeleted += deletedCount;
+                log.error("COS batch {} failed keys: {}",
+                        i / COS_DELETE_BATCH_SIZE,
+                        errors != null ? errors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()) : "[]");
+            } catch (CosServiceException e) {
+                log.error("COS batch {} service error: {}", i / COS_DELETE_BATCH_SIZE, e.getMessage());
+            } catch (CosClientException e) {
+                log.error("COS batch {} client error: {}", i / COS_DELETE_BATCH_SIZE, e.getMessage());
+            }
+        }
+        return totalDeleted;
+    }
+
     /**
      * 获取临时下载地址（预签名 URL，不暴露 bucket/region 信息）
      * @param key 图片在数据库中存储的路径，以 / 开头的相对路径
