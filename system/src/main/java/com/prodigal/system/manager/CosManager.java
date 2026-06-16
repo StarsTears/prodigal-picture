@@ -169,7 +169,7 @@ public class CosManager {
 
         for (int i = 0; i < keys.size(); i += COS_DELETE_BATCH_SIZE) {
             int end = Math.min(i + COS_DELETE_BATCH_SIZE, keys.size());
-            List<String> batch = keys.subList(i, end);
+            List<String> batch = new ArrayList<>(keys.subList(i, end));
 
             DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(cosClientConfig.getBucket());
             List<DeleteObjectsRequest.KeyVersion> keyList = new ArrayList<>();
@@ -199,9 +199,9 @@ public class CosManager {
                         i / COS_DELETE_BATCH_SIZE,
                         errors != null ? errors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()) : "[]");
             } catch (CosServiceException e) {
-                log.error("COS batch {} service error: {}", i / COS_DELETE_BATCH_SIZE, e.getMessage());
+                log.error("COS batch {} service error", i / COS_DELETE_BATCH_SIZE, e);
             } catch (CosClientException e) {
-                log.error("COS batch {} client error: {}", i / COS_DELETE_BATCH_SIZE, e.getMessage());
+                log.error("COS batch {} client error", i / COS_DELETE_BATCH_SIZE, e);
             }
         }
         return totalDeleted;
