@@ -45,11 +45,13 @@ import com.prodigal.system.utils.CustomThreadPool;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.hutool.core.date.DateUtil;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,6 +106,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Resource
     private TransactionTemplate transactionTemplate;
 
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
     /**
      * 图片校验(更新与修改)
      */
@@ -147,30 +152,41 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             ThrowUtils.throwIf(space.getTotalSize() >= space.getMaxSize(), ErrorCode.OPERATION_ERROR, "空间额度不够");
         }
 
+        // 幂等锁：防止同一请求多次处理导致重复上传 COS
+        String lockKey = null;
+        if (StrUtil.isNotBlank(pictureUploadDto.getRequestId())) {
+            lockKey = CacheConstant.UPLOAD_LOCK_PREFIX + pictureUploadDto.getRequestId();
+            Boolean locked = redisTemplate.opsForValue()
+                    .setIfAbsent(lockKey, "1", CacheConstant.UPLOAD_LOCK_SECONDS, TimeUnit.SECONDS);
+            if (Boolean.FALSE.equals(locked)) {
+                throw new BusinessException(ErrorCode.DUPLICATE_REQUEST);
+            }
+        }
+
         //判断新增还是修改
         String pictureID = pictureUploadDto.getId();
 
+        // 覆盖更新时暂存旧图片引用，上传成功后再删除旧文件
+        Picture oldPicture = null;
         //校验图片是否存在
         if (pictureID != null) {
-            Picture picture = this.getById(pictureID);
-            ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+            oldPicture = this.getById(pictureID);
+            ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
 //            //验权、进本人和管理员可编辑
 //            boolean isCan = picture.getUserId().equals(loginUser.getId());
 //            ThrowUtils.throwIf(!isCan && !userService.isAdmin(loginUser), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限修改该图片");
 
             //校验空间是否一致
             if (spaceId == null) {
-                if (picture.getSpaceId() != null) {
-                    spaceId = picture.getSpaceId();
+                if (oldPicture.getSpaceId() != null) {
+                    spaceId = oldPicture.getSpaceId();
                 }
             } else {
                 //若携带了spaceId，则判断是否一致
-                if (ObjUtil.notEqual(spaceId, picture.getSpaceId())) {
+                if (ObjUtil.notEqual(spaceId, oldPicture.getSpaceId())) {
                     throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间ID不一致");
                 }
             }
-            //更新、删除COS的文件
-            this.clearPictureFile(picture);
         }
         /*
             上传图片-根据用户id来划分目录
@@ -191,7 +207,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             pictureUploadTemplate = urlPictureUpload;
         }
 
-        UploadPictureResult uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource, uploadPrefix);
+        UploadPictureResult uploadPictureResult;
+        try {
+            uploadPictureResult = pictureUploadTemplate.uploadPicture(inputSource, uploadPrefix);
+        } catch (Exception e) {
+            // COS 上传失败，释放幂等锁以便用户重试
+            if (lockKey != null) {
+                redisTemplate.delete(lockKey);
+            }
+            throw e;
+        }
         //构造需要存储的图片信息
         Picture picture = new Picture();
         picture.setOriginUrl(uploadPictureResult.getOriginUrl());
@@ -200,7 +225,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setSourceUrl(uploadPictureResult.getSourceUrl());
         String picName = uploadPictureResult.getPicName();
         //抓取图片，如果已经写了图片名称，则使用用户填写的图片名称
-        if (pictureUploadDto != null && StrUtil.isNotBlank(pictureUploadDto.getPicName())) {
+        if (StrUtil.isNotBlank(pictureUploadDto.getPicName())) {
             picName = pictureUploadDto.getPicName();
         }
         picture.setName(picName);
@@ -228,7 +253,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 .eq("space_id", spaceId); // 附加 spaceId 条件
         String finalSpaceId = spaceId;
         String finalPictureID = pictureID;
-        transactionTemplate.execute(status -> {
+        try {
+            transactionTemplate.execute(status -> {
             boolean result= true;
             if (finalPictureID != null){
                 result = this.update(picture,updateWrapper);
@@ -247,6 +273,32 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             }
             return picture;
         });
+        } catch (Exception e) {
+            // DB 写入失败，清理 COS 孤儿文件并释放幂等锁
+            List<String> cosKeys = new ArrayList<>();
+            if (StrUtil.isNotBlank(uploadPictureResult.getOriginUrl())) {
+                cosKeys.add(uploadPictureResult.getOriginUrl());
+            }
+            if (StrUtil.isNotBlank(uploadPictureResult.getUrl())) {
+                cosKeys.add(uploadPictureResult.getUrl());
+            }
+            if (StrUtil.isNotBlank(uploadPictureResult.getThumbnailUrl())) {
+                cosKeys.add(uploadPictureResult.getThumbnailUrl());
+            }
+            if (!cosKeys.isEmpty()) {
+                cosManager.deleteObjects(cosKeys);
+            }
+            if (lockKey != null) {
+                redisTemplate.delete(lockKey);
+            }
+            throw e;
+        }
+
+        // 新上传成功后，异步删除覆盖更新的旧文件
+        if (oldPicture != null) {
+            this.clearPictureFile(oldPicture);
+        }
+
         return PictureVO.objToVO(picture);
     }
 
@@ -742,19 +794,21 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         Page<PictureVO> pictureVOPage = this.getPictureVOPage(picturePage, request);
 
         String value = JSONUtil.toJsonStr(pictureVOPage);
-
         cacheContext.setValue(value);
+
+        // 缓存 5~10 分钟随机过期，防止雪崩
+        int expireTime = 300 + RandomUtil.randomInt(0, 300);
+        cacheContext.setCacheExpireTime(expireTime);
+        cacheContext.setCacheExpireTimeUnit(TimeUnit.SECONDS);
+
         //保存到本地缓存
         cacheContext.setType(CacheConstant.CAFFEINE_TYPE);
         cacheContext.setKey(caffeineKey);
         cacheManager.putCacheValue(cacheContext);
 
         //保存到redis缓存
-        //将数据存到缓存 5~10分钟 随机过期，防止雪崩
-        int expireTime = 300 + RandomUtil.randomInt(0, 300);
         cacheContext.setType(CacheConstant.REDIS_TYPE);
-        cacheContext.setCacheExpireTime(expireTime);
-        cacheContext.setCacheExpireTimeUnit(TimeUnit.SECONDS);
+        cacheContext.setKey(redisKey);
         cacheManager.putCacheValue(cacheContext);
         return pictureVOPage;
     }

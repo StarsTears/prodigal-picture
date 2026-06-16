@@ -159,6 +159,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.USER_NOT_LOGIN, "未登录!");
         }
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
+        // 移除当前用户的 Sa-Token 登录态
+        User currentUser = (User) userObj;
+        if (currentUser.getId() != null) {
+            StpKit.SPACE.logout(currentUser.getId());
+        }
         return true;
     }
 

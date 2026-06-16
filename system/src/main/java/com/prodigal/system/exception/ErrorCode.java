@@ -30,6 +30,7 @@ public enum ErrorCode {
     SYSTEM_ERROR(50000, "系统错误"),
     OPERATION_ERROR(50100, "操作失败"),
     NOT_FOUND_ERROR(50200, "未找到该数据"),
+    DUPLICATE_REQUEST(50300, "请求正在处理中，请勿重复提交"),
     ;
     /**
      * 状态码

@@ -37,5 +37,12 @@ public interface CacheConstant {
     /** 失败计数器有效期（分钟） */
     long LOGIN_FAIL_EXPIRE_MINUTES = 15;
 
+    /*********接口限流************/
+    String RATE_LIMIT_PREFIX = "rate:limit:";
+
+    /*********图片上传幂等锁************/
+    String UPLOAD_LOCK_PREFIX = "picture:upload:lock:";
+    long UPLOAD_LOCK_SECONDS = 300;
+
 
 }

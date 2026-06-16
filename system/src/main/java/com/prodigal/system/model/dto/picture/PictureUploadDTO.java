@@ -29,5 +29,9 @@ public class PictureUploadDTO implements Serializable {
      * 空间 id
      */
     private String spaceId;
+    /**
+     * 请求幂等标识（UUID，防止重复提交）
+     */
+    private String requestId;
 
 }

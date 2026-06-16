@@ -9,7 +9,7 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.api.aliyunai.AliYunAiApi;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.api.aliyunai.model.vo.GetOutPaintingTaskVO;
-import com.prodigal.system.api.imagesearch.BaiduImageSearchApiFaced;
+import com.prodigal.system.api.imagesearch.CompositeImageSearchService;
 import com.prodigal.system.api.imagesearch.ImageSearchDTO;
 import com.prodigal.system.api.imagesearch.ImageSearchResult;
 import com.prodigal.system.common.BaseResult;
@@ -68,6 +68,8 @@ public class PictureController {
     private SpaceUserAuthManager spaceUserAuthManager;
     @Resource
     private DictService dictService;
+    @Resource
+    private CompositeImageSearchService compositeImageSearchService;
 
     /**
      * 图片上传
@@ -80,6 +82,10 @@ public class PictureController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResult<PictureVO> uploadPicture(@RequestPart MultipartFile multipartFile, PictureUploadDTO pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
+        // 若 DTO 无 requestId，从 Header 兜底
+        if (StrUtil.isBlank(pictureUploadDto.getRequestId())) {
+            pictureUploadDto.setRequestId(request.getHeader("X-Request-Id"));
+        }
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadDto, loginUser);
         return ResultUtils.success(pictureVO);
     }
@@ -88,6 +94,10 @@ public class PictureController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResult<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadDTO pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
+        // 若 DTO 无 requestId，从 Header 兜底
+        if (StrUtil.isBlank(pictureUploadDto.getRequestId())) {
+            pictureUploadDto.setRequestId(request.getHeader("X-Request-Id"));
+        }
         String fileUrl = pictureUploadDto.getFileUrl();
         PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadDto, loginUser);
         return ResultUtils.success(pictureVO);
@@ -122,13 +132,13 @@ public class PictureController {
     }
 
     /**
-     * 使用百度识图来抓取相似图片
+     * 以图搜图（Google + Bing 降级）
      *
      * @param imageSearchDto 图片搜索请求参数
      * @return List<ImageSearchResult>
      */
     @PostMapping("/search/picture")
-    public BaseResult<List<ImageSearchResult>> searchImageByBaidu(@RequestBody ImageSearchDTO imageSearchDto) {
+    public BaseResult<List<ImageSearchResult>> searchImage(@RequestBody ImageSearchDTO imageSearchDto) {
         ThrowUtils.throwIf(imageSearchDto == null, ErrorCode.PARAMS_ERROR);
         String pictureId = imageSearchDto.getPictureId();
         ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), ErrorCode.PARAMS_ERROR);
@@ -143,7 +153,9 @@ public class PictureController {
         Picture oldPicture = pictureService.getOne(queryWrapper);
 
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        List<ImageSearchResult> imageSearchResults = BaiduImageSearchApiFaced.searchImage(oldPicture.getOriginUrl());
+        //若该图有源图url则优先使用！反之则使用 COS 未压缩的图片Url
+        String imageURL = StrUtil.isNotBlank(oldPicture.getOriginUrl()) ? oldPicture.getOriginUrl() : oldPicture.getUrl();
+        List<ImageSearchResult> imageSearchResults = compositeImageSearchService.searchImage(imageURL);
         return ResultUtils.success(imageSearchResults);
     }
 

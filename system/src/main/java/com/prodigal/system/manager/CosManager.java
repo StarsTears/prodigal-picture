@@ -76,6 +76,21 @@ public class CosManager {
     }
 
     /**
+     * 下载对象为字节数组（适用于小文件，不适用于大文件）
+     * @param key COS key（可带前导 /）
+     * @return 文件的字节数组
+     * @throws IOException 下载失败时抛出
+     */
+    public byte[] getObjectBytes(String key) throws IOException {
+        String cosKey = key.startsWith("/") ? key.substring(1) : key;
+        GetObjectRequest request = new GetObjectRequest(cosClientConfig.getBucket(), cosKey);
+        COSObject cosObject = cosClient.getObject(request);
+        try (COSObjectInputStream in = cosObject.getObjectContent()) {
+            return in.readAllBytes();
+        }
+    }
+
+    /**
      * 上传对象（附带图片信息）
      *
      * @param key  唯一键
@@ -129,7 +144,7 @@ public class CosManager {
             // 如果部分删除成功部分失败, 返回 MultiObjectDeleteException
             List<DeleteObjectsResult.DeletedObject> deleteObjects = mde.getDeletedObjects();
             List<MultiObjectDeleteException.DeleteError> deleteErrors = mde.getErrors();
-            log.info("删除COS图片失败:{}", deleteErrors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()));
+            log.error("删除COS图片失败:{}", deleteErrors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()));
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除失败");
         } catch (CosServiceException e) {
             log.error("COS service error", e);

@@ -46,8 +46,6 @@ Prodigal Picture 是一站式智能云图库管理平台，涵盖 **公共图库
 | **数据存储** | MySQL 8.0（ShardingSphere 分表）｜ Redis（Caffeine 二级缓存）｜ MongoDB（邮件持久化）｜ 腾讯云 COS（万象图片处理） |
 | **外部集成** | 阿里云百炼（AI 扩图）｜ 百度搜图（以图搜图）｜ Actuator（Prometheus 监控） |
 
-
-
 ---
 
 ## 核心功能
@@ -97,8 +95,6 @@ Prodigal Picture 是一站式智能云图库管理平台，涵盖 **公共图库
 - Redis + Caffeine 二级缓存加速首页
 - 暗色/浅色主题一键切换
 - Actuator + Prometheus 应用监控
-
----
 
 ---
 

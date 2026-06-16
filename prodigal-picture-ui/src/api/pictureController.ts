@@ -202,8 +202,8 @@ export async function incrementShareQuantityUsingPost(
   })
 }
 
-/** searchImageByBaidu POST /api/picture/search/picture */
-export async function searchImageByBaiduUsingPost(
+/** searchImage POST /api/picture/search/picture */
+export async function searchImageUsingPost(
   body: API.ImageSearchDTO,
   options?: { [key: string]: any }
 ) {

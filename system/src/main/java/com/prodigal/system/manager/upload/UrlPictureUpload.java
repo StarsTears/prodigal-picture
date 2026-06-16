@@ -63,7 +63,7 @@ public class UrlPictureUpload extends PictureUploadTemplate{
                 try {
                     long contentLength = Long.parseLong(contentLengthStr);
                     final long ONE_M = 1024 * 1024L;
-                    ThrowUtils.throwIf(contentLength > 5 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过5M");
+                    ThrowUtils.throwIf(contentLength > 10 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过10M");
                 }catch (NumberFormatException e){
                     log.error("file contentLengthStr parse error", e);
                     throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小格式错误");
@@ -93,6 +93,16 @@ public class UrlPictureUpload extends PictureUploadTemplate{
     protected void processFile(Object inputSource, File file) throws IOException {
         String fileUrl = (String) inputSource;
         HttpUtil.downloadFile(fileUrl, file);
+        // 下载后校验文件是否为有效图片（HEAD 请求不可靠时兜底）
+        String type = FileUtil.getType(file);
+        if (type == null || !type.matches("jpg|jpeg|png|webp")) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "下载的文件不是有效图片");
+        }
+        // 校验文件大小
+        final long TEN_M = 10 * 1024 * 1024L;
+        if (file.length() > TEN_M) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过10M");
+        }
     }
 
     @Override

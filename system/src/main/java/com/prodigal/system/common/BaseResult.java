@@ -17,6 +17,8 @@ public class BaseResult<T> implements Serializable {
     private boolean status;
     private String msg="巭(gu)孬(nao)嫑(biao)哔哔···";
     private T data;
+    /** 请求追踪 ID */
+    private String requestId;
 
     public BaseResult() {
     }

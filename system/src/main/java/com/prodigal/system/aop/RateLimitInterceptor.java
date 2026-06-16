@@ -1,6 +1,7 @@
 package com.prodigal.system.aop;
 
 import com.prodigal.system.annotation.RateLimit;
+import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.exception.BusinessException;
 import com.prodigal.system.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,8 @@ public class RateLimitInterceptor {
             return joinPoint.proceed();
         }
         String ip = attributes.getRequest().getRemoteAddr();
-        String key = rateLimit.prefix() + joinPoint.getSignature().toShortString() + ":" + ip;
+        // 替换 IPv6 中的 ":"，防止 Redis key 层级错乱
+        String key = CacheConstant.RATE_LIMIT_PREFIX + joinPoint.getSignature().toShortString() + ":" + ip.replace(":", ".");
         long count = redisTemplate.opsForValue().increment(key);
         if (count == 1) {
             redisTemplate.expire(key, rateLimit.window(), rateLimit.timeUnit());

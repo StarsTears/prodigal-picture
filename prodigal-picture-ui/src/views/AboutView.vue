@@ -63,7 +63,7 @@
           <li>公共图库管理员审核机制（通过/拒绝 + 审核意见）</li>
           <li>审核结果通过邮件 + SSE 实时通知上传者</li>
           <li>多维度检索：关键词、标签、分类、时间范围、颜色</li>
-          <li>百度以图搜图、主色调相似度排序</li>
+          <li>多平台以图搜图（Bing + 百度）、主色调相似度排序</li>
         </ul>
       </a-collapse-panel>
       <a-collapse-panel key="2" header="空间与协作">
@@ -189,7 +189,7 @@
         <span class="layer-label">外部服务</span>
         <div class="layer-boxes">
           <div class="arch-box external-item">阿里云百炼<br/><small>AI 扩图</small></div>
-          <div class="arch-box external-item">百度搜图<br/><small>以图搜图</small></div>
+          <div class="arch-box external-item">多平台搜图<br/><small>Bing + 百度</small></div>
           <div class="arch-box external-item">Actuator<br/><small>Prometheus 监控</small></div>
         </div>
       </div>
