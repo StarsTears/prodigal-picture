@@ -2,9 +2,12 @@ package com.prodigal.system.job;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prodigal.system.config.MetricsConfig;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.service.PictureService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
@@ -41,6 +44,9 @@ public class PictureCleanupScheduler {
 
     @Resource
     private TransactionTemplate transactionTemplate;
+
+    @Resource
+    private MeterRegistry meterRegistry;
 
     @Scheduled(cron = "0 0 2 * * ?")
     public void cleanupDeletedPictures() {
@@ -176,6 +182,11 @@ public class PictureCleanupScheduler {
         )));
         log.info("Cleanup done: dbDeleted={}, cosDeleted={}, cosFailed={}, durationMs={}",
                 totalDbDeleted, totalCosDeleted, totalCosFailed, durationMs);
+
+        meterRegistry.gauge(MetricsConfig.METRIC_CLEANUP_DURATION, durationMs / 1000.0);
+        Counter.builder(MetricsConfig.METRIC_CLEANUP_DELETED)
+                .register(meterRegistry)
+                .increment(totalDbDeleted);
     }
 
     private static String json(Map<String, Object> map) {

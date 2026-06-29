@@ -144,6 +144,12 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
+        <!-- Micrometer Tracing + Brave 分布式链路追踪 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-brave</artifactId>
+        </dependency>
+
         <!-- BCrypt 密码加密 -->
         <dependency>
             <groupId>org.springframework.security</groupId>

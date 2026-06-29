@@ -1,7 +1,7 @@
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%X{spanId}] [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%X{traceId}] [%X{spanId}] [%X{requestId}] [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/prodigal-system.log
   logback:
@@ -141,6 +141,9 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  tracing:
+    sampling:
+      probability: 0.1
 
 # 其余需要使用配置文件
 # CORS 允许的前端域名（多个用逗号分隔）

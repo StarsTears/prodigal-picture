@@ -1,7 +1,7 @@
 <template>
   <div id="globalHeader" :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
-    <a-row :wrap="false">
-      <a-col flex="200px">
+    <a-row :wrap="false" align="middle">
+      <a-col flex="200px" class="logo-col">
         <RouterLink to="/">
           <div class="title-bar">
             <img src="../assets/logo.svg" alt="Prodigal Picture" class="logo">
@@ -9,10 +9,10 @@
           </div>
         </RouterLink>
       </a-col>
-      <a-col flex="auto">
+      <a-col flex="auto" class="menu-col">
         <a-menu v-model:selectedKeys="current" mode="horizontal" :items="items" @click="doMenuClick"/>
       </a-col>
-      <a-col flex="280px">
+      <a-col flex="none" class="user-col">
         <div class="login-status">
           <button
             class="theme-toggle"
@@ -41,16 +41,16 @@
           </button>
 
           <div v-if="loginUserStore.loginUser.id">
-            <a-flex :gap="8">
+            <a-flex :gap="8" align="center">
               <BellFilled @click="doNotice"  style="color: #1677ff;font-size: 18px;cursor: pointer"/>
               <a-dropdown>
                 <a-space>
-                  <a-avatar v-if="loginUserStore.loginUser.userAvatar" :src="loginUserStore.loginUser.userAvatar"/>
-                  <a-avatar v-if="!loginUserStore.loginUser.userAvatar" style="color: #f56a00; background-color: #fde3cf">{{loginUserStore.loginUser.userName.charAt(0)}}</a-avatar>
-                  {{ loginUserStore.loginUser.userName ?? "无名" }}
+                  <a-avatar v-if="loginUserStore.loginUser.userAvatar" :src="loginUserStore.loginUser.userAvatar" :size="32"/>
+                  <a-avatar v-if="!loginUserStore.loginUser.userAvatar" :size="32" style="color: #f56a00; background-color: #fde3cf">{{loginUserStore.loginUser.userName.charAt(0)}}</a-avatar>
+                  <span class="user-name-text">{{ loginUserStore.loginUser.userName ?? "无名" }}</span>
                 </a-space>
                 <template #overlay>
-                  <a-menu>
+                  <a-menu style="min-width: 130px">
                     <a-menu-item @click="doShow">
                       <UserOutlined/>
                       个人中心
@@ -430,6 +430,7 @@ const doNotice = (e: Event) => {
   height: 48px;
   width: 48px;
   border-radius: 12px;
+  flex-shrink: 0;
 }
 
 #globalHeader .title {
@@ -438,14 +439,12 @@ const doNotice = (e: Event) => {
   font-weight: bold;
   font-family: "Segoe UI Historic";
   margin-left: 10px;
+  white-space: nowrap;
 }
 
-/*#globalHeader :deep(.ant-space-item) {*/
-/*  padding-right: 0 ;*/
-/*}*/
 .detail-footer {
   display: flex;
-  justify-content: flex-end; /* 将内容推到右侧 */
+  justify-content: flex-end;
 }
 
 #globalHeader .login-status {
@@ -454,7 +453,12 @@ const doNotice = (e: Event) => {
   justify-content: flex-end;
   gap: 8px;
   height: 64px;
-  padding-right: 16px;
+  padding-right: 24px;
+  white-space: nowrap;
+}
+
+#globalHeader .user-col {
+  flex-shrink: 0;
 }
 
 /* 主题切换开关 */
@@ -526,4 +530,27 @@ const doNotice = (e: Event) => {
   margin-left: 2px;
 }
 
+/* 平板及以下：隐藏用户名文本，只显示头像 */
+@media (max-width: 768px) {
+  #globalHeader .user-name-text {
+    display: none;
+  }
+
+  #globalHeader .title {
+    display: none;
+  }
+
+  #globalHeader .logo-col {
+    flex: 0 0 auto !important;
+  }
+
+  #globalHeader .login-status {
+    padding-right: 8px;
+    gap: 4px;
+  }
+
+  #globalHeader .menu-col {
+    overflow-x: auto;
+  }
+}
 </style>

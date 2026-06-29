@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.api.aliyunai.AliYunAiApi;
 import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDTO;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
+import com.prodigal.system.config.MetricsConfig;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.FilePathConstant;
 import com.prodigal.system.exception.BusinessException;
@@ -42,6 +43,9 @@ import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
 import com.prodigal.system.utils.ColorSimilarUtils;
 import com.prodigal.system.utils.CustomThreadPool;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import cn.hutool.core.date.DateUtil;
@@ -109,6 +113,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Resource
+    private MeterRegistry meterRegistry;
+
     /**
      * 图片校验(更新与修改)
      */
@@ -133,6 +140,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      */
     @Override
     public PictureVO uploadPicture(Object inputSource, PictureUploadDTO pictureUploadDto, User loginUser) {
+        Timer.Sample sample = Timer.start(meterRegistry);
         if (inputSource == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "上传图片数据源为空");
         }
@@ -215,6 +223,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             if (lockKey != null) {
                 redisTemplate.delete(lockKey);
             }
+            sample.stop(Timer.builder(MetricsConfig.METRIC_UPLOAD_DURATION)
+                    .register(meterRegistry));
+            Counter.builder(MetricsConfig.METRIC_UPLOAD_TOTAL)
+                    .tag(MetricsConfig.TAG_STATUS, "failure")
+                    .register(meterRegistry)
+                    .increment();
             throw e;
         }
         //构造需要存储的图片信息
@@ -291,6 +305,12 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             if (lockKey != null) {
                 redisTemplate.delete(lockKey);
             }
+            sample.stop(Timer.builder(MetricsConfig.METRIC_UPLOAD_DURATION)
+                    .register(meterRegistry));
+            Counter.builder(MetricsConfig.METRIC_UPLOAD_TOTAL)
+                    .tag(MetricsConfig.TAG_STATUS, "failure")
+                    .register(meterRegistry)
+                    .increment();
             throw e;
         }
 
@@ -298,6 +318,17 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         if (oldPicture != null) {
             this.clearPictureFile(oldPicture);
         }
+
+        sample.stop(Timer.builder(MetricsConfig.METRIC_UPLOAD_DURATION)
+                .description("Picture upload duration")
+                .register(meterRegistry));
+        Counter.builder(MetricsConfig.METRIC_UPLOAD_TOTAL)
+                .tag(MetricsConfig.TAG_STATUS, "success")
+                .register(meterRegistry)
+                .increment();
+        Counter.builder(MetricsConfig.METRIC_UPLOAD_SIZE)
+                .register(meterRegistry)
+                .increment(picture.getPicSize());
 
         return PictureVO.objToVO(picture);
     }
@@ -917,6 +948,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             return true;
         });
 
+        Counter.builder(MetricsConfig.METRIC_DELETE_TOTAL)
+                .tag(MetricsConfig.TAG_REASON, "user_removed")
+                .register(meterRegistry)
+                .increment();
+
 //        //异步清理文件
 //        this.clearPictureFile(picture);
     }
@@ -1028,6 +1064,11 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         taskDto.setInput(input);
         BeanUtils.copyProperties(createPictureOutPaintingTaskDto, taskDto);
         //3、调用aliYunAi 扩图任务
-        return aliYunAiApi.createOutPaintingTask(taskDto);
+        CreateOutPaintingTaskVO result = aliYunAiApi.createOutPaintingTask(taskDto);
+        Counter.builder(MetricsConfig.METRIC_OUTPAINTING_TOTAL)
+                .tag(MetricsConfig.TAG_STATUS, "created")
+                .register(meterRegistry)
+                .increment();
+        return result;
     }
 }
