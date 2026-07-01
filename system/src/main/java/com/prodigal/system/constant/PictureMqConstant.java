@@ -10,4 +10,8 @@ public interface PictureMqConstant {
     String PICTURE_REVIEW_QUEUE = "picture.review.queue";
 
     String PICTURE_REVIEW_ROUTING_KEY = "picture.review.notify";
+
+    String PICTURE_REVIEW_DLX = "picture.review.dlx";
+
+    String PICTURE_REVIEW_DLQ = "picture.review.dlq";
 }

@@ -51,17 +51,5 @@ public class EmailProducer {
         log.info("邮件发送消息已投递 MQ, emailId={},messageId={}", message.getEmailId(), messageId);
     }
 
-    public void publishPictureReviewed(PictureReviewedMessage message) {
-        String messageId = message.getMessageId();
-        if (StrUtil.isBlank(messageId)) {
-            messageId = UUID.randomUUID().toString();
-            message.setMessageId(messageId);
-        }
-        rabbitTemplate.convertAndSend(
-                PictureMqConstant.PICTURE_REVIEW_EXCHANGE,
-                PictureMqConstant.PICTURE_REVIEW_ROUTING_KEY,
-                message
-        );
-        log.info("图片审核通知已投递 MQ, pictureId={}, messageId={}", message.getPictureId(), messageId);
-    }
+
 }

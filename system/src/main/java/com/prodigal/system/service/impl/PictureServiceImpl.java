@@ -36,6 +36,7 @@ import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.model.message.PictureReviewedMessage;
 import com.prodigal.system.model.vo.PictureVO;
 import com.prodigal.system.model.vo.UserVO;
+import com.prodigal.system.mq.producer.PictureProducer;
 import com.prodigal.system.service.PictureService;
 import com.prodigal.system.mapper.PictureMapper;
 import com.prodigal.system.mq.producer.EmailProducer;
@@ -103,7 +104,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     private AliYunAiApi aliYunAiApi;
 
     @Resource
-    private EmailProducer emailProducer;
+    private PictureProducer pictureProducer;
 
     // 创建自定义线程池
     private ExecutorService threadPool = CustomThreadPool.createCustomThreadPool(10, 50, 120, TimeUnit.SECONDS);
@@ -886,7 +887,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
 
         // 审核完成后通过 MQ 异步通知上传者
-        emailProducer.publishPictureReviewed(new PictureReviewedMessage(
+        pictureProducer.publishPictureReviewed(new PictureReviewedMessage(
                 oldPicture.getId(),
                 StrUtil.isNotBlank(oldPicture.getName()) ? oldPicture.getName() : oldPicture.getId(),
                 oldPicture.getUserId(),

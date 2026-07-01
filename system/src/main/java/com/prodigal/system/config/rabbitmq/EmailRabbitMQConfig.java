@@ -14,6 +14,8 @@ import org.springframework.retry.support.RetryTemplate;
 import org.springframework.retry.support.RetryTemplateBuilder;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Lang
@@ -25,9 +27,14 @@ import java.time.Duration;
 @Slf4j
 @Configuration
 public class EmailRabbitMQConfig {
+
+    // ======================== 验证码邮件拓扑 ========================
+
     @Bean
     public Queue emailCaptchaQueue() {
-        return new Queue(EmailMqConstant.CAPTCHA_QUEUE, true);
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-dead-letter-exchange", EmailMqConstant.CAPTCHA_DLX);
+        return new Queue(EmailMqConstant.CAPTCHA_QUEUE, true, false, false, args);
     }
 
     @Bean
@@ -40,6 +47,24 @@ public class EmailRabbitMQConfig {
                                        @Qualifier("emailCaptchaExchange") DirectExchange emailCaptchaExchange) {
         return BindingBuilder.bind(emailCaptchaQueue)
                 .to(emailCaptchaExchange)
+                .with(EmailMqConstant.CAPTCHA_ROUTING_KEY);
+    }
+
+    @Bean
+    public DirectExchange emailCaptchaDlx() {
+        return new DirectExchange(EmailMqConstant.CAPTCHA_DLX, true, false);
+    }
+
+    @Bean
+    public Queue emailCaptchaDlq() {
+        return new Queue(EmailMqConstant.CAPTCHA_DLQ, true);
+    }
+
+    @Bean
+    public Binding emailCaptchaDlqBinding(@Qualifier("emailCaptchaDlq") Queue emailCaptchaDlq,
+                                          @Qualifier("emailCaptchaDlx") DirectExchange emailCaptchaDlx) {
+        return BindingBuilder.bind(emailCaptchaDlq)
+                .to(emailCaptchaDlx)
                 .with(EmailMqConstant.CAPTCHA_ROUTING_KEY);
     }
 
@@ -56,15 +81,18 @@ public class EmailRabbitMQConfig {
                 .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
                 .build();
         factory.setRetryTemplate(retryTemplate);
-        factory.setErrorHandler(e -> log.warn("[send email captcha] retry exhausted, error: {}", e.getMessage(), e));
+        factory.setDefaultRequeueRejected(false);
+        factory.setErrorHandler(e -> log.error("[send email captcha] retry exhausted, routing to DLQ, error: {}", e.getMessage(), e));
         return factory;
     }
 
-    // ---------- 邮件发送（公告/告警）拓扑 ----------
+    // ======================== 邮件发送（公告/告警）拓扑 ========================
 
     @Bean
     public Queue emailSendQueue() {
-        return new Queue(EmailMqConstant.EMAIL_SEND_QUEUE, true);
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-dead-letter-exchange", EmailMqConstant.EMAIL_SEND_DLX);
+        return new Queue(EmailMqConstant.EMAIL_SEND_QUEUE, true, false, false, args);
     }
 
     @Bean
@@ -77,6 +105,24 @@ public class EmailRabbitMQConfig {
                                     @Qualifier("emailSendExchange") DirectExchange emailSendExchange) {
         return BindingBuilder.bind(emailSendQueue)
                 .to(emailSendExchange)
+                .with(EmailMqConstant.EMAIL_SEND_ROUTING_KEY);
+    }
+
+    @Bean
+    public DirectExchange emailSendDlx() {
+        return new DirectExchange(EmailMqConstant.EMAIL_SEND_DLX, true, false);
+    }
+
+    @Bean
+    public Queue emailSendDlq() {
+        return new Queue(EmailMqConstant.EMAIL_SEND_DLQ, true);
+    }
+
+    @Bean
+    public Binding emailSendDlqBinding(@Qualifier("emailSendDlq") Queue emailSendDlq,
+                                       @Qualifier("emailSendDlx") DirectExchange emailSendDlx) {
+        return BindingBuilder.bind(emailSendDlq)
+                .to(emailSendDlx)
                 .with(EmailMqConstant.EMAIL_SEND_ROUTING_KEY);
     }
 
@@ -93,44 +139,9 @@ public class EmailRabbitMQConfig {
                 .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
                 .build();
         factory.setRetryTemplate(retryTemplate);
-        factory.setErrorHandler(e -> log.warn("[send email] retry exhausted, error: {}", e.getMessage(), e));
+        factory.setDefaultRequeueRejected(false);
+        factory.setErrorHandler(e -> log.error("[send email] retry exhausted, routing to DLQ, error: {}", e.getMessage(), e));
         return factory;
     }
 
-    // ---------- 图片审核通知拓扑 ----------
-
-    @Bean
-    public Queue pictureReviewQueue() {
-        return new Queue(PictureMqConstant.PICTURE_REVIEW_QUEUE, true);
-    }
-
-    @Bean
-    public DirectExchange pictureReviewExchange() {
-        return new DirectExchange(PictureMqConstant.PICTURE_REVIEW_EXCHANGE, true, false);
-    }
-
-    @Bean
-    public Binding pictureReviewBinding(@Qualifier("pictureReviewQueue") Queue pictureReviewQueue,
-                                        @Qualifier("pictureReviewExchange") DirectExchange pictureReviewExchange) {
-        return BindingBuilder.bind(pictureReviewQueue)
-                .to(pictureReviewExchange)
-                .with(PictureMqConstant.PICTURE_REVIEW_ROUTING_KEY);
-    }
-
-    @Bean("pictureReviewRabbitListenerContainerFactory")
-    public SimpleRabbitListenerContainerFactory pictureReviewListenerContainerFactory(
-            ConnectionFactory connectionFactory,
-            MessageConverter messageConverter) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
-        factory.setConnectionFactory(connectionFactory);
-        factory.setMessageConverter(messageConverter);
-        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
-        RetryTemplate retryTemplate = new RetryTemplateBuilder()
-                .maxAttempts(3)
-                .exponentialBackoff(Duration.ofSeconds(2), 1.5, Duration.ofSeconds(30))
-                .build();
-        factory.setRetryTemplate(retryTemplate);
-        factory.setErrorHandler(e -> log.warn("[picture review notify] retry exhausted, error: {}", e.getMessage(), e));
-        return factory;
-    }
 }
