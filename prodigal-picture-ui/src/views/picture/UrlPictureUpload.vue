@@ -18,6 +18,7 @@ const fileUrl = ref<string>()
 
 interface Props {
   picture?: API.PictureVO
+  spaceId?: string
   onSuccess?: (newPicture: API.PictureVO) => void;
 }
 

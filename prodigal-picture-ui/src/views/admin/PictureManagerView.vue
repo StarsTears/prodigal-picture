@@ -3,8 +3,8 @@
     <a-flex justify="space-between">
       <h2>图片管理</h2>
       <a-space>
-        <a-button type="primary" @click="doCreate">+ 创建图片</a-button>
-        <a-button type="primary" ghost @click="doBatchCreate">+ 批量创建图片</a-button>
+        <a-button type="primary" @click="doCreate" :icon="h(PlusOutlined)">创建图片</a-button>
+        <a-button type="primary" ghost @click="doBatchCreate" :icon="h(PlusOutlined)">批量创建图片</a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px"/>
@@ -152,10 +152,9 @@
 <script lang="ts" setup>
 import {h, computed, onMounted, reactive, ref, unref} from "vue";
 import {useRouter} from 'vue-router';
-import {StopOutlined, DeleteOutlined, EditOutlined, CheckOutlined} from '@ant-design/icons-vue';
+import {StopOutlined, DeleteOutlined, EditOutlined, CheckOutlined, PlusOutlined} from '@ant-design/icons-vue';
 import {Table, message} from "ant-design-vue";
 import dayjs from "dayjs";
-import {cloneDeep} from 'lodash-es';
 import {PIC_REVIEW_STATUS_ENUM, PIC_REVIEW_STATUS_MAP, PIC_REVIEW_STATUS_OPTIONS} from "@/constants/picture";
 import {
   deletePictureUsingPost, doPictureReviewUsingPost,

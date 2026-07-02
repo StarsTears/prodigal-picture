@@ -5,7 +5,7 @@
     <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
     <a-space size="middle">
       <router-link :to="`/picture/add_picture?spaceId=${id}`" class="space-manager-link">
-        <a-button type="primary" v-if="canManageSpaceUser" :icon="h(PlusOutlined)">+ 创建图片</a-button>
+        <a-button type="primary" v-if="canManageSpaceUser" :icon="h(PlusOutlined)">创建图片</a-button>
       </router-link>
       <router-link :to="`/spaceUserManager/${id}/${space.userId}`" class="space-manager-link" v-if="space.spaceType!=0">
         <a-button type="primary" v-if="canManageSpaceUser" ghost :icon="h(TeamOutlined)">成员管理</a-button>

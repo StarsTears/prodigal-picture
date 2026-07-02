@@ -201,7 +201,7 @@
             <!-- 2. 手动引入与你 Spring Boot 版本兼容的新版 SpringDoc -->
             <dependency>
                 <groupId>org.springdoc</groupId>
-                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
                 <version>${springdoc.version}</version>
             </dependency>
 

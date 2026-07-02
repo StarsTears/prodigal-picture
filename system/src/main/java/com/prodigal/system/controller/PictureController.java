@@ -94,10 +94,6 @@ public class PictureController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
     public BaseResult<PictureVO> uploadPictureByUrl(@RequestBody PictureUploadDTO pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        // 若 DTO 无 requestId，从 Header 兜底
-        if (StrUtil.isBlank(pictureUploadDto.getRequestId())) {
-            pictureUploadDto.setRequestId(request.getHeader("X-Request-Id"));
-        }
         String fileUrl = pictureUploadDto.getFileUrl();
         PictureVO pictureVO = pictureService.uploadPicture(fileUrl, pictureUploadDto, loginUser);
         return ResultUtils.success(pictureVO);
@@ -220,7 +216,7 @@ public class PictureController {
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
         //补充审核参数
         User loginUser = userService.getLoginUser(request);
-        pictureService.fillReviewParams(picture, loginUser);
+        pictureService.fillReviewParams(picture, loginUser, spaceId);
 
         // 构造 UpdateWrapper
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();

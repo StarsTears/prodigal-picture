@@ -45,7 +45,7 @@ public interface PictureService extends IService<Picture> {
 
     void doPictureReview(PictureReviewDTO pictureReviewDto, User loginUser);
 
-    void fillReviewParams(Picture picture, User loginUser);
+    void fillReviewParams(Picture picture, User loginUser, String spaceId);
 
     void deletePicture(String pictureId, String spaceId, User loginUser);
 

@@ -208,7 +208,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
 
         if (loginUser.getUserRole().contains(UserRoleEnum.ADMINISTRATOR.getRole())) {
-            uploadPrefix = String.format("%s/%S", FilePathConstant.PICTURE_PRIVATE_PREFIX, "super");
+            uploadPrefix = String.format("%s/%s", FilePathConstant.PICTURE_PRIVATE_PREFIX, "super");
         }
         //通过数据源判断使用的上传模板（file、url）
         PictureUploadTemplate pictureUploadTemplate = filePictureUpload;
@@ -256,7 +256,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         // 设置空间ID;将公共空间的空间ID设置为0
         picture.setSpaceId(spaceId !=null ? spaceId : "0");
         //补充审核参数
-        this.fillReviewParams(picture, loginUser);
+        this.fillReviewParams(picture, loginUser, spaceId);
         //如果pictureID 不为空则进行更新
         if (pictureID != null) {
             picture.setId(pictureID);
@@ -281,8 +281,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             if (finalSpaceId != null && !"0".equals(finalSpaceId)) {
                 boolean update = spaceService.lambdaUpdate()
                         .eq(Space::getId, finalSpaceId)
-                        .setSql("totalSize = totalSize +" + picture.getPicSize())
-                        .setSql("totalCount = totalCount + 1")
+                        .setSql("total_size = total_size +" + picture.getPicSize())
+                        .setSql("total_count = total_count + 1")
                         .update();
                 ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "空间数据更新失败");
             }
@@ -477,7 +477,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         //验权
 //        checkPicturePermission(loginUser, picture);
         //补充审核参数
-        this.fillReviewParams(picture, loginUser);
+        this.fillReviewParams(picture, loginUser, spaceId);
 
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id)         // 根据主键 id 查询
@@ -517,6 +517,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 .in(Picture::getId, pictureIdList)
                 .list();
         if (pictureList.isEmpty()) {
+            log.warn("not fund picture by :{}", pictureEditByBatchDto);
             return;
         }
 
@@ -903,11 +904,15 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
      * @param loginUser 登录用户
      */
     @Override
-    public void fillReviewParams(Picture picture, User loginUser) {
+    public void fillReviewParams(Picture picture, User loginUser, String spaceId) {
         if (userService.isAdmin(loginUser)) {
             picture.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
             picture.setReviewerId(loginUser.getId());
             picture.setReviewMessage("管理员自动审核通过");
+            picture.setReviewTime(new Date());
+        } else if (spaceId != null && !"0".equals(spaceId)) {
+            picture.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            picture.setReviewMessage("用户空间上传自动通过");
             picture.setReviewTime(new Date());
         } else {
             picture.setReviewStatus(PictureReviewStatusEnum.REVIEWING.getValue());
