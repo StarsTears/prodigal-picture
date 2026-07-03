@@ -648,7 +648,9 @@ declare namespace API {
     picScale?: number
     picSize?: number
     picWidth?: number
+    viewQuantity?: number
     shareQuantity?: number
+    downloadQuantity?: number
     spaceId?: string
     tags?: string[]
     thumbnailUrl?: string
@@ -656,7 +658,6 @@ declare namespace API {
     url?: string
     user?: UserVO
     userId?: string
-    viewQuantity?: number
   }
 
   type RegisterDTO = {

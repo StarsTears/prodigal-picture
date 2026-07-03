@@ -440,10 +440,14 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         queryWrapper.eq("id", id).eq("space_id", spaceId);
         Picture picture = this.getOne(queryWrapper);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        // 增加下载次数
+        UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id", id).eq("space_id", spaceId)
+                .setSql("download_quantity = download_quantity + 1");
+        this.update(updateWrapper);
         // 返回服务端代理下载 URL，用户无法看到 COS bucket/region 信息
-//        String downloadUrl = "/api/file/download?pictureId=" + id + "&spaceId=" + spaceId;
-       String url = cosManager.generateTempUrl(picture.getOriginUrl());
-       return url;
+        String url = cosManager.generateTempUrl(picture.getOriginUrl());
+        return url;
    }
 
     @Override

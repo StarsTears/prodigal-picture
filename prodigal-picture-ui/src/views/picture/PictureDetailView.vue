@@ -1,128 +1,113 @@
 <template>
   <div id="pictureDetailView">
-    <!--图片展示区-->
-    <div class="image-hero" @dragstart="handleDragStart">
-      <div class="image-container">
-        <a-image :src="picture.url" class="hero-image" />
-      </div>
-    </div>
-
-    <!--信息与操作栏-->
-    <div class="info-bar">
-      <div class="info-bar__left">
-        <h2 class="picture-title">{{ picture.name ?? '未命名' }}</h2>
-        <div class="picture-stats">
-          <span class="stat-item">
-            <EyeOutlined />
-            {{ formatNumber(picture.viewQuantity ?? 0) }} 次浏览
-          </span>
-          <span class="stat-item">
-            <ShareAltOutlined />
-            {{ formatNumber(picture.shareQuantity ?? 0) }} 次分享
-          </span>
-          <span v-if="picture.picSize" class="stat-item">
-            <FileOutlined />
-            {{ formatSize(picture.picSize) }}
-          </span>
-        </div>
-      </div>
-      <div class="info-bar__right">
-        <a-space :size="12">
-          <a-button v-if="isLogin" type="primary" size="large" @click="doDownload">
-            <template #icon><DownloadOutlined /></template>
-            免费下载
-          </a-button>
-          <a-button v-if="isLogin" size="large" @click="(e) => doShare(picture, e)">
-            <template #icon><ShareAltOutlined /></template>
-            分享
-          </a-button>
-          <a-button v-if="canEditPicture" size="large" @click="doEdit">
-            <template #icon><EditOutlined /></template>
-            编辑
-          </a-button>
-          <a-dropdown v-if="isAdmin || canDeletePicture">
-            <a-button size="large">
-              <MoreOutlined />
-            </a-button>
-            <template #overlay>
-              <a-menu>
-                <a-menu-item v-if="isAdmin" @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
-                  <CheckOutlined /> 审核通过
-                </a-menu-item>
-                <a-menu-item v-if="isAdmin" @click="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
-                  <StopOutlined /> 拒绝
-                </a-menu-item>
-                <a-menu-item v-if="canDeletePicture" danger @click="doDelete">
-                  <DeleteOutlined /> 删除
-                </a-menu-item>
-              </a-menu>
-            </template>
-          </a-dropdown>
-        </a-space>
-      </div>
-    </div>
-
-    <!--色卡 + 详情区-->
-    <a-row :gutter="[20, 20]" class="detail-section">
-      <!--左侧：图片详情-->
-      <a-col :xs="24" :lg="16">
-        <div class="detail-card">
-          <h3 class="detail-card__title">图片信息</h3>
-          <p v-if="picture.introduction" class="picture-intro">{{ picture.introduction }}</p>
-          <a-row :gutter="[16, 12]">
-            <a-col :span="12">
-              <div class="meta-item">
-                <span class="meta-label">分类</span>
-                <span class="meta-value">
-                  <a-tag color="blue">{{ picture.category ?? '默认' }}</a-tag>
-                </span>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div class="meta-item">
-                <span class="meta-label">格式</span>
-                <span class="meta-value">{{ picture.picFormat?.toUpperCase() ?? '-' }}</span>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div class="meta-item">
-                <span class="meta-label">尺寸</span>
-                <span class="meta-value">{{ picture.picWidth }} × {{ picture.picHeight }} px</span>
-              </div>
-            </a-col>
-            <a-col :span="12">
-              <div class="meta-item">
-                <span class="meta-label">宽高比</span>
-                <span class="meta-value">{{ picture.picScale }}</span>
-              </div>
-            </a-col>
-          </a-row>
+    <!--左图右信息 布局-->
+    <a-row :gutter="[24, 24]" class="detail-layout">
+      <!--左侧：图片展示-->
+      <a-col :xs="24" :lg="15">
+        <div class="image-panel" @dragstart="handleDragStart">
+          <a-image :src="picture.url" class="hero-image" />
         </div>
       </a-col>
 
-      <!--右侧：标签 + 色调-->
-      <a-col :xs="24" :lg="8">
-        <div class="detail-card">
-          <h3 class="detail-card__title">标签</h3>
-          <div class="tags-cloud" v-if="picture.tags?.length">
-            <a-tag v-for="tag in picture.tags" :key="tag" class="tag-pill">{{ tag }}</a-tag>
-          </div>
-          <span v-else class="text-muted">暂无标签</span>
-        </div>
+      <!--右侧：图片信息-->
+      <a-col :xs="24" :lg="9">
+        <div class="info-panel">
+          <!--标题-->
+          <h2 class="picture-title">{{ picture.name ?? '未命名' }}</h2>
 
-        <div v-if="picture.picColor" class="detail-card color-card">
-          <h3 class="detail-card__title">主色调</h3>
-          <div class="color-preview">
-            <div class="color-swatch" :style="{ backgroundColor: toHexColor(picture.picColor) }" />
-            <span class="color-hex">{{ toHexColor(picture.picColor) }}</span>
+          <!--上传者-->
+          <div v-if="picture.user" class="author-card">
+            <a-avatar :src="picture.user.userAvatar" :size="40" />
+            <div class="author-info">
+              <span class="author-name">{{ picture.user.userName }}</span>
+<!--              <span class="author-label">上传者</span>-->
+            </div>
           </div>
-        </div>
 
-        <div v-if="picture.user" class="detail-card user-card">
-          <h3 class="detail-card__title">上传者</h3>
-          <div class="user-info">
-            <a-avatar :src="picture.user.userAvatar" :size="36" />
-            <span class="user-name">{{ picture.user.userName }}</span>
+          <!--简介-->
+          <p v-if="picture.introduction" class="picture-intro">{{ picture.introduction }}</p>
+
+          <!--下载按钮-->
+          <a-button v-if="isLogin" type="primary" block size="large" class="btn-download" @click="doDownload">
+            <template #icon><DownloadOutlined /></template>
+            免费下载原图
+          </a-button>
+
+          <!--元数据 + 统计 + 标签-->
+          <div class="info-card">
+            <!--元数据 两列-->
+            <div class="meta-grid">
+              <div class="meta-cell">
+                <ColumnWidthOutlined class="meta-icon" />
+                <span class="meta-label">分辨率</span>
+                <span class="meta-val">{{ picture.picWidth }} × {{ picture.picHeight }}</span>
+              </div>
+              <div class="meta-cell">
+                <PictureOutlined class="meta-icon" />
+                <span class="meta-label">格式</span>
+                <span class="meta-val">{{ picture.picFormat?.toUpperCase() ?? '-' }}</span>
+              </div>
+              <div class="meta-cell">
+                <FileOutlined class="meta-icon" />
+                <span class="meta-label">大小</span>
+                <span class="meta-val">{{ formatSize(picture.picSize) }}</span>
+              </div>
+              <div class="meta-cell">
+                <ColumnHeightOutlined class="meta-icon" />
+                <span class="meta-label">比例</span>
+                <span class="meta-val">{{ formatRatio(picture.picWidth, picture.picHeight) }}</span>
+              </div>
+              <div class="meta-cell">
+                <AppstoreOutlined class="meta-icon" />
+                <span class="meta-label">分类</span>
+                <a-tag color="blue" size="small" class="meta-tag">{{ picture.category ?? '默认' }}</a-tag>
+              </div>
+              <div v-if="picture.picColor" class="meta-cell">
+                <span class="meta-color-dot" :style="{ backgroundColor: toHexColor(picture.picColor) }" />
+                <span class="meta-label">色系</span>
+                <span class="meta-val">{{ toColorName(picture.picColor) }}</span>
+              </div>
+            </div>
+
+            <!--统计-->
+            <div class="stats-row">
+              <span class="stats-num"><EyeOutlined /> {{ formatNumber(picture.viewQuantity ?? 0) }}</span>
+              <span class="stats-num"><ShareAltOutlined /> {{ formatNumber(picture.shareQuantity ?? 0) }}</span>
+              <span class="stats-num"><DownloadOutlined /> {{ formatNumber(picture.downloadQuantity ?? 0) }}</span>
+            </div>
+
+            <!--标签-->
+            <div v-if="picture.tags?.length" class="tags-row">
+              <a-tag v-for="tag in picture.tags" :key="tag" class="tag-pill">{{ tag }}</a-tag>
+            </div>
+          </div>
+
+          <!--操作按钮-->
+          <div class="action-row">
+            <a-button v-if="isLogin" @click="(e) => doShare(picture, e)">
+              <template #icon><ShareAltOutlined /></template>
+              分享
+            </a-button>
+            <a-button v-if="canEditPicture" @click="doEdit">
+              <template #icon><EditOutlined /></template>
+              编辑
+            </a-button>
+            <a-dropdown v-if="isAdmin || canDeletePicture">
+              <a-button><MoreOutlined /></a-button>
+              <template #overlay>
+                <a-menu>
+                  <a-menu-item v-if="isAdmin" @click="handleReview(PIC_REVIEW_STATUS_ENUM.PASS)">
+                    <CheckOutlined /> 审核通过
+                  </a-menu-item>
+                  <a-menu-item v-if="isAdmin" @click="handleReview(PIC_REVIEW_STATUS_ENUM.REJECT)">
+                    <StopOutlined /> 拒绝
+                  </a-menu-item>
+                  <a-menu-item v-if="canDeletePicture" danger @click="doDelete">
+                    <DeleteOutlined /> 删除
+                  </a-menu-item>
+                </a-menu>
+              </template>
+            </a-dropdown>
           </div>
         </div>
       </a-col>
@@ -149,11 +134,15 @@ import {
   StopOutlined,
   ShareAltOutlined,
   EyeOutlined,
-  FileOutlined,
   MoreOutlined,
+  ColumnWidthOutlined,
+  PictureOutlined,
+  FileOutlined,
+  ColumnHeightOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons-vue'
 import { message } from "ant-design-vue"
-import { downloadImage, formatSize, formatNumber, handleDragStart, toHexColor } from "@/utils/index"
+import { downloadImage, formatSize, formatNumber, handleDragStart, toHexColor, formatRatio, toColorName } from "@/utils/index"
 import { useLoginUserStore } from "@/stores/loginUserStore"
 import ACCESS_ENUM from "@/access/accessEnum"
 import { useRouter } from "vue-router"
@@ -266,206 +255,213 @@ const doDelete = async () => {
 
 <style scoped>
 #pictureDetailView {
-  max-width: 1200px;
-  margin: 0 auto 48px;
+  max-width: 1400px;
+  margin: 0 auto;
   padding: 0 16px;
 }
 
-/* ========== 图片展示区 ========== */
-.image-hero {
+.detail-layout {
+  align-items: center;
+}
+
+/* ========== 左侧图片面板 ========== */
+.image-panel {
   background: #0d0d0d;
   border-radius: 14px;
   overflow: hidden;
-  margin-bottom: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
-  max-height: 75vh;
+  min-height: 280px;
+  padding: 20px;
 }
 
-.image-container {
+.image-panel :deep(.ant-image) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
+  height: 100%;
 }
 
-.hero-image :deep(.ant-image) {
-  display: block;
-}
-
-.hero-image :deep(.ant-image-img) {
-  display: block;
+.image-panel :deep(.ant-image-img) {
   max-width: 100%;
-  max-height: 72vh;
-  object-fit: scale-down;
+  max-height: 70vh;
+  object-fit: contain;
   border-radius: 6px;
 }
 
-/* ========== 信息与操作栏 ========== */
-.info-bar {
+/* ========== 右侧信息面板 ========== */
+.info-panel {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 0 4px;
-}
-
-.info-bar__left {
-  flex: 1;
-  min-width: 260px;
+  flex-direction: column;
+  gap: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 28px 24px;
 }
 
 .picture-title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
-  margin: 0 0 8px;
+  margin: 0 0 16px;
   color: var(--text-primary);
   line-height: 1.3;
+  word-break: break-word;
 }
 
-.picture-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.stat-item {
+/* 上传者卡片 */
+.author-card {
   display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.info-bar__right {
-  flex-shrink: 0;
-}
-
-/* ========== 详情卡片 ========== */
-.detail-section {
-  margin-top: 0;
-}
-
-.detail-card {
-  background: var(--bg-card, #fff);
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  background: var(--bg-image-placeholder);
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  border: 1px solid var(--border-color, #f0f0f0);
 }
 
-.detail-card__title {
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.author-name {
   font-size: 15px;
   font-weight: 600;
-  margin: 0 0 14px;
   color: var(--text-primary);
+}
+
+.author-label {
+  font-size: 11px;
+  color: var(--text-secondary);
 }
 
 .picture-intro {
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.7;
-  margin: 0 0 16px;
+  margin: 0 0 18px;
 }
 
-/* 元数据项 */
-.meta-item {
+/* 下载按钮 */
+.btn-download {
+  margin-bottom: 18px;
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* 信息卡片 */
+.info-card {
+  background: var(--bg-image-placeholder);
+  border-radius: 12px;
+  padding: 18px 16px 14px;
+  margin-bottom: 18px;
+}
+
+/* 元数据 2列 */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 20px;
+  margin-bottom: 14px;
+}
+
+.meta-cell {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-icon {
+  color: var(--text-secondary);
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 .meta-label {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
-.meta-value {
-  font-size: 14px;
-  font-weight: 500;
+.meta-val {
+  font-size: 13px;
   color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.meta-tag {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.meta-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+/* 统计 */
+.stats-row {
+  display: flex;
+  gap: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.stats-num {
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* 标签 */
-.tags-cloud {
+.tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
 }
 
 .tag-pill {
   font-size: 12px;
-  padding: 2px 12px;
-  border-radius: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
 }
 
-.text-muted {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-/* 色调卡片 */
-.color-card .color-preview {
+/* 操作按钮 */
+.action-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.color-swatch {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.color-hex {
-  font-size: 16px;
-  font-weight: 600;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-  color: var(--text-primary);
-}
-
-/* 上传者 */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
+  gap: 8px;
 }
 
 /* ========== 响应式 ========== */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
+  .info-panel {
+    margin-top: 8px;
+  }
+
   .picture-title {
-    font-size: 18px;
+    font-size: 16px;
   }
+}
 
-  .info-bar {
-    flex-direction: column;
-  }
-
-  .info-bar__right {
-    width: 100%;
-  }
-
-  .info-bar__right :deep(.ant-space) {
-    width: 100%;
-  }
-
-  .info-bar__right :deep(.ant-btn) {
-    flex: 1;
+@media (max-width: 576px) {
+  .image-panel {
+    min-height: 200px;
+    max-height: 55vh;
   }
 }
 </style>

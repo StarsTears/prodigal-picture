@@ -110,4 +110,47 @@ export function formatNumber(value: number): string {
   return `${formatted}k`
 }
 
-// endregion 格式化数字为 k
+/**
+ * 将十六进制颜色转换为中文颜色名称
+ */
+export function toColorName(input: string): string {
+  const colorValue = input.startsWith('0x') ? input.slice(2) : input
+  const hex = parseInt(colorValue, 16)
+  const r = (hex >> 16) & 0xff
+  const g = (hex >> 8) & 0xff
+  const b = hex & 0xff
+
+  const max = Math.max(r, g, b)
+  const min = Math.min(r, g, b)
+  const l = (max + min) / 2 / 255
+  const s = max === min ? 0 : (max - min) / (255 - Math.abs(max + min - 255))
+  const lightness = l < 0.2 ? '暗' : l < 0.45 ? '深' : l < 0.65 ? '' : l < 0.85 ? '亮' : '浅'
+
+  if (s < 0.12) return lightness ? `${lightness}灰` : '灰'
+
+  let hue = 0
+  if (max === min) hue = 0
+  else if (max === r) hue = ((g - b) / (max - min)) * 60
+  else if (max === g) hue = (2 + (b - r) / (max - min)) * 60
+  else hue = (4 + (r - g) / (max - min)) * 60
+  if (hue < 0) hue += 360
+
+  const names: [number, string][] = [
+    [15, '红'], [45, '橙'], [70, '暖黄'], [100, '黄绿'],
+    [150, '绿'], [190, '青'], [220, '蓝绿'], [260, '蓝'],
+    [290, '紫'], [335, '粉'], [360, '红'],
+  ]
+  const base = names.find(([d]) => hue < d)![1]
+
+  return lightness ? `${lightness}${base}` : base
+}
+
+/**
+ * 将宽高转换为 n:n 格式的比例
+ */
+export function formatRatio(width?: number, height?: number): string {
+  if (!width || !height) return '-'
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+  const divisor = gcd(width, height)
+  return `${width / divisor}:${height / divisor}`
+}

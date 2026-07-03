@@ -85,6 +85,31 @@ public class PictureVO implements Serializable {
     private String picFormat;
 
     /**
+     * 空间 id
+     */
+    private String spaceId;
+
+    /**
+     * 权限列表
+     */
+    private List<String> permissionList = new ArrayList<>();
+
+    /**
+     *  查看次数
+     */
+    private Long viewQuantity;
+
+    /**
+     *  分享次数
+     */
+    private Long shareQuantity;
+
+    /**
+     *  下载次数
+     */
+    private Long downloadQuantity;
+
+    /**
      * 创建用户 id
      */
     private String userId;
@@ -107,25 +132,6 @@ public class PictureVO implements Serializable {
      * 创建用户信息
      */
     private UserVO user;
-    /**
-     * 空间 id
-     */
-    private String spaceId;
-
-    /**
-     * 权限列表
-     */
-    private List<String> permissionList = new ArrayList<>();
-
-    /**
-     *  查看次数
-     */
-    private Long viewQuantity;
-
-    /**
-     *  分享次数
-     */
-    private Long shareQuantity;
 
     /**
      * 封装类转对象

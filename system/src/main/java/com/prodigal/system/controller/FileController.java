@@ -43,7 +43,7 @@ public class FileController {
      */
     @PostMapping("/test/upload")
     @PermissionCheck(mustRole = {"administrator", "admin"})
-    public BaseResult<String> testUploadFile(@RequestPart MultipartFile multipartFile) {
+    public BaseResult<String> testUploadFile(@RequestPart("multipartFile") MultipartFile multipartFile) {
         //文件目录
         String filename = multipartFile.getOriginalFilename();
         String filepath = String.format("/test/%s", filename);

@@ -19,43 +19,43 @@
         <div class="image-wrapper" @dragstart="handleDragStart">
           <LazyImg :url="item.thumbnailUrl ?? item.url" />
 
-          <!--悬停遮罩层-->
-          <div class="image-overlay">
-            <!--顶部：格式 + 分辨率-->
-            <div class="overlay-top">
-              <span v-if="item.picFormat" class="format-badge">{{ item.picFormat.toUpperCase() }}</span>
-              <span v-if="item.picWidth" class="resolution-text">{{ item.picWidth }} × {{ item.picHeight }}</span>
+          <!--悬停信息卡片-->
+          <div class="hover-card">
+            <!--操作按钮-->
+            <div class="hover-card__actions">
+              <span class="hover-action" @click.stop="(e) => doSearch(item, e)" title="以图搜图">
+                <SearchOutlined />
+              </span>
+              <span v-if="showShare" class="hover-action" @click.stop="(e) => doShare(item, e)" title="分享">
+                <ShareAltOutlined />
+              </span>
             </div>
 
-            <!--中间：分类 + 标签-->
-            <div class="overlay-center">
-              <span v-if="item.category" class="category-pill">{{ item.category }}</span>
-              <div v-if="item.tags?.length" class="tags-row">
-                <span v-for="tag in item.tags.slice(0, 3)" :key="tag" class="mini-tag">{{ tag }}</span>
+            <!--分类 + 标签-->
+            <div class="hover-top">
+              <span v-if="item.category" class="hover-category">{{ item.category }}</span>
+              <div v-if="item.tags?.length" class="hover-tags">
+                <span v-for="tag in item.tags.slice(0, 4)" :key="tag" class="hover-tag">{{ tag }}</span>
               </div>
             </div>
 
-            <!--底部：名称 + 色调 + 统计 + 操作-->
-            <div class="overlay-bottom">
-              <div class="overlay-bottom__info">
-                <span class="overlay-title">{{ item.name }}</span>
-                <div class="overlay-meta">
-                  <span v-if="item.picColor" class="color-dot" :style="{ backgroundColor: toHexColor(item.picColor) }" />
-                  <span v-if="item.picSize" class="meta-size">{{ formatSize(item.picSize) }}</span>
-                </div>
+            <!--信息行-->
+            <div class="hover-rows">
+              <div class="hover-row">
+                <ColumnWidthOutlined class="hover-row__icon" />
+                <span class="hover-row__text">{{ item.picWidth }} × {{ item.picHeight }}</span>
               </div>
-              <div class="overlay-actions">
-                <span class="action-item" title="浏览">
-                  <EyeOutlined />
-                  {{ formatNumber(item.viewQuantity) }}
-                </span>
-                <span v-if="showShare" class="action-item" @click.stop="(e) => doShare(item, e)" title="分享">
-                  <ShareAltOutlined />
-                  {{ formatNumber(item.shareQuantity) }}
-                </span>
-                <span v-if="showSearch" class="action-item" @click.stop="(e) => doSearch(item, e)" title="以图搜图">
-                  <SearchOutlined />
-                </span>
+              <div class="hover-row">
+                <PictureOutlined class="hover-row__icon" />
+                <span class="hover-row__text">{{ item.picFormat?.toUpperCase() ?? '-' }}</span>
+              </div>
+              <div class="hover-row">
+                <FileOutlined class="hover-row__icon" />
+                <span class="hover-row__text">{{ formatSize(item.picSize) }}</span>
+              </div>
+              <div class="hover-row">
+                <DownloadOutlined class="hover-row__icon" />
+                <span class="hover-row__text">{{ formatNumber(item.downloadQuantity) }}</span>
               </div>
             </div>
           </div>
@@ -82,7 +82,10 @@ import { formatNumber, formatSize, handleDragStart, toHexColor } from "@/utils"
 import {
   SearchOutlined,
   ShareAltOutlined,
-  EyeOutlined,
+  ColumnWidthOutlined,
+  PictureOutlined,
+  FileOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons-vue'
 import { Empty } from 'ant-design-vue'
 import ShareModal from "@/components/ShareModal.vue"
@@ -176,12 +179,13 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 }
 
 .picture-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
-.picture-card:hover .image-overlay {
+.picture-card:hover .hover-card {
   opacity: 1;
+  transform: translateY(0);
 }
 
 /* 图片容器 */
@@ -195,160 +199,124 @@ const doSearch = (picture: API.PictureVO, e: Event) => {
 .image-wrapper :deep(img) {
   width: 100%;
   display: block;
-  transition: transform 0.4s ease;
+  transition: transform 0.45s ease;
 }
 
 .picture-card:hover .image-wrapper :deep(img) {
-  transform: scale(1.04);
+  transform: scale(1.05);
 }
 
-/* ========== 悬停遮罩层 ========== */
-.image-overlay {
+/* ========== 悬停信息卡片 ========== */
+.hover-card {
   position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) translateY(6px);
+  width: calc(100% - 48px);
+  max-width: 240px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
 }
 
-.picture-card:hover .image-overlay {
+.picture-card:hover .hover-card {
   pointer-events: auto;
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(0);
 }
 
-/* --- 顶部：格式 + 分辨率 --- */
-.overlay-top {
+/* --- 操作按钮 --- */
+.hover-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.hover-action {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
-}
-
-.format-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(6px);
-  padding: 3px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-}
-
-.resolution-text {
-  font-size: 11px;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   color: rgba(255, 255, 255, 0.85);
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s;
+  cursor: pointer;
 }
 
-/* --- 中间：分类 + 标签 --- */
-.overlay-center {
+.hover-action:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* --- 信息行 --- */
+.hover-rows {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px 12px;
+}
+
+.hover-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 3px 0;
 }
 
-.category-pill {
-  font-size: 11px;
-  color: #fff;
-  background: rgba(64, 150, 255, 0.7);
-  backdrop-filter: blur(6px);
-  padding: 3px 12px;
-  border-radius: 12px;
+.hover-row__icon {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  flex-shrink: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.hover-row__text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.tags-row {
+/* --- 分类 + 标签 --- */
+.hover-top {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-}
-
-.mini-tag {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(6px);
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-/* --- 底部：名称 + 色调 + 统计 + 操作 --- */
-.overlay-bottom {
-  padding: 28px 10px 10px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.overlay-bottom__info {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.overlay-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  min-width: 0;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-.overlay-meta {
-  display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.hover-category {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(64, 150, 255, 0.4);
+  padding: 2px 10px;
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
-.color-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
-}
-
-.meta-size {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-}
-
-.overlay-actions {
+.hover-tags {
   display: flex;
-  gap: 14px;
-  justify-content: center;
-  color: #fff;
-  font-size: 13px;
-}
-
-.action-item {
-  display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
-  cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 6px;
-  transition: background 0.2s;
 }
 
-.action-item:hover {
-  background: rgba(255, 255, 255, 0.2);
+.hover-tag {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 7px;
+  border-radius: 6px;
 }
 
 /* ========== 底部标题 ========== */

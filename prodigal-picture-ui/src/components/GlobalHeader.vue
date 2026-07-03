@@ -21,28 +21,24 @@
             :aria-label="themeStore.darkMode ? '切换浅色模式' : '切换暗黑模式'"
             @click="themeStore.toggle"
           >
-            <span class="theme-toggle-track">
-              <span class="theme-toggle-thumb" :class="{ dark: themeStore.darkMode }" />
-              <span class="theme-toggle-icon sun-icon" :class="{ active: !themeStore.darkMode }">
-                <svg viewBox="0 0 13 12" width="14" height="14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                  <g clip-path="url(#ts-sun)">
-                    <path d="M6.6 8.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
-                    <path d="M6.6.5v1M6.6 10.5v1M2.71 2.11l.71.71M9.78 9.18l.71.71M1.1 6h1M11.1 6h1M2.71 9.89l.71-.71M9.78 2.82l.71-.71"/>
-                  </g>
-                  <defs><clipPath id="ts-sun"><rect width="12" height="12" fill="white" transform="translate(.6)"/></clipPath></defs>
-                </svg>
-              </span>
-              <span class="theme-toggle-icon moon-icon" :class="{ active: themeStore.darkMode }">
-                <svg viewBox="0 0 13 12" width="14" height="14" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.7 6.4a5 5 0 0 1-4.9-5 5 5 0 1 0 4.9 5z"/>
-                </svg>
-              </span>
+            <span class="theme-toggle-icon" :class="{ dark: themeStore.darkMode }">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
             </span>
           </button>
 
           <div v-if="loginUserStore.loginUser.id">
             <a-flex :gap="8" align="center">
-              <BellFilled @click="doNotice"  style="color: #1677ff;font-size: 18px;cursor: pointer"/>
+              <a-badge :count="unreadCount" :overflow-count="99" :show-zero="false" size="small">
+                <button class="notice-btn" @click="doNotice" :title="'通知' + (unreadCount ? `（${unreadCount} 条未读）` : '')">
+                  <BellOutlined />
+                </button>
+              </a-badge>
               <a-dropdown>
                 <a-space>
                   <a-avatar v-if="loginUserStore.loginUser.userAvatar" :src="loginUserStore.loginUser.userAvatar" :size="32"/>
@@ -181,7 +177,7 @@ import {computed, h, reactive, ref, watch} from 'vue';
 import {
   HomeOutlined, LogoutOutlined, UserOutlined,
   EyeOutlined, EditOutlined, GlobalOutlined, SaveOutlined, UndoOutlined, SoundOutlined,
-  BellFilled,KeyOutlined,
+  BellOutlined,KeyOutlined,
 } from '@ant-design/icons-vue';
 import {type FormInstance, MenuProps, message, notification, UploadProps} from 'ant-design-vue';
 import {useRouter} from "vue-router";
@@ -195,6 +191,7 @@ import { useSSE } from "@/composables/useSSE";
 const loginUserStore = useLoginUserStore();
 const themeStore = useThemeStore();
 const { connect, disconnect, onEmailSent } = useSSE();
+const unreadCount = ref(0);
 
 // 登录后建立 SSE 连接
 watch(() => loginUserStore.loginUser?.id, (newId) => {
@@ -205,8 +202,9 @@ watch(() => loginUserStore.loginUser?.id, (newId) => {
   }
 }, { immediate: true });
 
-// 收到邮件通知时提示
+// 收到邮件通知时提示, 未读数 +1
 onEmailSent((data) => {
+  unreadCount.value++
   notification.info({
     message: '邮件通知',
     description: data.message || '您收到一封新的通知邮件',
@@ -405,6 +403,7 @@ const emailModalRef = ref(false)
 // 分享
 const doNotice = (e: Event) => {
   e.stopPropagation()
+  unreadCount.value = 0
   if (emailModalRef.value) {
     emailModalRef.value.showDrawer()
   }
@@ -461,73 +460,96 @@ const doNotice = (e: Event) => {
   flex-shrink: 0;
 }
 
-/* 主题切换开关 */
+/* 主题切换按钮 */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   padding: 0;
   flex-shrink: 0;
-  background: none;
-  border: none;
+  background: var(--bg-image-placeholder);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
   cursor: pointer;
   outline: none;
+  transition: background .25s, border-color .25s, box-shadow .25s;
 }
 
-.theme-toggle-track {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 52px;
-  height: 26px;
-  border-radius: 13px;
+.theme-toggle:hover {
   background: var(--bg-switch, #e8e8e8);
-  padding: 0 4px;
-  transition: background .3s ease;
+  border-color: var(--primary-color, #4096ff);
+  box-shadow: 0 0 0 2px rgba(64, 150, 255, .15);
 }
 
-.dark .theme-toggle-track {
-  background: #333;
-}
-
-.theme-toggle-thumb {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
+/* 通知按钮 */
+.notice-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  flex-shrink: 0;
+  background: var(--bg-image-placeholder);
+  border: 1px solid var(--border-color);
   border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
-  transition: transform .3s ease;
-  z-index: 1;
+  cursor: pointer;
+  outline: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  transition: background .25s, border-color .25s, box-shadow .25s, color .25s;
 }
 
-.theme-toggle-thumb.dark {
-  transform: translateX(26px);
+.notice-btn:hover {
+  background: var(--bg-switch, #e8e8e8);
+  border-color: var(--primary-color, #4096ff);
+  box-shadow: 0 0 0 2px rgba(64, 150, 255, .15);
+  color: var(--primary-color, #4096ff);
 }
 
 .theme-toggle-icon {
   position: relative;
-  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  color: #999;
-  transition: color .3s ease;
+  width: 18px;
+  height: 18px;
+  color: #f5a623;
+  transition: color .35s ease, transform .4s ease;
 }
 
-.theme-toggle-icon.active {
-  color: #1677ff;
+.theme-toggle-icon.dark {
+  color: #a78bfa;
+  transform: rotate(180deg);
 }
 
-.sun-icon {
-  margin-right: 2px;
+.theme-toggle-icon svg {
+  position: absolute;
+  transition: opacity .35s ease, transform .4s ease;
 }
 
-.moon-icon {
-  margin-left: 2px;
+/* 浅色模式：显示太阳 */
+.theme-toggle-icon svg:first-child {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.theme-toggle-icon.dark svg:first-child {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+/* 暗黑模式：显示月亮 */
+.theme-toggle-icon svg:last-child {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.theme-toggle-icon.dark svg:last-child {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* 平板及以下：隐藏用户名文本，只显示头像 */

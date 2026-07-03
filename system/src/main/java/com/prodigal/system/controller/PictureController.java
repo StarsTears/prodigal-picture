@@ -80,7 +80,7 @@ public class PictureController {
      */
     @PostMapping("/upload")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_UPLOAD)
-    public BaseResult<PictureVO> uploadPicture(@RequestPart MultipartFile multipartFile, PictureUploadDTO pictureUploadDto, HttpServletRequest request) {
+    public BaseResult<PictureVO> uploadPicture(@RequestPart("multipartFile") MultipartFile multipartFile, PictureUploadDTO pictureUploadDto, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         // 若 DTO 无 requestId，从 Header 兜底
         if (StrUtil.isBlank(pictureUploadDto.getRequestId())) {
