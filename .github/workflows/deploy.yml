@@ -12,7 +12,7 @@ on:
       - 'grafana/**'
       - 'system/Dockerfile*'
       - 'prodigal-picture-ui/Dockerfile'
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start service  # 一个常用的SSH 连接 Action
+      - name: Start service
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -29,16 +29,14 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22}}
           script_stop: true
-          command_timeout: 30m  # 关键：增加超时时间
+          command_timeout: 30m
           script: |
-            # 先测试基本命令
             echo "=== Testing connection ==="
             whoami
             groups
 
-            # 先定义变量（在 sg 外部）
             PROJECT_DIR="/opt/project/prodigal-picture"
-            echo "📁 Project directory: $PROJECT_DIR"
+            echo "Project directory: $PROJECT_DIR"
             mkdir -p $PROJECT_DIR
             cd $PROJECT_DIR
             echo "Current directory: $(pwd)"
@@ -48,8 +46,7 @@ jobs:
               git fetch origin main
               git reset --hard origin/main
             else
-               echo "🔄 First deployment, cloning repository..."
-               # 如果目录不为空，先清理（包含隐藏文件）
+               echo "First deployment, cloning repository..."
                if [ "$(ls -A)" ]; then
                   echo "Directory not empty, cleaning..."
                   find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
@@ -59,8 +56,8 @@ jobs:
                # 确保检出 main 分支（避免默认分支不是 main 导致代码不一致）
                git checkout main
             fi
-            echo "📌 Current commit: $(git rev-parse --short HEAD)"
-            # 先从 GitHub Secrets 获取值并赋给普通变量
+            echo "Current commit: $(git rev-parse --short HEAD)"
+
             DB_HOST="${{ secrets.DB_HOST }}"
             DB_NAME="${{ secrets.DB_NAME }}"
             DB_USERNAME="${{ secrets.DB_USERNAME }}"
@@ -84,7 +81,6 @@ jobs:
             GRAFANA_PASSWORD="${{ secrets.GRAFANA_PASSWORD }}"
             CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
 
-            # 创建 .env 文件
             cat > .env << EOF
             TZ=Asia/Shanghai
             SPRING_PROFILES_ACTIVE=prod
@@ -113,38 +109,41 @@ jobs:
             GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
             EOF
 
-
-            # 复制模板并替换变量
             cp prodigal-picture-ui/nginx.conf.template prodigal-picture-ui/nginx.conf
             sed -i "s|{{COS_CLIENT_BUCKET}}|${COS_CLIENT_BUCKET}|g" prodigal-picture-ui/nginx.conf
             sed -i "s|{{COS_CLIENT_REGION}}|${COS_CLIENT_REGION}|g" prodigal-picture-ui/nginx.conf
-            
-            echo "🐳 Building and starting containers..."
+
+            echo "Building new images (old containers keep running)..."
+            export DOCKER_BUILDKIT=1
+            export COMPOSE_DOCKER_CLI_BUILD=1
+            sudo -E docker compose build --parallel
+
+            echo "Switching to new containers..."
             sudo docker compose down --remove-orphans
-            sudo docker compose up -d --build
-            
+            sudo docker compose up -d
+
             sudo docker image prune -f || true
-            
-            echo "🏥 Performing health check..."
+
+            echo "Performing health check..."
             for i in $(seq 1 15); do
               if curl -sf http://127.0.0.1:9999/api/health/check | grep -q OK; then
-                echo "✅ Backend healthy!"
+                echo "Backend healthy!"
                 break
               fi
               if [ "$i" -eq 15 ]; then
-                echo "❌ Backend health check failed!"
+                echo "Backend health check failed!"
                 sudo docker compose logs --tail=50
                 exit 1
               fi
-              echo "⏳ Waiting for backend... ($i/15)"
+              echo "Waiting for backend... ($i/15)"
               sleep 10
             done
 
             if curl -sf http://127.0.0.1:81/ > /dev/null; then
-              echo "✅ Frontend healthy!"
+              echo "Frontend healthy!"
             else
-              echo "❌ Frontend health check failed!"
+              echo "Frontend health check failed!"
               sudo docker compose logs ui --tail=20
               exit 1
             fi
-            echo "✅ Deployment successful!"
+            echo "Deployment successful!"

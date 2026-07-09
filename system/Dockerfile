@@ -1,7 +1,14 @@
-FROM maven:3.9-eclipse-temurin-17 AS builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /build
 
-# 复制父 pom 和子模块 pom(多模块项目)
+# 使用阿里云 Maven 镜像加速依赖下载
+RUN sed -i '/<mirrors>/a\
+    <mirror>\
+      <id>aliyun</id>\
+      <mirrorOf>central</mirrorOf>\
+      <url>https://maven.aliyun.com/repository/public</url>\
+    </mirror>' /usr/share/maven/conf/settings.xml
+
 COPY pom.xml ./
 COPY system/pom.xml ./system/pom.xml
 
