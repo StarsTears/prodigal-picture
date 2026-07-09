@@ -1,6 +1,6 @@
 package com.prodigal.system.common;
 
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -17,6 +17,8 @@ public class BaseResult<T> implements Serializable {
     private boolean status;
     private String msg="巭(gu)孬(nao)嫑(biao)哔哔···";
     private T data;
+    /** 请求追踪 ID */
+    private String requestId;
 
     public BaseResult() {
     }
@@ -29,15 +31,15 @@ public class BaseResult<T> implements Serializable {
     public BaseResult(Integer code, Boolean status, T data) {
         this(code, status, "", data);
     }
-    public BaseResult(ErrorCode errorCode) {
-        this(errorCode.getCode(), false, errorCode.getMessage(),null);
+    public BaseResult(BizStatus bizStatus) {
+        this(bizStatus.getCode(), false, bizStatus.getMessage(),null);
     }
-    public static BaseResult success() {
-        return new BaseResult(0, true, "成功", null);
+    public static <T> BaseResult<T> success() {
+        return new BaseResult<T>(0, true, "成功", null);
     }
 
-    public static BaseResult error() {
-        BaseResult baseResult = new BaseResult();
+    public static <T> BaseResult<T> error() {
+        BaseResult<T> baseResult = new BaseResult<T>();
         return baseResult.status(false);
     }
 

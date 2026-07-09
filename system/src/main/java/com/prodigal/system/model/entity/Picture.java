@@ -17,7 +17,7 @@ public class Picture implements Serializable {
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     /**
      * 图片 url
@@ -90,26 +90,6 @@ public class Picture implements Serializable {
     private String picFormat;
 
     /**
-     * 创建用户 id
-     */
-    private Long userId;
-
-    /**
-     * 创建时间
-     */
-    private Date createTime;
-
-    /**
-     * 编辑时间
-     */
-    private Date editTime;
-
-    /**
-     * 更新时间
-     */
-    private Date updateTime;
-
-    /**
      * 审核状态
      */
     private Integer reviewStatus;
@@ -122,7 +102,7 @@ public class Picture implements Serializable {
     /**
      * 审核人 id
      */
-    private Long reviewerId;
+    private String reviewerId;
 
     /**
      * 审核时间
@@ -131,7 +111,7 @@ public class Picture implements Serializable {
     /**
      * 空间ID
      */
-    private Long spaceId;
+    private String spaceId;
 
     /**
      *  查看次数
@@ -144,10 +124,38 @@ public class Picture implements Serializable {
     private Long shareQuantity;
 
     /**
+     *  下载次数
+     */
+    private Long downloadQuantity;
+
+    /**
      * 是否删除
      */
     @TableLogic
     private Integer isDelete;
+
+    /**
+     * 创建用户 id
+     */
+    private String userId;
+
+    /**
+     * 创建时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+
+    /**
+     * 编辑时间
+     */
+    @TableField(fill = FieldFill.INSERT)
+    private Date editTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

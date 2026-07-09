@@ -1,6 +1,8 @@
 package com.prodigal.system.model.enums;
 
 import cn.hutool.core.util.ObjUtil;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -37,9 +39,15 @@ public enum SpaceLevelEnum {
         this.maxSize = maxSize;
     }
 
+    @JsonValue
+    public int getValue() {
+        return value;
+    }
+
     /**
      * 根据 value 获取枚举
      */
+    @JsonCreator
     public static SpaceLevelEnum getEnumByValue(Integer value) {
         if (ObjUtil.isEmpty(value)) {
             return null;
@@ -49,7 +57,7 @@ public enum SpaceLevelEnum {
                 return spaceLevelEnum;
             }
         }
-        return null;
+        throw new IllegalArgumentException("无效的空间级别: " + value + "，有效值: [0=普通版, 1=专业版, 2=旗舰版]");
     }
 
 }

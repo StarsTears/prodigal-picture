@@ -1,8 +1,6 @@
 package com.prodigal.system.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.prodigal.system.model.entity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -24,7 +22,7 @@ public class PictureVO implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 图片 url
@@ -87,9 +85,34 @@ public class PictureVO implements Serializable {
     private String picFormat;
 
     /**
+     * 空间 id
+     */
+    private String spaceId;
+
+    /**
+     * 权限列表
+     */
+    private List<String> permissionList = new ArrayList<>();
+
+    /**
+     *  查看次数
+     */
+    private Long viewQuantity;
+
+    /**
+     *  分享次数
+     */
+    private Long shareQuantity;
+
+    /**
+     *  下载次数
+     */
+    private Long downloadQuantity;
+
+    /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 创建时间
@@ -109,25 +132,6 @@ public class PictureVO implements Serializable {
      * 创建用户信息
      */
     private UserVO user;
-    /**
-     * 空间 id
-     */
-    private Long spaceId;
-
-    /**
-     * 权限列表
-     */
-    private List<String> permissionList = new ArrayList<>();
-
-    /**
-     *  查看次数
-     */
-    private Long viewQuantity;
-
-    /**
-     *  分享次数
-     */
-    private Long shareQuantity;
 
     /**
      * 封装类转对象

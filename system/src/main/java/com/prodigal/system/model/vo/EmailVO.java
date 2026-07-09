@@ -1,14 +1,11 @@
 package com.prodigal.system.model.vo;
 
-import cn.hutool.json.JSONUtil;
 import com.prodigal.system.model.entity.Email;
-import com.prodigal.system.model.entity.Picture;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @program: prodigal-picture
@@ -45,12 +42,12 @@ public class EmailVO implements Serializable {
      * 接收人
      */
     private String to;
-    private Long receiveUserId;
+    private String receiveUserId;
 
     private UserVO receiveUserVO;
     /**
      * 状态：
-     *  0:自建(草稿) 1:提交 2：已发
+     *  0:草稿 1:发送中 2:已发
      */
     private Integer status;
 
@@ -58,7 +55,7 @@ public class EmailVO implements Serializable {
      * 创建人
      * 关联 user 表
      */
-    private Long createUserId;
+    private String createUserId;
     /**
      * 创建时间
      */
@@ -67,7 +64,7 @@ public class EmailVO implements Serializable {
     /**
      * 发送人
      */
-    private Long sendUserId;
+    private String sendUserId;
 
     /**
      * 发送时间
@@ -76,7 +73,7 @@ public class EmailVO implements Serializable {
     /**
      * 修改人
      */
-    private Long updateUserId;
+    private String updateUserId;
     /**
      * 更新时间
      */

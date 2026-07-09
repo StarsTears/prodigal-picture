@@ -1,0 +1,44 @@
+package com.prodigal.system.exception;
+
+import lombok.Getter;
+
+/**
+ * @program: prodigal-picture
+ * @author: Lang
+ * @description: 自定义响应码
+ **/
+@Getter
+public enum BizStatus {
+    SUCCESS(0, "操作成功"),
+    PARAMS_ERROR(40000, "参数错误"),
+    USER_NOT_FOUND(40400, "账户不存在"),
+    USER_EXIST(41500, "账户或邮箱已存在"),
+    LOGIN_FAIL(40100, "账户或密码错误"),
+    USER_NOT_LOGIN(40200, "用户未登录"),
+    USER_NOT_AUTHORIZED(40300, "用户未授权"),
+    USER_NOT_PERMISSION(40500, "用户无权限"),
+    USER_NOT_ROLE(40600, "用户未分配角色"),
+    USER_NOT_PERMISSION_MENU(40700, "用户未分配菜单"),
+    USER_NOT_PERMISSION_API(40800, "用户未分配接口"),
+    USER_NOT_PERMISSION_ROLE(40900, "用户未分配角色"),
+    USER_NOT_PERMISSION_ROLE_MENU(41000, "用户未分配角色菜单"),
+    USER_NOT_PERMISSION_ROLE_API(41100, "用户未分配角色接口"),
+    CAPTCHA_ERROR(41200, "验证码错误或已过期"),
+    PASSWORD_NOT_MATCH(41300, "两次密码不一致"),
+    EMAIL_NOT_MATCH(41400, "邮箱与账户不匹配"),
+    TOO_MANY_REQUESTS(42900, "请求过于频繁，请稍后再试"),
+    SYSTEM_ERROR(50000, "系统错误"),
+    OPERATION_ERROR(50100, "操作失败"),
+    NOT_FOUND_ERROR(50200, "未找到该数据"),
+    DUPLICATE_REQUEST(50300, "请求正在处理中，请勿重复提交"),
+    ;
+    /**
+     * 状态码
+     */
+    private final int code;
+    private final String message;
+    BizStatus(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+}

@@ -17,7 +17,7 @@ public class Space implements Serializable {
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
     /**
      * 空间类型：0-私有 1-团队
      */
@@ -56,21 +56,24 @@ public class Space implements Serializable {
     /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 编辑时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date editTime;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

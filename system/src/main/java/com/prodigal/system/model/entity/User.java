@@ -17,7 +17,7 @@ public class User implements Serializable {
      * id (要指定主键策略)
      */
     @TableId(type = IdType.ASSIGN_ID)
-    private Long id;
+    private String id;
 
     /**
      * 账号
@@ -61,7 +61,7 @@ public class User implements Serializable {
     /**
      * 邀请用户ID
      */
-    private Long inviteUser;
+    private String inviteUser;
 
     /**
      * 分享码
@@ -70,16 +70,19 @@ public class User implements Serializable {
     /**
      * 编辑时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date editTime;
 
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

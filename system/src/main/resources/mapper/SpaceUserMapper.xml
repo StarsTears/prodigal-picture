@@ -5,16 +5,16 @@
 <mapper namespace="com.prodigal.system.mapper.SpaceUserMapper">
 
     <resultMap id="BaseResultMap" type="com.prodigal.system.model.entity.SpaceUser">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="spaceId" column="spaceId" jdbcType="BIGINT"/>
-            <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="spaceRole" column="spaceRole" jdbcType="VARCHAR"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="spaceId" column="space_id" jdbcType="VARCHAR"/>
+            <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+            <result property="spaceRole" column="space_role" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,spaceId,userId,
-        spaceRole,createTime,updateTime
+        id,space_id,user_id,
+        space_role,create_time,update_time
     </sql>
 </mapper>

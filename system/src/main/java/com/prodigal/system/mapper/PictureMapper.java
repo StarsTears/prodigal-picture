@@ -17,13 +17,13 @@ import java.util.List;
 public interface PictureMapper extends BaseMapper<Picture> {
 
     //查询已删除且修改时间在指定时间之前的图片
-    List<Picture> selectDeletedPictures (@Param("date") Date date, @Param("spaceIds") List<Long> spaceIds);
+    List<Picture> selectDeletedPictures (@Param("date") Date date, @Param("spaceIds") List<String> spaceIds);
 
     //根据pictureIds 和 spaceIds 删除图片
-    int deletePicturesByPictureIdsAndSpaceId (@Param("pictureIds") List<Long> pictureIds, @Param("spaceId") Long spaceId);
+    int deletePicturesByPictureIdsAndSpaceId (@Param("pictureIds") List<String> pictureIds, @Param("spaceId") String spaceId);
 
     //删除已删除且修改时间在指定时间之前的图片
-    int deleteDeletedPictures (@Param("date") Date date, @Param("spaceIds") List<Long> spaceIds);
+    int deleteDeletedPictures (@Param("date") Date date, @Param("spaceIds") List<String> spaceIds);
 
 }
 

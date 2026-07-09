@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 
 import Antd from 'ant-design-vue';
 import 'ant-design-vue/dist/reset.css';
+import './styles/theme.css'
 
 import Vue3ColorPicker from "vue3-colorpicker";
 import "vue3-colorpicker/style.css";

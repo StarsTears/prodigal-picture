@@ -1,0 +1,35 @@
+package com.prodigal.system.model.dto.space;
+
+import com.prodigal.system.model.enums.SpaceLevelEnum;
+import com.prodigal.system.model.enums.SpaceTypeEnum;
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * @program: prodigal-picture
+ * @author: Lang
+ * @description: 空间添加请求参数
+ **/
+@Data
+public class SpaceAddDTO implements Serializable {
+    private static final long serialVersionUID = 9125766214211237093L;
+    /**
+     * 空间类型：0-私有 1-团队
+     */
+    private SpaceTypeEnum spaceType;
+
+    /**
+     * 空间所属人
+     */
+    private String userId;
+    /**
+     * 空间名称
+     */
+    private String spaceName;
+
+    /**
+     * 空间级别：0-普通版 1-专业版 2-旗舰版
+     */
+    private SpaceLevelEnum spaceLevel;
+}

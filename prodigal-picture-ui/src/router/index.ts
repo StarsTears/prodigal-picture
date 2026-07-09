@@ -51,11 +51,20 @@ const router = createRouter({
       }]
     },
     {
+      path:'/reset-password',
+      name:'resetPassword',
+      component: FullScreenLayout,
+      children:[{
+        path: '',
+        component:()=>import('../views/ResetPasswordView.vue')
+      }]
+    },
+    {
       path:'/admin/userManager',
       name:'用户管理',
       component: () => import('@/layouts/BasicLayout.vue'),
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       },
       children:[{
         path: '',
@@ -80,7 +89,7 @@ const router = createRouter({
         component:()=>import('../views/admin/PictureManagerView.vue'),
       }],
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       }
     },
     {
@@ -92,7 +101,7 @@ const router = createRouter({
         component:()=>import('../views/admin/SpaceManagerView.vue'),
       }],
       meta:{
-        access:ACCESS_ENUM.SUPER_ADMIN || ACCESS_ENUM.ADMIN
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
       }
     },
     {
@@ -181,6 +190,18 @@ const router = createRouter({
       }],
     },
     {
+      path:'/admin/dictManager',
+      name:'字典管理',
+      component: () => import('@/layouts/BasicLayout.vue'),
+      meta:{
+        access:ACCESS_ENUM.ADMIN + ',' + ACCESS_ENUM.SUPER_ADMIN
+      },
+      children:[{
+        path: '',
+        component:()=>import('../views/admin/DictManageView.vue'),
+      }]
+    },
+    {
       path:'/admin/emailManager',
       name:'邮件管理',
       component: () => import('@/layouts/BasicLayout.vue'),
@@ -195,14 +216,6 @@ const router = createRouter({
       children:[{
         path: '',
         component: EmailNoticeView,
-      }],
-    },{
-      path:'/github',
-      name:'GitHub',
-      component: () => import('@/layouts/BasicLayout.vue'),
-      children:[{
-        path: '',
-        component: ()=>import('../views/git/GitHubView.vue'),
       }],
     },
   ],

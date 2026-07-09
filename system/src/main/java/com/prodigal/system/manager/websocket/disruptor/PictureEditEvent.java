@@ -30,5 +30,5 @@ public class PictureEditEvent {
     /**
      * 图片id
      */
-    private Long pictureId;
+    private String pictureId;
 }

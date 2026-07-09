@@ -1,16 +1,14 @@
 package com.prodigal.system.model.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.prodigal.system.model.enums.EmailTypeEnum;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @program: prodigal-picture
@@ -56,11 +54,11 @@ public class Email implements Serializable {
      * 接收人
      */
     private String to;
-    private Long receiveUserId;
+    private String receiveUserId;
 
     /**
      * 状态：
-     *  0:自建(草稿) 1:提交 2：已发
+     *  0:草稿 1:发送中 2:已发
      */
     private Integer status;
 
@@ -68,16 +66,17 @@ public class Email implements Serializable {
      * 创建人
      * 关联 user 表
      */
-    private Long createUserId;
+    private String createUserId;
     /**
      * 创建时间
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 发送人
      */
-    private Long sendUserId;
+    private String sendUserId;
 
     /**
      * 发送时间
@@ -86,10 +85,11 @@ public class Email implements Serializable {
     /**
      * 修改人
      */
-    private Long updateUserId;
+    private String updateUserId;
     /**
      * 更新时间
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
 
     /**

@@ -4,7 +4,7 @@ import request from '@/request.ts'
 
 /** deletePicture POST /api/picture/delete */
 export async function deletePictureUsingPost(
-  body: API.PictureDeleteDto,
+  body: API.PictureDeleteDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/delete', {
@@ -19,7 +19,7 @@ export async function deletePictureUsingPost(
 
 /** editPicture POST /api/picture/edit */
 export async function editPictureUsingPost(
-  body: API.PictureEditDto,
+  body: API.PictureEditDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/edit', {
@@ -34,7 +34,7 @@ export async function editPictureUsingPost(
 
 /** editPictureByBatch POST /api/picture/edit/batch */
 export async function editPictureByBatchUsingPost(
-  body: API.PictureEditByBatchDto,
+  body: API.PictureEditByBatchDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/edit/batch', {
@@ -49,7 +49,7 @@ export async function editPictureByBatchUsingPost(
 
 /** getPictureByID POST /api/picture/get */
 export async function getPictureByIdUsingPost(
-  body: API.PictureGetDto,
+  body: API.PictureGetDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPicture_>('/api/picture/get', {
@@ -66,7 +66,7 @@ export async function getPictureByIdUsingPost(
 export async function getPictureVoByIdUsingPost(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getPictureVOByIDUsingPOSTParams,
-  body: API.PictureGetDto,
+  body: API.PictureGetDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPictureVO_>('/api/picture/get/vo', {
@@ -84,7 +84,7 @@ export async function getPictureVoByIdUsingPost(
 
 /** getTempDownloadUrl POST /api/picture/get/download/url */
 export async function getTempDownloadUrlUsingPost(
-  body: API.PictureGetDto,
+  body: API.PictureGetDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultString_>('/api/picture/get/download/url', {
@@ -99,7 +99,7 @@ export async function getTempDownloadUrlUsingPost(
 
 /** listPictureByPage POST /api/picture/list/page */
 export async function listPictureByPageUsingPost(
-  body: API.PictureQueryDto,
+  body: API.PictureQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPagePicture_>('/api/picture/list/page', {
@@ -114,7 +114,7 @@ export async function listPictureByPageUsingPost(
 
 /** listPictureVOByPage POST /api/picture/list/page/vo */
 export async function listPictureVoByPageUsingPost(
-  body: API.PictureQueryDto,
+  body: API.PictureQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPagePictureVO_>('/api/picture/list/page/vo', {
@@ -129,7 +129,7 @@ export async function listPictureVoByPageUsingPost(
 
 /** listPictureVOByPageCache POST /api/picture/list/page/vo/cache */
 export async function listPictureVoByPageCacheUsingPost(
-  body: API.PictureQueryDto,
+  body: API.PictureQueryDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPagePictureVO_>('/api/picture/list/page/vo/cache', {
@@ -144,7 +144,7 @@ export async function listPictureVoByPageCacheUsingPost(
 
 /** createPictureOutPaintingTask POST /api/picture/out_painting/create_task */
 export async function createPictureOutPaintingTaskUsingPost(
-  body: API.CreatePictureOutPaintingTaskDto,
+  body: API.CreatePictureOutPaintingTaskDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultCreateOutPaintingTaskVO_>('/api/picture/out_painting/create_task', {
@@ -174,7 +174,7 @@ export async function getPictureOutPaintingTaskUsingGet(
 
 /** doPictureReview POST /api/picture/review */
 export async function doPictureReviewUsingPost(
-  body: API.PictureReviewDto,
+  body: API.PictureReviewDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/review', {
@@ -187,9 +187,24 @@ export async function doPictureReviewUsingPost(
   })
 }
 
-/** searchImageByBaidu POST /api/picture/search/picture */
-export async function searchImageByBaiduUsingPost(
-  body: API.ImageSearchDto,
+/** incrementShareQuantity POST /api/picture/share */
+export async function incrementShareQuantityUsingPost(
+  body: API.PictureGetDTO,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultBoolean_>('/api/picture/share', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** searchImage POST /api/picture/search/picture */
+export async function searchImageUsingPost(
+  body: API.ImageSearchDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultListImageSearchResult_>('/api/picture/search/picture', {
@@ -220,7 +235,7 @@ export async function testShardingUsingPost(options?: { [key: string]: any }) {
 
 /** updatePicture POST /api/picture/update */
 export async function updatePictureUsingPost(
-  body: API.PictureUpdateDto,
+  body: API.PictureUpdateDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultBoolean_>('/api/picture/update', {
@@ -276,7 +291,7 @@ export async function uploadPictureUsingPost(
 
 /** uploadPictureByBatch POST /api/picture/upload/batch */
 export async function uploadPictureByBatchUsingPost(
-  body: API.PictureUploadByBatchDto,
+  body: API.PictureUploadByBatchDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultInt_>('/api/picture/upload/batch', {
@@ -291,7 +306,7 @@ export async function uploadPictureByBatchUsingPost(
 
 /** uploadPictureByUrl POST /api/picture/upload/url */
 export async function uploadPictureByUrlUsingPost(
-  body: API.PictureUploadDto,
+  body: API.PictureUploadDTO,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResultPictureVO_>('/api/picture/upload/url', {

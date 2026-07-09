@@ -3,8 +3,8 @@
     <a-flex justify="space-between">
       <h2>图片管理</h2>
       <a-space>
-        <a-button type="primary" href="/picture/add_picture" target="_blank">+ 创建图片</a-button>
-        <a-button type="primary" href="/picture/add_picture/batch" target="_blank" ghost>+ 批量创建图片</a-button>
+        <a-button type="primary" @click="doCreate" :icon="h(PlusOutlined)">创建图片</a-button>
+        <a-button type="primary" ghost @click="doBatchCreate" :icon="h(PlusOutlined)">批量创建图片</a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px"/>
@@ -28,7 +28,10 @@
       </a-form-item>
       <!-- 按颜色搜索 -->
       <a-form-item label="颜色" name="picColor">
-        <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
+        <a-space>
+          <color-picker v-model:value="searchParams.picColor" format="hex" @pureColorChange="onColorChange"/>
+          <a-button v-if="searchParams.picColor" size="small" type="link" @click="onClearColor">清除颜色</a-button>
+        </a-space>
       </a-form-item>
       <a-form-item>
         <a-button type="primary" html-type="submit">搜索</a-button>
@@ -94,50 +97,64 @@
         </template>
         <template v-if="column.key === 'action'">
           <a-space wrap>
-            <a-button type="link" :href="`/picture/add_picture?id=${record.id}`" target="_blank">
+            <a-button size="small" type="primary" :icon="h(EditOutlined)" @click="doEdit(record)">
               编辑
-              <template #icon>
-                <EditOutlined/>
-              </template>
             </a-button>
             <a-button v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.PASS"
-                      type="link"
+                      size="small"
+                      type="primary"
+                      ghost
                       :icon="h(CheckOutlined)"
-                      @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS)">
+                      @click="openReviewModal(record, PIC_REVIEW_STATUS_ENUM.PASS)">
               通过
             </a-button>
-            <a-popconfirm v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.REJECT"
-                          okText="确定"
-                          cancelText="取消"
-                          title="Sure to Reject?"
-                          @confirm="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)">
-              <a-button danger :icon="h(SmileOutlined)">
-                拒绝
-              </a-button>
-            </a-popconfirm>
+            <a-button v-if="record.reviewStatus!==PIC_REVIEW_STATUS_ENUM.REJECT"
+                      size="small"
+                      danger
+                      :icon="h(StopOutlined)"
+                      @click="openReviewModal(record, PIC_REVIEW_STATUS_ENUM.REJECT)">
+              拒绝
+            </a-button>
             <a-popconfirm okText="确定"
                           cancelText="取消"
-                          title="Sure to delete?"
+                          title="确定删除？"
                           @confirm="doDelete(record)">
-              <a-button danger>
+              <a-button size="small" danger :icon="h(DeleteOutlined)">
                 删除
-                <template #icon>
-                  <DeleteOutlined/>
-                </template>
               </a-button>
             </a-popconfirm>
           </a-space>
         </template>
       </template>
     </a-table>
+
+    <!-- 审核意见弹窗 -->
+    <a-modal
+      v-model:open="reviewModalVisible"
+      :title="reviewModalTitle"
+      ok-text="确定"
+      cancel-text="取消"
+      @ok="confirmReview"
+    >
+      <a-form layout="vertical">
+        <a-form-item label="审核意见">
+          <a-textarea
+            v-model:value="reviewMessage"
+            :placeholder="reviewModalPlaceholder"
+            :rows="4"
+            allow-clear
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 <script lang="ts" setup>
-import {h, computed, onMounted, reactive, ref, UnwrapRef, unref} from "vue";
-import {SmileOutlined, DownOutlined, DeleteOutlined, EditOutlined, CheckOutlined} from '@ant-design/icons-vue';
+import {h, computed, onMounted, reactive, ref, unref} from "vue";
+import {useRouter} from 'vue-router';
+import {StopOutlined, DeleteOutlined, EditOutlined, CheckOutlined, PlusOutlined} from '@ant-design/icons-vue';
 import {Table, message} from "ant-design-vue";
 import dayjs from "dayjs";
-import {cloneDeep} from 'lodash-es';
 import {PIC_REVIEW_STATUS_ENUM, PIC_REVIEW_STATUS_MAP, PIC_REVIEW_STATUS_OPTIONS} from "@/constants/picture";
 import {
   deletePictureUsingPost, doPictureReviewUsingPost,
@@ -148,20 +165,17 @@ import {
 const columns = [
   {
     title: '序号',
-    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
     width: 150,
-    fixed: 'left',
     ellipsis: true,
   },
   {
     title: '名称',
     dataIndex: 'name',
     width: 200,
-    fixed: 'left'
   },
   {
     title: '图片',
@@ -212,8 +226,6 @@ const columns = [
   {
     title: '操作',
     key: 'action',
-    // width: 260,
-    fixed: 'right'
   },
 ]
 // 数据
@@ -221,7 +233,7 @@ const dataList = ref<API.Picture>([])
 const total = ref(0)
 const loading = ref<boolean>(true)
 // 搜索条件
-const searchParams = reactive<API.PictureQueryDto>({
+const searchParams = reactive<API.PictureQueryDTO>({
   current: 1,
   pageSize: 5,
   sortField: 'createTime',
@@ -276,36 +288,69 @@ const doTableChange = (page: any) => {
 const onColorChange = (color: string) => {
   searchParams.picColor = color
 }
+const onClearColor = () => {
+  searchParams.picColor = undefined
+  doSearch()
+}
 const doSearch = () => {
   // 重置页码
   searchParams.current = 1
   fetchData()
 }
 
-//编辑数据
-// const dataSource = ref(dataList);
-// const editableData: UnwrapRef<Record<string, dataList>> = reactive({});
-// const doEdit = (key: string) => {
-//   editableData[key] = cloneDeep(dataSource.value.filter(item => key === item.key)[0]);
-// };
+const router = useRouter()
 
-//审核图片
-const handleReview = async (record: API.PictureVO, reviewStatus: number) => {
-  const reviewMessage = prompt("请输入审核信息")
+//编辑数据
+const doEdit = (record: API.PictureVO) => {
+  router.push(`/picture/add_picture?id=${record.id}&spaceId=${record.spaceId}`)
+}
+
+const doCreate = () => {
+  router.push('/picture/add_picture')
+}
+
+const doBatchCreate = () => {
+  router.push('/picture/add_picture/batch')
+}
+
+// 审核弹窗状态
+const reviewModalVisible = ref(false)
+const reviewModalTitle = ref('')
+const reviewModalPlaceholder = ref('')
+const reviewMessage = ref('')
+const currentRecord = ref<API.PictureVO | null>(null)
+const currentReviewStatus = ref<number>(PIC_REVIEW_STATUS_ENUM.PASS)
+
+const openReviewModal = (record: API.PictureVO, reviewStatus: number) => {
+  currentRecord.value = record
+  currentReviewStatus.value = reviewStatus
+  reviewMessage.value = ''
+  if (reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS) {
+    reviewModalTitle.value = '审核通过'
+    reviewModalPlaceholder.value = '选填：可输入审核通过意见'
+  } else {
+    reviewModalTitle.value = '审核拒绝'
+    reviewModalPlaceholder.value = '请输入拒绝理由'
+  }
+  reviewModalVisible.value = true
+}
+
+const confirmReview = async () => {
+  const record = currentRecord.value
+  if (!record) return
   const res = await doPictureReviewUsingPost({
     id: record.id,
-    spaceId:record.spaceId,
-    reviewMessage,
-    reviewStatus
+    spaceId: record.spaceId,
+    reviewMessage: reviewMessage.value || undefined,
+    reviewStatus: currentReviewStatus.value,
   })
   if (res.code === 0) {
     message.success("审核操作成功")
-    // 刷新数据
+    reviewModalVisible.value = false
     fetchData()
   } else {
-    message.error("审核操作失败")
+    message.error(res.msg || "审核操作失败")
   }
-  console.log("审核图片")
 }
 
 

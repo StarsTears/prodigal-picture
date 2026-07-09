@@ -22,7 +22,8 @@ router.beforeEach(async (to, from, next) => {
   // }
   const toUrl = to.fullPath;
   if (toUrl.startsWith("/admin")){
-    if (!loginUser || !loginUser.userRole?.includes(ACCESS_ENUM.ADMIN||ACCESS_ENUM.SUPER_ADMIN)){
+    const roles = (loginUser?.userRole || '').split(',');
+    if (!loginUser || (!roles.includes(ACCESS_ENUM.ADMIN) && !roles.includes(ACCESS_ENUM.SUPER_ADMIN))){
       message.error("没有权限");
       next(`/login?redirect=${to.fullPath}`);
       return;

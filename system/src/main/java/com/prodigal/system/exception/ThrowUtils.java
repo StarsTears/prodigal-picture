@@ -23,20 +23,20 @@ public class ThrowUtils {
      * 条件成立则抛异常
      *
      * @param condition 条件
-     * @param errorCode 错误码
+     * @param bizStatus 错误码
      */
-    public static void throwIf(boolean condition, ErrorCode errorCode) {
-        throwIf(condition, new BusinessException(errorCode));
+    public static void throwIf(boolean condition, BizStatus bizStatus) {
+        throwIf(condition, new BusinessException(bizStatus));
     }
 
     /**
      * 条件成立则抛异常
      *
      * @param condition 条件
-     * @param errorCode 错误码
+     * @param bizStatus 错误码
      * @param message   错误信息
      */
-    public static void throwIf(boolean condition, ErrorCode errorCode, String message) {
-        throwIf(condition, new BusinessException(errorCode, message));
+    public static void throwIf(boolean condition, BizStatus bizStatus, String message) {
+        throwIf(condition, new BusinessException(bizStatus, message));
     }
 }

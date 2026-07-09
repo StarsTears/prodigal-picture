@@ -2,15 +2,15 @@ package com.prodigal.system.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.prodigal.system.model.dto.space.SpaceAddDto;
-import com.prodigal.system.model.dto.space.SpaceEditDto;
-import com.prodigal.system.model.dto.space.SpaceQueryDto;
+import com.prodigal.system.model.dto.space.SpaceAddDTO;
+import com.prodigal.system.model.dto.space.SpaceEditDTO;
+import com.prodigal.system.model.dto.space.SpaceQueryDTO;
 import com.prodigal.system.model.entity.Space;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.SpaceVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author Lang
@@ -22,17 +22,17 @@ public interface SpaceService extends IService<Space> {
     void validSpace(Space space, boolean add);
 
 
-    long addSpace(SpaceAddDto spaceAddDto, User loginUser);
+    String addSpace(SpaceAddDTO spaceAddDto, User loginUser);
 
-    void editSpace(SpaceEditDto spaceEditDto, User loginUser);
+    void editSpace(SpaceEditDTO spaceEditDto, User loginUser);
 
-    void deleteSpace(Long spaceId, User loginUser);
+    void deleteSpace(String spaceId, User loginUser);
 
     SpaceVO getSpaceVO(Space space, HttpServletRequest request);
 
     Page<SpaceVO> listSpaceVOeByPage(Page<Space> spacePage, HttpServletRequest request);
 
-    LambdaQueryWrapper<Space> getQueryWrapper(SpaceQueryDto spaceQueryDto);
+    LambdaQueryWrapper<Space> getQueryWrapper(SpaceQueryDTO spaceQueryDto);
 
     void fillSpaceBySpaceLevel(Space space);
 

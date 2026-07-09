@@ -37,7 +37,7 @@ const progress: UploadProps['progress'] = {
 
 interface Props {
   picture?: API.PictureVO
-  spaceId ?:number
+  spaceId ?:string
   onSuccess?: (newPicture: API.PictureVO) => void;
 }
 
@@ -49,7 +49,7 @@ const props = defineProps<Props>();
 const handleUpload=async ({file}:any)=>{
   loading.value = true;
   try {
-    const params:API.PictureUploadDto  = props.picture ? {id:props.picture.id} : {}
+    const params:API.PictureUploadDTO  = props.picture ? {id:props.picture.id} : {}
     params.spaceId = props.spaceId;
     const res = await uploadPictureUsingPost(params,{}, file);
     if (res.code === 0 && res.data) {
@@ -86,9 +86,9 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
     message.error('You can only upload JPG file!');
   }
   //校验图片大小
-  const isLt2M = file.size / 1024 / 1024 < 5;
+  const isLt2M = file.size / 1024 / 1024 < 10;
   if (!isLt2M) {
-    message.error('Image must smaller than 5MB!');
+    message.error('Image must smaller than 10MB!');
   }
   return isJpgOrPng && isLt2M;
 };
@@ -108,12 +108,12 @@ const beforeUpload = (file: UploadProps['fileList'][number]) => {
 
 .ant-upload-select-picture-card i {
   font-size: 32px;
-  color: #999;
+  color: var(--text-secondary);
 }
 
 .ant-upload-select-picture-card .ant-upload-text {
   margin-top: 8px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 </style>

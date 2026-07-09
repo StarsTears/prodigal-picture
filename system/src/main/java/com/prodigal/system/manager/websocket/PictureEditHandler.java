@@ -19,19 +19,28 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  * @program: prodigal-picture
  * @author: Lang
  * @description: websocket 处理器
  **/
+@Slf4j
 @Component
 public class PictureEditHandler extends TextWebSocketHandler {
+
+    private static final long EDIT_IDLE_TIMEOUT_MS = 30_000;
+    private static final long HEARTBEAT_TIMEOUT_MS = 45_000;
+
     @Resource
     private UserService userService;
     @Resource
@@ -39,10 +48,27 @@ public class PictureEditHandler extends TextWebSocketHandler {
     private PictureEditEventProducer pictureEditEventProducer;
 
     //使用 ConcurrentHashMap 保证线程安全
-    //每张图片的编辑状态 key: pictureId  value: 当前正在编辑的userId
-    private static final Map<Long, Long> pictureEditingUsers = new ConcurrentHashMap<>();
+    //每张图片的编辑状态 key: pictureId  value: 编辑锁信息(包含userId/session/最近活跃时间)
+    private static final Map<String, EditLockInfo> pictureEditingUsers = new ConcurrentHashMap<>();
     //保存所有的会话连接， key: pictureId  value: 所有会话集合
-    private static final Map<Long, Set<WebSocketSession>> pictureSessions = new ConcurrentHashMap<>();
+    private static final Map<String, Set<WebSocketSession>> pictureSessions = new ConcurrentHashMap<>();
+    //会话心跳时间， key: session  value: 最后一次收到心跳的时间戳
+    private static final Map<WebSocketSession, Long> sessionHeartbeats = new ConcurrentHashMap<>();
+
+    /**
+     * 编辑锁信息: 持有人、会话、心跳时间
+     */
+    static class EditLockInfo {
+        final String userId;
+        final WebSocketSession session;
+        volatile long lastActiveTime;
+
+        EditLockInfo(String userId, WebSocketSession session) {
+            this.userId = userId;
+            this.session = session;
+            this.lastActiveTime = System.currentTimeMillis();
+        }
+    }
 
     /**
      * 连接建立后，将当前用户加入到图片的编辑会话中
@@ -54,7 +80,7 @@ public class PictureEditHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         //保存会话至集合
         User user = (User) session.getAttributes().get("user");
-        Long pictureId = (Long) session.getAttributes().get("pictureId");
+        String pictureId = (String) session.getAttributes().get("pictureId");
 
         pictureSessions.putIfAbsent(pictureId, ConcurrentHashMap.newKeySet());
         pictureSessions.get(pictureId).add(session);
@@ -70,8 +96,11 @@ public class PictureEditHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        //清理心跳记录
+        sessionHeartbeats.remove(session);
+
         Map<String, Object> attributes = session.getAttributes();
-        Long pictureId = (Long) attributes.get("pictureId");
+        String pictureId = (String) attributes.get("pictureId");
         User user = (User) attributes.get("user");
         //移除当前用户的编辑状态
         this.handleExitEditMessage(session, null, user, pictureId);
@@ -107,9 +136,21 @@ public class PictureEditHandler extends TextWebSocketHandler {
         String type = pictureEditRequestMessage.getType();
         PictureEditMessageTypeEnum pictureEditMessageTypeEnum = PictureEditMessageTypeEnum.valueOf(type);
 
+        //心跳消息直接响应，不走 Disruptor，减少开销
+        if (pictureEditMessageTypeEnum == PictureEditMessageTypeEnum.HEARTBEAT) {
+            sessionHeartbeats.put(session, System.currentTimeMillis());
+            PictureEditResponseMessage pong = new PictureEditResponseMessage();
+            pong.setType(PictureEditMessageTypeEnum.HEARTBEAT.getValue());
+            pong.setMessage("pong");
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(JSONUtil.toJsonStr(pong)));
+            }
+            return;
+        }
+
         //从 session 中 获取公共参数
         Map<String, Object> attributes = session.getAttributes();
-        Long pictureId = (Long) attributes.get("pictureId");
+        String pictureId = (String) attributes.get("pictureId");
         User user = (User) attributes.get("user");
         //以下方法可改为使用 disruptor 优化
         pictureEditEventProducer.publishEvent(session, pictureEditRequestMessage, user, pictureId);
@@ -133,11 +174,62 @@ public class PictureEditHandler extends TextWebSocketHandler {
 //        }
     }
 
-    public void handleEnterEditMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, Long pictureId) throws Exception {
+    /**
+     * 定时清理: 过期编辑锁(心跳超时或会话已关闭) + 心跳超时会话 + 已关闭的会话
+     */
+    @Scheduled(fixedRate = 30_000)
+    public void cleanStaleConnections() {
+        long now = System.currentTimeMillis();
+
+        //清理过期编辑锁
+        for (Map.Entry<String, EditLockInfo> entry : pictureEditingUsers.entrySet()) {
+            EditLockInfo lock = entry.getValue();
+            if (!lock.session.isOpen() || now - lock.lastActiveTime > EDIT_IDLE_TIMEOUT_MS) {
+                String pictureId = entry.getKey();
+                try {
+                    User user = userService.getById(Long.valueOf(lock.userId));
+                    handleExitEditMessage(lock.session, null, user, pictureId);
+                    log.info("清理过期编辑锁, pictureId={}, userId={}, idleMs={}",
+                            pictureId, lock.userId, now - lock.lastActiveTime);
+                } catch (Exception e) {
+                    pictureEditingUsers.remove(pictureId);
+                    log.warn("清理编辑锁异常, pictureId={}, userId={}", pictureId, lock.userId, e);
+                }
+            }
+        }
+
+        //清理心跳超时会话 和 已关闭的会话
+        for (Map.Entry<String, Set<WebSocketSession>> entry : pictureSessions.entrySet()) {
+            Set<WebSocketSession> sessions = entry.getValue();
+            Iterator<WebSocketSession> it = sessions.iterator();
+            while (it.hasNext()) {
+                WebSocketSession session = it.next();
+                Long lastHeartbeat = sessionHeartbeats.get(session);
+                boolean heartbeatTimeout = lastHeartbeat != null && now - lastHeartbeat > HEARTBEAT_TIMEOUT_MS;
+                if (!session.isOpen() || heartbeatTimeout) {
+                    if (heartbeatTimeout) {
+                        log.info("心跳超时关闭会话, pictureId={}, sessionId={}, idleMs={}",
+                                entry.getKey(), session.getId(), now - lastHeartbeat);
+                        try {
+                            session.close();
+                        } catch (IOException ignored) {
+                        }
+                    }
+                    sessionHeartbeats.remove(session);
+                    it.remove();
+                }
+            }
+            if (sessions.isEmpty()) {
+                pictureSessions.remove(entry.getKey());
+            }
+        }
+    }
+
+    public void handleEnterEditMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, String pictureId) throws Exception {
         //判断是否存在用户正在编辑该图片
         if (!pictureEditingUsers.containsKey(pictureId)) {
-            //设置当前用户为编辑用户
-            pictureEditingUsers.put(pictureId, user.getId());
+            //设置当前用户为编辑用户，记录 session 和心跳时间
+            pictureEditingUsers.put(pictureId, new EditLockInfo(user.getId(), session));
             //构造响应
             PictureEditResponseMessage pictureEditResponseMessage = new PictureEditResponseMessage();
             pictureEditResponseMessage.setType(PictureEditMessageTypeEnum.ENTER_EDIT.getValue());
@@ -148,15 +240,21 @@ public class PictureEditHandler extends TextWebSocketHandler {
         }
     }
 
-    public void handleEditActionMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, Long pictureId) throws IOException {
-        Long editingUserId = pictureEditingUsers.get(pictureId);
+    public void handleEditActionMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, String pictureId) throws IOException {
+        EditLockInfo lock = pictureEditingUsers.get(pictureId);
+        if (lock == null) {
+            return;
+        }
+        //刷新心跳时间
+        lock.lastActiveTime = System.currentTimeMillis();
+
         String editAction = pictureEditRequestMessage.getEditAction();
         PictureEditActionEnum pictureEditActionEnum = PictureEditActionEnum.getEnumByValue(editAction);
         if (pictureEditActionEnum == null){
             return;
         }
         //确认是当前编辑用户
-        if (editingUserId.equals(user.getId())) {
+        if (lock.userId.equals(user.getId())) {
             //构造响应
             PictureEditResponseMessage pictureEditResponseMessage = new PictureEditResponseMessage();
             pictureEditResponseMessage.setType(PictureEditMessageTypeEnum.EDIT_ACTION.getValue());
@@ -168,9 +266,9 @@ public class PictureEditHandler extends TextWebSocketHandler {
         }
     }
 
-    public void handleExitEditMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, Long pictureId) throws Exception {
-        Long editingUserId = pictureEditingUsers.get(pictureId);
-        if (editingUserId!=null && editingUserId.equals(user.getId())){
+    public void handleExitEditMessage(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, String pictureId) throws Exception {
+        EditLockInfo lock = pictureEditingUsers.get(pictureId);
+        if (lock != null && lock.userId.equals(user.getId())){
             //移除当前用户的编辑状态
             pictureEditingUsers.remove(pictureId);
             //构造响应
@@ -183,7 +281,7 @@ public class PictureEditHandler extends TextWebSocketHandler {
     }
 
     // 全部广播
-    private void broadcastToPicture(Long pictureId, PictureEditResponseMessage pictureEditResponseMessage) throws Exception {
+    private void broadcastToPicture(String pictureId, PictureEditResponseMessage pictureEditResponseMessage) throws Exception {
         broadcastToPicture(pictureId, pictureEditResponseMessage, null);
     }
 
@@ -194,27 +292,26 @@ public class PictureEditHandler extends TextWebSocketHandler {
      * @param responseMessage 响应信息
      * @param excludeSession  排除的会话
      */
-    private void broadcastToPicture(Long pictureId, PictureEditResponseMessage responseMessage, WebSocketSession excludeSession) throws IOException {
+    private void broadcastToPicture(String pictureId, PictureEditResponseMessage responseMessage, WebSocketSession excludeSession) throws IOException {
         //获取所有会话
         Set<WebSocketSession> sessionSet = pictureSessions.get(pictureId);
         if (CollUtil.isNotEmpty(sessionSet)) {
             //创建 ObjectMapper
             ObjectMapper objectMapper = new ObjectMapper();
-            //配置序列化、将Long类型 转为 String 类型;解决精度丢失的问题
-            SimpleModule simpleModule = new SimpleModule();
-            simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-            simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
-            objectMapper.registerModule(simpleModule);
             String message = objectMapper.writeValueAsString(responseMessage);
             TextMessage textMessage = new TextMessage(message);
-            for (WebSocketSession session : sessionSet) {
+            Iterator<WebSocketSession> it = sessionSet.iterator();
+            while (it.hasNext()) {
+                WebSocketSession session = it.next();
                 //排除当前操作人
                 if (session.equals(excludeSession)) {
                     continue;
                 }
-                //发送消息
+                //发送消息; 已关闭的会话直接移除
                 if (session.isOpen()) {
                     session.sendMessage(textMessage);
+                } else {
+                    it.remove();
                 }
             }
         }

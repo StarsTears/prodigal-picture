@@ -1,77 +1,158 @@
 <template>
   <a-drawer
     v-model:open="open"
-    class="custom-class"
-    root-class-name="root-class-name"
-    :root-style="{ color: 'blue' }"
-    style="color: red"
     title="通知"
     placement="right"
-    @after-open-change="afterOpenChange"
+    :width="420"
   >
-    <a-list item-layout="horizontal" :data-source="dataList">
-      <template #renderItem="{ item:email }">
-        <a-list-item>
+    <div v-if="dataList.length === 0" style="text-align: center; padding: 80px 0">
+      <a-empty description="暂无通知" />
+    </div>
+
+    <a-list
+      v-else
+      :data-source="dataList"
+      item-layout="horizontal"
+    >
+      <template #renderItem="{ item: email }">
+        <a-list-item class="notice-item" @click="showDetail(email)">
           <a-list-item-meta>
-            <template #description>
-              {{email.txt}}
+            <template #avatar>
+              <a-avatar :src="logo" style="background: #fff" />
             </template>
             <template #title>
-<!--              <a href="https://www.antdv.com/">{{ item.title }}</a>-->
-              {{email.subject}}
+              <a-space :size="8">
+                <span class="notice-subject">{{ email.subject || '(无主题)' }}</span>
+                <a-tag :color="EMAIL_TYPE_COLOR_MAP[email.type!]" style="font-size: 11px; line-height: 18px">
+                  {{ EMAIL_TYPE_MAP[email.type!] }}
+                </a-tag>
+              </a-space>
             </template>
-            <template #avatar>
-              <a-avatar src="https://www.antdv.com/assets/logo.1ef800a8.svg" />
+            <template #description>
+              <div class="notice-desc">
+                <span class="notice-time">{{ dayjs(email.sendTime).format('MM-DD HH:mm') }}</span>
+                <span class="notice-txt">{{ truncateText(email.txt, 50) }}</span>
+              </div>
             </template>
           </a-list-item-meta>
         </a-list-item>
       </template>
     </a-list>
+
+    <a-modal
+      v-model:open="detailOpen"
+      :title="currentNotice?.subject || '通知详情'"
+      :footer="null"
+      width="560px"
+      destroy-on-close
+    >
+      <template v-if="currentNotice">
+        <a-descriptions :column="1" bordered size="small" style="margin-bottom: 12px">
+          <a-descriptions-item label="类型">
+            <a-tag :color="EMAIL_TYPE_COLOR_MAP[currentNotice.type!]">
+              {{ EMAIL_TYPE_MAP[currentNotice.type!] }}
+            </a-tag>
+          </a-descriptions-item>
+          <a-descriptions-item label="发送时间">
+            {{ dayjs(currentNotice.sendTime).format('YYYY-MM-DD HH:mm:ss') }}
+          </a-descriptions-item>
+        </a-descriptions>
+        <a-divider style="margin: 12px 0" />
+        <div v-if="currentNotice.html" class="detail-content" v-html="currentNotice.txt" />
+        <div v-else class="detail-content">{{ currentNotice.txt }}</div>
+      </template>
+    </a-modal>
   </a-drawer>
 </template>
-<script lang="ts" setup>
-import {onMounted, ref,reactive} from 'vue';
-import {useLoginUserStore} from "@/stores/loginUserStore";
-import {listEmailByPageUsingPost} from "@/api/emailController";
-import {message} from "ant-design-vue";
 
-const open = ref<boolean>(false);
-const afterOpenChange = (bool: boolean) => {
-  console.log('open', bool);
-};
-//该函数需传递给父组件，用于打开弹窗
+<script lang="ts" setup>
+import { ref, reactive } from 'vue';
+import { useLoginUserStore } from '@/stores/loginUserStore';
+import { listEmailByPageUsingPost } from '@/api/emailController';
+import { message } from 'ant-design-vue';
+import dayjs from 'dayjs';
+import { EMAIL_TYPE_MAP, EMAIL_TYPE_COLOR_MAP } from '@/constants/email';
+import logo from '@/assets/logo.svg';
+
+const open = ref(false);
+
 const showDrawer = () => {
   open.value = true;
-  fetchData()
+  fetchData();
 };
-//将 onModal 函数暴露给父组件
-defineExpose({
-  showDrawer,
-})
 
-//获取当前登录用户的邮件信息
-const loginUserStore = useLoginUserStore()
-const dataList = ref<API.EmailVO[]>([])
-const emilMessage = reactive<API.EmailQueryDto>({
-  to: loginUserStore?.loginUser.userEmail,
-  subject: '',
-})
+defineExpose({ showDrawer });
+
+const loginUserStore = useLoginUserStore();
+const dataList = ref<API.EmailVO[]>([]);
+
 const fetchData = async () => {
   const res = await listEmailByPageUsingPost({
-    ...emilMessage,
+    to: loginUserStore?.loginUser.userEmail,
     status: 2,
+    current: 1,
+    pageSize: 50,
   });
-  console.log(res)
   if (res.code === 0) {
-    console.log(res.data)
-    dataList.value = res.data.records ??[]
+    dataList.value = res.data?.records ?? [];
   } else {
-    message.error('获取信息失败，请重试！,' + res.msg)
+    message.error('获取通知失败，' + res.msg);
   }
-}
-// onMounted(()=>{
-//   fetchData()
-// })
+};
+
+const truncateText = (text: string | undefined, maxLen: number): string => {
+  if (!text) return '';
+  // 预览时去除 HTML 标签显示纯文本
+  const plainText = text.replace(/<[^>]*>/g, '');
+  return plainText.length > maxLen ? plainText.slice(0, maxLen) + '...' : plainText;
+};
+
+const detailOpen = ref(false);
+const currentNotice = ref<API.EmailVO | null>(null);
+
+const showDetail = (email: API.EmailVO) => {
+  currentNotice.value = email;
+  detailOpen.value = true;
+};
 </script>
 
-
+<style scoped>
+.notice-item {
+  cursor: pointer;
+  padding: 12px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.notice-item:hover {
+  background: var(--bg-image-placeholder);
+}
+.notice-subject {
+  font-size: 14px;
+  font-weight: 500;
+}
+.notice-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.notice-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.notice-txt {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detail-content {
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-primary);
+  max-height: 400px;
+  overflow-y: auto;
+}
+</style>

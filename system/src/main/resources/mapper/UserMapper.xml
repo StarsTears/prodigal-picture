@@ -5,28 +5,28 @@
 <mapper namespace="com.prodigal.system.mapper.UserMapper">
 
     <resultMap id="BaseResultMap" type="com.prodigal.system.model.entity.User">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
-            <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
-            <result property="userEmail" column="userEmail" jdbcType="VARCHAR"/>
-            <result property="userName" column="userName" jdbcType="VARCHAR"/>
-            <result property="userAvatar" column="userAvatar" jdbcType="VARCHAR"/>
-            <result property="userProfile" column="userProfile" jdbcType="VARCHAR"/>
-            <result property="userRole" column="userRole" jdbcType="VARCHAR"/>
-            <result property="vipNumber" column="vipNumber" jdbcType="BIGINT"/>
-            <result property="inviteUser" column="inviteUser" jdbcType="BIGINT"/>
-            <result property="shareCode" column="shareCode" jdbcType="VARCHAR"/>
-            <result property="editTime" column="editTime" jdbcType="TIMESTAMP"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+            <id property="id" column="id" jdbcType="VARCHAR"/>
+            <result property="userAccount" column="user_account" jdbcType="VARCHAR"/>
+            <result property="userPassword" column="user_password" jdbcType="VARCHAR"/>
+            <result property="userEmail" column="user_email" jdbcType="VARCHAR"/>
+            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+            <result property="userAvatar" column="user_avatar" jdbcType="VARCHAR"/>
+            <result property="userProfile" column="user_profile" jdbcType="VARCHAR"/>
+            <result property="userRole" column="user_role" jdbcType="VARCHAR"/>
+            <result property="vipNumber" column="vip_number" jdbcType="BIGINT"/>
+            <result property="inviteUser" column="invite_user" jdbcType="VARCHAR"/>
+            <result property="shareCode" column="share_code" jdbcType="VARCHAR"/>
+            <result property="editTime" column="edit_time" jdbcType="TIMESTAMP"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userAccount,userPassword,userEmail,
-        userName,userAvatar,userProfile,
-        userRole,vipNumber,inviteUser,
-        shareCode,editTime,createTime,
-        updateTime,isDelete
+        id,user_account,user_password,user_email,
+        user_name,user_avatar,user_profile,
+        user_role,vip_number,invite_user,
+        share_code,edit_time,create_time,
+        update_time,is_delete
     </sql>
 </mapper>

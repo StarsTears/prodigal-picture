@@ -72,7 +72,7 @@ const router = useRouter();
 const uploadType = ref<'file' | 'url'>('file')
 
 const picture = ref<API.PictureVO>()
-const pictureForm = reactive<API.PictureEditDto>({})
+const pictureForm = reactive<API.PictureEditDTO>({})
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
   // 图片上传成功，信息回填

@@ -11,21 +11,20 @@
             </a-form-item>
             <a-form-item
               name="userPassword"
-              :rules="[
-                { required: true, message: '请输入密码' },
-                { min: 6, message: '密码不能小于 6 位' },
-              ]"
+              :rules="[{ required: true, message: '请输入密码' }]"
             >
               <a-input-password v-model:value="formState.userPassword" placeholder="请输入密码" />
             </a-form-item>
             <div class="tips">
               没有账号？
               <RouterLink to="/register">去注册</RouterLink>
+              &nbsp;|&nbsp;
+              <RouterLink to="/reset-password">忘记密码？</RouterLink>
             </div>
             <a-form-item>
               <a-button type="primary" html-type="submit" style="width: 100%">登录</a-button>
             </a-form-item>
-            <div class="test-account-tip">测试账号：test 密码：123456</div>
+<!--            <div class="test-account-tip">测试账号：test 密码：123456</div>-->
           </a-form>
         </a-tab-pane>
         <a-tab-pane key="email" tab="邮箱登录">
@@ -62,7 +61,7 @@ import { useRoute, useRouter } from "vue-router";
 
 const loginType = ref<'account' | 'email'>('account');
 
-const formState = reactive<API.LoginDto>({
+const formState = reactive<API.LoginDTO>({
   userAccount: '',
   userPassword: ''
 });
@@ -109,7 +108,7 @@ const onSendCaptcha = async () => {
   }
   sendingCaptcha.value = true;
   try {
-    const res = await sendVerificationCodeUsingPost(emailFormState.email);
+    const res = await sendVerificationCodeUsingPost({ email: emailFormState.email });
     if (res.code === 0) {
       message.success('验证码已发送，请查收邮箱');
       startCountdown();
@@ -175,7 +174,7 @@ const handleSubmitEmail = async (values: any) => {
   left: 0;
   right: 0;
   bottom: 0; /* 撑满整个视口 */
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--bg-login-gradient);
   padding: 20px;
   box-sizing: border-box;
   overflow: hidden; /* 确保不会出现滚动条 */
@@ -186,7 +185,7 @@ const handleSubmitEmail = async (values: any) => {
   margin: 0 auto;
   width: 100%;
   /*max-width: 420px;*/
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
   padding: 40px;
@@ -200,13 +199,13 @@ const handleSubmitEmail = async (values: any) => {
 
 .desc {
   text-align: center;
-  color: #bbb;
+  color: var(--text-tertiary);
   margin-bottom: 16px;
 }
 
 .tips {
   margin-bottom: 16px;
-  color: #bbb;
+  color: var(--text-tertiary);
   font-size: 13px;
   text-align: right;
 }
@@ -218,7 +217,7 @@ const handleSubmitEmail = async (values: any) => {
 }
 
 .test-account-tip {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 13px;
   text-align: right;
   margin-bottom: 8px;

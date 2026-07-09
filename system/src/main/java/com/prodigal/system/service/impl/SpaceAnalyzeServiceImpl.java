@@ -5,8 +5,8 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.mapper.SpaceMapper;
 import com.prodigal.system.model.dto.space.analyze.*;
@@ -20,7 +20,7 @@ import com.prodigal.system.service.SpaceService;
 import com.prodigal.system.service.UserService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,15 +49,15 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDto spaceUsageAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceUsageAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDTO spaceUsageAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceUsageAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //查询公共空间 权限校验：仅管理员可访问
         //查询全控件/公共空间，需从 Picture 表查询
         if (spaceUsageAnalyzeDto.isQueryAll() || spaceUsageAnalyzeDto.isQueryPublic()) {
             this.checkSpaceAnalyzeAuth(spaceUsageAnalyzeDto, loginUser);
             //统计图库的使用空间
             QueryWrapper<Picture> wrapper = new QueryWrapper<>();
-            wrapper.select("picSize");
+            wrapper.select("pic_size");
             //补充查询范围
             this.fillAnalyzeQueryWrapper(spaceUsageAnalyzeDto, wrapper);
             List<Object> pictureObjList = pictureService.getBaseMapper().selectObjs(wrapper);
@@ -77,23 +77,26 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             return spaceUsageAnalyzeVO;
         } else {
             //查询私有空间 权限校验：仅登录用户可访问
-            Long spaceId = spaceUsageAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || spaceId <= 0, ErrorCode.PARAMS_ERROR);
+            String spaceId = spaceUsageAnalyzeDto.getSpaceId();
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), BizStatus.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
             //校验权限:仅空间所有者或管理员可访问
             spaceService.checkSpacePermission(space, loginUser);
             //构造返回结果
             SpaceUsageAnalyzeVO spaceUsageAnalyzeVO = new SpaceUsageAnalyzeVO();
             spaceUsageAnalyzeVO.setUsedSize(space.getTotalSize());
             spaceUsageAnalyzeVO.setMaxSize(space.getMaxSize());
-            //直接返回给前端 百分比
-            double sizeUsageRatio = NumberUtil.round(space.getTotalSize() * 100.0 / space.getMaxSize(), 2).doubleValue();
+            double sizeUsageRatio = (space.getMaxSize() != null && space.getMaxSize() > 0)
+                    ? NumberUtil.round(space.getTotalSize() * 100.0 / space.getMaxSize(), 2).doubleValue()
+                    : 0;
             spaceUsageAnalyzeVO.setSizeUsageRatio(sizeUsageRatio);
 
             spaceUsageAnalyzeVO.setUsedCount(space.getTotalCount());
             spaceUsageAnalyzeVO.setMaxCount(space.getMaxCount());
-            double countUsageRatio = NumberUtil.round(space.getTotalCount() * 100.0 / space.getMaxCount(), 2).doubleValue();
+            double countUsageRatio = (space.getMaxCount() != null && space.getMaxCount() > 0)
+                    ? NumberUtil.round(space.getTotalCount() * 100.0 / space.getMaxCount(), 2).doubleValue()
+                    : 0;
             spaceUsageAnalyzeVO.setCountUsageRatio(countUsageRatio);
             return spaceUsageAnalyzeVO;
         }
@@ -106,15 +109,15 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param loginUser               登录用户
      */
     @Override
-    public List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDto spaceCategoryAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceCategoryAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDTO spaceCategoryAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceCategoryAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceCategoryAnalyzeDto, loginUser);
         //构造查询条件
 //        QueryWrapper<Picture> wrapper = Wrappers.lambdaQuery();
         QueryWrapper<Picture> wrapper = new QueryWrapper<>();
         this.fillAnalyzeQueryWrapper(spaceCategoryAnalyzeDto, wrapper);
-        wrapper.select("category","count(*) as count", "sum(picSize) as totalSize")
+        wrapper.select("category","count(*) as count", "sum(pic_size) as totalSize")
                 .groupBy("category");
 
 
@@ -136,8 +139,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDto spaceTagAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceTagAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDTO spaceTagAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceTagAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceTagAnalyzeDto, loginUser);
         //构造查询条件
@@ -163,8 +166,8 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDto spaceSizeAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceSizeAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDTO spaceSizeAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceSizeAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceSizeAnalyzeDto, loginUser);
         //构造查询条件
@@ -172,7 +175,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         this.fillAnalyzeQueryWrapper(spaceSizeAnalyzeDto, wrapper);
 
         //查询符合条件的图片大小
-        wrapper.select("picSize");
+        wrapper.select("pic_size");
         List<Long> sizeList = pictureService.getBaseMapper().selectObjs(wrapper)
                 .stream()
                 .map(obj -> ((Number) obj).longValue())
@@ -196,33 +199,33 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDto spaceUserAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceUserAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDTO spaceUserAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceUserAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //检查权限
         this.checkSpaceAnalyzeAuth(spaceUserAnalyzeDto, loginUser);
         //构造查询条件
         QueryWrapper<Picture> wrapper = new QueryWrapper<>();
-        Long userId = spaceUserAnalyzeDto.getUserId();
-        wrapper.eq(ObjUtil.isNotNull(userId), "userId", userId);
+        String userId = spaceUserAnalyzeDto.getUserId();
+        wrapper.eq(ObjUtil.isNotNull(userId), "user_id", userId);
         this.fillAnalyzeQueryWrapper(spaceUserAnalyzeDto, wrapper);
         //时间维度
         String timeDimension = spaceUserAnalyzeDto.getTimeDimension();
         switch (timeDimension) {
             case "day":
-                wrapper.select("DATE_FORMAT(createTime, '%Y-%m-%d') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y-%m-%d') as timeRange", "count(*) as count");
                 break;
                 case "week":
-//                  wrapper.select("DATE_FORMAT(createTime, '%Y-%u') as timeRange", "count(*) as count");
-                  wrapper.select("YEARWEEk(createTime) as timeRange", "count(*) as count");
+//                  wrapper.select("DATE_FORMAT(create_time, '%Y-%u') as timeRange", "count(*) as count");
+                  wrapper.select("YEARWEEK(create_time) as timeRange", "count(*) as count");
                     break;
             case "month":
-                wrapper.select("DATE_FORMAT(createTime, '%Y-%m') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y-%m') as timeRange", "count(*) as count");
                 break;
             case "year":
-                wrapper.select("DATE_FORMAT(createTime, '%Y') as timeRange", "count(*) as count");
+                wrapper.select("DATE_FORMAT(create_time, '%Y') as timeRange", "count(*) as count");
                 break;
             default:
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的时间维度："+ timeDimension);
+                throw new BusinessException(BizStatus.PARAMS_ERROR, "不支持的时间维度："+ timeDimension);
         }
         //分组排序
         wrapper.groupBy("timeRange").orderByAsc("timeRange");
@@ -241,14 +244,14 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @return
      */
     @Override
-    public List<Space> analyzeSpaceRank(SpaceRankAnalyzeDto spaceRankAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceRankAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+    public List<Space> analyzeSpaceRank(SpaceRankAnalyzeDTO spaceRankAnalyzeDto, User loginUser) {
+        ThrowUtils.throwIf(spaceRankAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //仅管理员可查看空间排行
-        ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问空间排行");
+        ThrowUtils.throwIf(!userService.isAdmin(loginUser), BizStatus.USER_NOT_PERMISSION, "无权访问空间排行");
         //构造查询条件
         QueryWrapper<Space> wrapper = new QueryWrapper<>();
-        wrapper.select("id", "spaceName", "spaceLevel","totalSize", "totalCount")
-                        .orderByDesc("totalSize")
+        wrapper.select("id", "space_name", "space_level","total_size", "total_count")
+                        .orderByDesc("total_size")
                         .last("LIMIT "+ spaceRankAnalyzeDto.getTopN()); //取前N 名
         return spaceService.list(wrapper);
     }
@@ -260,17 +263,17 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param spaceAnalyzeDto 空间请求参数
      * @param loginUser       登录用户
      */
-    private void checkSpaceAnalyzeAuth(SpaceAnalyzeDto spaceAnalyzeDto, User loginUser) {
+    private void checkSpaceAnalyzeAuth(SpaceAnalyzeDTO spaceAnalyzeDto, User loginUser) {
         // 检查权限
         if (spaceAnalyzeDto.isQueryAll() || spaceAnalyzeDto.isQueryPublic()) {
             // 全空间分析或者公共图库权限校验：仅管理员可访问
-            ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问公共图库");
+            ThrowUtils.throwIf(!userService.isAdmin(loginUser), BizStatus.USER_NOT_PERMISSION, "无权访问公共图库");
         } else {
             // 私有空间权限校验
-            Long spaceId = spaceAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || spaceId <= 0, ErrorCode.PARAMS_ERROR);
+            String spaceId = spaceAnalyzeDto.getSpaceId();
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), BizStatus.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
             spaceService.checkSpacePermission(space, loginUser);
         }
     }
@@ -281,20 +284,20 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      * @param spaceAnalyzeDto 空间请求参数
      * @param queryWrapper    查询条件
      */
-    private void fillAnalyzeQueryWrapper(SpaceAnalyzeDto spaceAnalyzeDto, QueryWrapper<Picture> queryWrapper) {
+    private void fillAnalyzeQueryWrapper(SpaceAnalyzeDTO spaceAnalyzeDto, QueryWrapper<Picture> queryWrapper) {
         if (spaceAnalyzeDto.isQueryAll()) {
             return;
         }
         if (spaceAnalyzeDto.isQueryPublic()) {
-            queryWrapper.isNull("spaceId");
+            queryWrapper.eq("space_id", "0");
             return;
         }
-        Long spaceId = spaceAnalyzeDto.getSpaceId();
+        String spaceId = spaceAnalyzeDto.getSpaceId();
         if (spaceId != null) {
-            queryWrapper.eq("spaceId", spaceId);
+            queryWrapper.eq("space_id", spaceId);
             return;
         }
-        throw new BusinessException(ErrorCode.PARAMS_ERROR, "未指定查询范围");
+        throw new BusinessException(BizStatus.PARAMS_ERROR, "未指定查询范围");
     }
 
 }

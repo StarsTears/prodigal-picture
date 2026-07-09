@@ -46,7 +46,7 @@ import {reactive} from "vue";
 //定义组件属性
 interface Props {
   pictureList: API.PictureVO[];
-  spaceId: number;
+  spaceId: string;
   onSuccess: () => void;
 }
 
@@ -72,7 +72,7 @@ defineExpose({
   openModal,
 })
 
-const formData = reactive<API.PictureEditByBatchDto>({
+const formData = reactive<API.PictureEditByBatchDTO>({
   category: '',
   tags: [],
   nameRule: '',

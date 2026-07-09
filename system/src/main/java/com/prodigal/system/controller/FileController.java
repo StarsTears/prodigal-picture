@@ -5,8 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.constant.UserConstant;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.entity.Picture;
@@ -16,8 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -43,8 +42,8 @@ public class FileController {
      * @return 文件路径
      */
     @PostMapping("/test/upload")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<String> testUploadFile(@RequestPart MultipartFile multipartFile) {
+    @PermissionCheck(mustRole = {"administrator", "admin"})
+    public BaseResult<String> testUploadFile(@RequestPart("multipartFile") MultipartFile multipartFile) {
         //文件目录
         String filename = multipartFile.getOriginalFilename();
         String filepath = String.format("/test/%s", filename);
@@ -57,7 +56,7 @@ public class FileController {
             //返回访问地址
             return ResultUtils.success(filepath);
         } catch (IOException e) {
-            log.error("file upload error,filepath:{}={}", filepath, e);
+            log.error("file upload error,filepath:{}", filepath, e);
             throw new RuntimeException(e);
         } finally {
             //删除临时文件
@@ -76,9 +75,9 @@ public class FileController {
      * @param response 响应对象
      */
     @GetMapping("/test/download")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
+    @PermissionCheck(mustRole = {"administrator", "admin"})
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
-        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), BizStatus.PARAMS_ERROR);
         streamFileToResponse(filepath, filepath.substring(filepath.lastIndexOf('/') + 1), response);
     }
 
@@ -89,16 +88,16 @@ public class FileController {
      * @param response 响应对象
      */
     @GetMapping("/download")
-    public void downloadFile(Long pictureId, Long spaceId, HttpServletResponse response) throws IOException {
-        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
-        Long sid = spaceId == null ? 0L : spaceId;
+    public void downloadFile(String pictureId, String spaceId, HttpServletResponse response) throws IOException {
+        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), BizStatus.PARAMS_ERROR);
+        String sid = spaceId == null ? "0" : spaceId;
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("id", pictureId).eq("spaceId", sid);
+        queryWrapper.eq("id", pictureId).eq("space_id", sid);
         Picture picture = pictureService.getOne(queryWrapper);
-        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        ThrowUtils.throwIf(picture == null, BizStatus.NOT_FOUND_ERROR, "图片不存在");
 
         String urlKey = StrUtil.isNotBlank(picture.getOriginUrl()) ? picture.getOriginUrl() : picture.getUrl();
-        ThrowUtils.throwIf(StrUtil.isBlank(urlKey), ErrorCode.NOT_FOUND_ERROR, "图片路径为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(urlKey), BizStatus.NOT_FOUND_ERROR, "图片路径为空");
 
         String fileName = StrUtil.isNotBlank(picture.getName()) ? picture.getName()
                 : urlKey.substring(urlKey.lastIndexOf('/') + 1);
@@ -118,7 +117,7 @@ public class FileController {
                     "attachment; filename*=UTF-8''" + URLEncoder.encode(fileName, "UTF-8").replace("+", "%20"));
             cosManager.streamToOutput(cosKey, response.getOutputStream());
         } catch (IOException e) {
-            log.error("file download error, key:{}={}", cosKey, e);
+            log.error("file download error, key:{}", cosKey, e);
             throw new RuntimeException(e);
         }
     }
@@ -129,9 +128,9 @@ public class FileController {
      * @return 临时下载地址
      */
     @GetMapping("/test/get/temp/url")
-    @PermissionCheck(mustRole = {UserConstant.SUPER_ADMIN_ROLE, UserConstant.ADMIN_ROLE})
-    public BaseResult<String> testGetTempURL(String filepath) {
-        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+    @PermissionCheck(mustRole = {"administrator", "admin"})
+    public BaseResult<String> testGetTempURL(@RequestParam("filepath") String filepath) {
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), BizStatus.PARAMS_ERROR);
         String tempUrl = cosManager.generateTempUrl(filepath);
         return ResultUtils.success(tempUrl);
     }

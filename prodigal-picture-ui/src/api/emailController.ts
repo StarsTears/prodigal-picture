@@ -3,7 +3,7 @@
 import request from '@/request.ts'
 
 /** addEmail POST /api/email/add */
-export async function addEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
+export async function addEmailUsingPost(body: API.EmailAddDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultString_>('/api/email/add', {
     method: 'POST',
     headers: {
@@ -42,12 +42,27 @@ export async function getEmailByIdUsingGet(
   })
 }
 
-/** listEmailByPage POST /api/email/list */
+/** listEmailByPage POST /api/email/page */
 export async function listEmailByPageUsingPost(
-  body: API.EmailQueryDto,
+  body: API.EmailQueryDTO,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResultPageEmailVO_>('/api/email/list', {
+  return request<API.BaseResultPageEmailVO_>('/api/email/page', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
+/** listNoticeByPage POST /api/email/notice/page */
+export async function listNoticeByPageUsingPost(
+  body: API.PageRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResultPageEmailVO_>('/api/email/notice/page', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -58,8 +73,8 @@ export async function listEmailByPageUsingPost(
 }
 
 /** sendEmail POST /api/email/send */
-export async function sendEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
-  return request<API.BaseResultBoolean_>('/api/email/send', {
+export async function sendEmailUsingPost(body: API.EmailSendDTO, options?: { [key: string]: any }) {
+  return request<API.BaseResultString_>('/api/email/send', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -76,7 +91,7 @@ export async function sendEmailByIdUsingPost(
   options?: { [key: string]: any }
 ) {
   const { emailId: param0, ...queryParams } = params
-  return request<API.BaseResultBoolean_>(`/api/email/send/${param0}`, {
+  return request<API.BaseResultString_>(`/api/email/send/${param0}`, {
     method: 'POST',
     params: { ...queryParams },
     ...(options || {}),
@@ -99,7 +114,7 @@ export async function sendVerificationCodeUsingPost(
 }
 
 /** updateEmail POST /api/email/update */
-export async function updateEmailUsingPost(body: API.EmailDto, options?: { [key: string]: any }) {
+export async function updateEmailUsingPost(body: API.EmailUpdateDTO, options?: { [key: string]: any }) {
   return request<API.BaseResultBoolean_>('/api/email/update', {
     method: 'POST',
     headers: {

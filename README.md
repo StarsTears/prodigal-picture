@@ -1,103 +1,161 @@
-# Getting Started
-<p align="center">
+<h1 align="center">Prodigal Picture</h1>
+<p align="center"><strong>企业级智能协同云图库平台</strong></p>
 
-[//]: # (	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-b99b286755aef70355a7084753f89cdb7c9.png">)
-</p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Prodigal Picture v1.0.0</h1>
-<h4 align="center">基于 Vue + Ant Design  和 Spring Boot/Spring Cloud & Alibaba 前后端分离的云图库管理系统</h4>
 <p align="center">
-    <a><img alt="GitHub" src="https://img.shields.io/github/contributors/StarsTears/prodigal-picture"></a>
+  <img alt="GitHub" src="https://img.shields.io/github/contributors/StarsTears/prodigal-picture">
+  <img alt="version" src="https://img.shields.io/badge/version-1.0.0-blue">
+  <img alt="JDK" src="https://img.shields.io/badge/JDK-21-orange">
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.4.3-brightgreen">
+  <img alt="Vue" src="https://img.shields.io/badge/Vue-3.5-42b883">
 </p>
+
+---
 
 ## 平台简介
-###后端
-* 基于 Spring Boot + Redis + COS+ Al+ WebSocket 的企业级智能协同云图库平台。
-* 分为公共图库、私有图库和团队共享图库三大模块。用户可在平台公开上传和检索图片;管理员可以上传、审核和管理分析图片。
-* 个人用户可将图片上传至私有空间进行批量管理、多维检索、编辑和分析;企业可开通团队空间并邀请成员，共享和实时协同编辑图片。
+
+Prodigal Picture 是一站式智能云图库管理平台，涵盖 **公共图库、私有空间、团队协作** 三大核心模块。支持图片上传、多维检索、AI 扩图、审核流程、空间分析、邮件通知、SSE 实时推送等功能，满足个人到企业级团队的图片资产管理需求。
+
+### 后端
+
+- Spring Boot 3.4.3 + MySQL 8.0 + MongoDB + Redis + RabbitMQ
+- MyBatis-Plus 3.5 + ShardingSphere 5.5 动态分表
+- Sa-Token RBAC 多账号体系权限控制
+- 腾讯云 COS 对象存储 + 数据万象图片处理
+- SSE 服务端推送 + WebSocket 实时协同
+- Knife4j + SpringDoc 自动接口文档
+
 ### 前端
-* 基于 Vue3 + Ant Design + Pinia+ Al+ WebSocket 的企业级智能协同云图库平台。 
-* 分为公共图库、私有图库和团队共享图库三大模块。用户可在平台公开上传和检索图片;管理员可以上传、审核和管理分析图片。
-* 个人用户可将图片上传至私有空间进行批量管理、多维检索、编辑和分析;企业可开通团队空间并邀请成员，共享和实时协同编辑图片。
 
-## 系统模块
+- Vue 3.5 + TypeScript + Vite
+- Ant Design Vue 4.x + Pinia 状态管理
+- ECharts 5 可视化图表 + vue-echarts
+- SSE 实时通知 + 暗色/浅色主题切换
 
-~~~
-├─annotation                    //元注解
-├─aop      
-├─api                           //调用第三方API,如阿里云百炼
-│  ├─aliyunai
-│  └─imagesearch
-├─common                        //公共模块
-├─config                        //配置
-├─constant                      //常量
-├─controller    
-├─exception                     异常处理
-├─manager                       //独立方法；如COS
-│  ├─strategy
-│  └─upload
-├─mapper
-├─model                         //实体对象
-│  ├─dto
-│  ├─entity
-│  ├─enums
-│  └─vo
-├─service
-│  └─impl
-└─utils
-~~~
-## 依赖
-1. Spring Boot 2.7.6
-2. MySQL 8.0+
-3. MyBatis Plus 3.5.9
-4. Mybatis-plus-bom  3.5.9
-5. 腾讯云对象存储COS
-6. Knife4j-openapi2  4.4.0
-7. Hutool 工具类  5.8.26
-8. jsoup  1.15.3 
-9. Lombok 1.18.32
-10. Sa-Token 1.39.0
-11. ShardingSphere 5.2.0
+---
 
+## 系统架构
 
-## 功能
-1. 统一异常管理:封装了自定义异常类及统一错误码枚举类，并基于 @RestControllerAdvice 注解开发全局异常处理器，提升了系统的稳定性。
-2. 统一响应封装:自定义响应封装类和返回成功/失败响应的工具类，实现了标准化的接口响应数据格式，便于前后端交亘。
-3. 全局跨域配置:基于 WebMvcConfiqurer 实现了全局 CORS 配置类，配置可信源，解决了前后端跨域请求问题精度丢失解决:
-    自定义 Jackson 配置类，通过 ObjectMapper 配置 Long 类型序列化为字符串，解决前端因 」 精度限制导致的长整型数据精度丢失问题，确保前后端数据一致。
-4. 通过 MyBatis Plus 的 LambdaQueryWrapper 和 SqlRunner 构造动态 SQL 查询，简化了操作数据库的编码。库表设计:根据业务设计用户、图片、空间、空间成员表，其中图片标签采用 JSON 数组存储，便于维护:并通过给空间成员关联表添加联合索引来提升检索性能。
-5. 使用 Knife4i 自动生成接口文档，并基于 ApiOperation 注解编写接口注释，减少了人工维护文档的工作量，提高了接口可读性。
-6. 用户注册:使用 MD5+盐值加密策略对用户密码进行加密存储，防止明文密码泄露风险。用户登录:通过 Redis 整合 Spring Session 分布式保存用户登录态，实现了跨服务器的用户识别。
-7. 权限管理:基于自定义权限校验注解和 Spring AOP 环绕切面，实现了统一的权限校验，区分用户和管理员。图片存管:基于 COS 对象存储 SDK封装了通用文件上传下载服务，并基于数据万象服务自动解析图片信息(包括宽高、格式、大小等)，便于检索。
-8. 图片审核:设计分级审核策略，管理员上传图片自动通过审核，并自动记录审核时间与审核人id，确保可审计追溯。URL 传图:使用 Hutool 请求 URL来下载图片，并在下载前通过 Head 请求校验 URL，有效隆低带宽消耗与数据异常风险。
-9. 运用 **模板方法** 设计模式统一封装本地图片和 URL 图片上传的流程，如校验、下载、上传和资源释放，复用代码并提高可维护性。
-10. 图片搜索:基于 MyBatis plus 封装了将对象转换为 SQL查询的通用方法，支持按关键词、标签、分类、时间范围等多维度组合搜索。
-11. 以图搜图:通过分析请求获取到百度以图搜图 API，利用 Jsoup 和 HtpClient 调用 API，并运用 门]面模式 组合 API 调用来获取图片列表，便于客户端使用。 
-12. 颜色搜图:使用数据万象提取图片主色调并存储到数据库，搜索时通过欧氏距离计算颜色相似度并通过 Stream API进行排序。 
-13. 批量编辑:通过 Transactional 事务管理确保批量编辑图片的原子性;并利用 ThreadPoolExecutor+ 数据库批处理进一步优化了批处理性能。 
-14. A1 扩图:基于阿里云百炼大模型封装 AI 绘图服务，提供创建与査询任务的 API，采用异步任务轮询处理进度，并统错误码以提升稳定性。 
-15. 空间分析:运用 group by 实现数据的聚合统计，并通过 MyBatis Plus 的 selectObis 方法按需选择字段，提高查询性能并节约内存占用。 
-16. 成员管理:设计 space_user 关联表保存团队空间成员及角色信息，使用唯一联合索引防止成员重复加入，同时提升查询性能。 
-17. 运用 @Lazy 注解，解决了空间服务和空间成员服务互相引用导致的循环依赖问题。
-18. 权限管理:基于 Sa-Token 的 Kit 模式实现了多账号体系的 **RBAC 权限控制**，通过从请求上下文中获取参数实现了统的权限校验逻辑，并运用注解合并简化了鉴权注解的使用，轻松实现方法级别的权限校验。
-19. 数据分表:使用 shardingSphere 自定义分表算法实现了团队空间图片的 动态分表，提高了查询效率。并且为了通过 
-20. 框架内置的校验规则，手动维护可用分表节点。协作编辑:基于 WebSocket+ **事件驱动设计** 实现多人协作编辑图片功能，自定义握手拦截器确保权限校验通过后才能连接，并通过“编辑锁”机制，避免编辑冲突。
+| 层级 | 技术/组件 |
+|------|----------|
+| **客户端** | Vue 3 + TypeScript  →  Ant Design Vue  →  Pinia / Vite |
+| **协议** | HTTP / SSE |
+| **网关** | REST API ｜ Sa-Token 鉴权 ｜ 接口限流 ｜ CORS 跨域 |
+| **框架** | Spring Boot 3.x |
+| **业务服务** | Controller → Service → Manager → Mapper |
+|  | AOP 切面 ｜ 异常处理 ｜ 定时任务 ｜ RabbitMQ ｜ SSE 推送 |
+| **数据存储** | MySQL 8.0（ShardingSphere 分表）｜ Redis（Caffeine 二级缓存）｜ MongoDB（邮件持久化）｜ 腾讯云 COS（万象图片处理） |
+| **外部集成** | 阿里云百炼（AI 扩图）｜ 百度搜图（以图搜图）｜ Actuator（Prometheus 监控） |
+
+---
+
+## 核心功能
+
+### 图片管理
+- 本地上传、URL 抓取、批量导入
+- 自动解析格式/尺寸/色调，生成缩略图与 WebP 格式
+- 公共图库管理员审核机制（通过/拒绝 + 审核意见），审核结果邮件 + SSE 实时通知上传者
+- 多维度检索：关键词、标签、分类、时间范围、颜色
+- 百度以图搜图、主色调相似度排序
+- 批量编辑图片（事务保障 + 线程池并发）
+
+### 空间与协作
+- 公共图库 / 私有空间 / 团队空间三种模式
+- 空间等级体系（普通版 / 专业版 / 企业版），支持空间额度管控
+- 团队空间成员管理，RBAC 权限控制
+- WebSocket 多人实时协同编辑，Disruptor 无锁队列 + 编辑锁防冲突
+
+### AI 能力
+- 阿里云百炼大模型 AI 扩图（异步任务 + 轮询进度）
+- 图片主色调自动提取（数据万象）
+
+### 空间分析
+- 空间用量 / 分类分布 / 标签统计
+- 用户上传排行 / 大小排行 / 时间趋势
+- ECharts 可视化图表展示
+
+### 邮件系统
+- 公告、告警、通知三种邮件类型
+- HTML 富文本邮件内容，支持附件
+- RabbitMQ 异步发送，削峰填谷不阻塞主流程
+- MongoDB 持久化邮件记录，支持历史回溯
+- SSE 实时推送邮件到达通知，在线用户即时感知
+- 验证码邮件（注册/重置密码）
+- MQ 消费幂等保障（Redis 去重）
+
+### 系统管理
+- 用户管理：注册/登录、密码修改与重置、个人信息编辑
+- 图片管理：管理员审核、编辑、删除
+- 空间管理：创建/编辑/分析空间
+- 字典管理：系统枚举、配置项等键值数据维护
+- 邮件管理：邮件草稿/发送/历史查询
+
+### 基础设施
+- 全局统一异常处理与响应封装
+- 跨域配置 + Long 精度丢失解决（Jackson 序列化）
+- Redis + Caffeine 二级缓存加速首页
+- 暗色/浅色主题一键切换
+- Actuator + Prometheus 应用监控
+
+---
+
+## 快速开始
+
+### 环境要求
+
+| 组件 | 版本 |
+|------|------|
+| JDK | 21+ |
+| Maven | 3.6+ |
+| Node.js | 18+ |
+| MySQL | 8.0+ |
+| Redis | 6.0+ |
+| RabbitMQ | 3.9+ |
+| MongoDB | 5.0+ |
+
+### 后端启动
+
+```bash
+# 1. 初始化数据库（执行 sql/ 目录下的脚本）
+
+# 2. 修改 system/src/main/resources/application.yml 中的数据库、Redis、RabbitMQ、COS 等配置
+
+# 3. 启动
+cd system
+mvn spring-boot:run
+```
+
+### 前端启动
+
+```bash
+cd prodigal-picture-ui
+npm install
+npm run dev
+```
+
+访问 http://localhost:5173 即可打开前端页面。
+
+---
 
 ## 在线体验
 
-- test/123456
-## 效果展示
-![img.png](project_img/首页.png)
-![img.png](project_img/图片管理.png)
-![img.png](project_img/图片详情.png)
-![img.png](project_img/用户管理.png)
-![img.png](project_img/空间管理.png)
-![img.png](project_img/空间图库分析.png)
-![img.png](project_img/公共图库分析.png)
-![img.png](project_img/全空间分析.png)
-### Reference Documentation
-For further reference, please consider the following sections:
+演示地址：*（待部署）*
 
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.7.6/maven-plugin/reference/html/)
-* [Create an OCI image](https://docs.spring.io/spring-boot/docs/2.7.6/maven-plugin/reference/html/#build-image)
-* [Spring Web](https://docs.spring.io/spring-boot/docs/2.7.6/reference/htmlsingle/#web)
+演示账号：`test` / `123456`
+
+---
+
+## 效果展示
+
+| 首页 | 图片管理 |
+|------|----------|
+| ![首页](project_img/首页.png) | ![图片管理](project_img/图片管理.png) |
+
+| 图片详情 | 用户管理 |
+|----------|----------|
+| ![图片详情](project_img/图片详情.png) | ![用户管理](project_img/用户管理.png) |
+
+| 空间管理 | 空间图库分析 |
+|----------|-------------|
+| ![空间管理](project_img/空间管理.png) | ![空间图库分析](project_img/空间图库分析.png) |
+
+---

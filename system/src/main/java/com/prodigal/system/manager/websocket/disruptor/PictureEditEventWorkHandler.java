@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 
 /**
  * @program: prodigal-picture
@@ -31,7 +31,7 @@ public class PictureEditEventWorkHandler implements WorkHandler<PictureEditEvent
     @Override
     public void onEvent(PictureEditEvent event) throws Exception {
         User user = event.getUser();
-        Long pictureId = event.getPictureId();
+        String pictureId = event.getPictureId();
         WebSocketSession session = event.getSession();
         PictureEditRequestMessage pictureEditRequestMessage = event.getPictureEditRequestMessage();
         String type = pictureEditRequestMessage.getType();

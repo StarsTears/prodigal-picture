@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.vo.PictureVO;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.util.Date;
 import java.util.List;
@@ -21,17 +21,17 @@ import java.util.List;
 */
 public interface PictureService extends IService<Picture> {
 
-    PictureVO uploadPicture(Object inputSource, PictureUploadDto pictureUploadDto, User loginUser);
+    PictureVO uploadPicture(Object inputSource, PictureUploadDTO pictureUploadDto, User loginUser);
 
-    int uploadPictureByBatch(PictureUploadByBatchDto pictureUploadByBatchDto, User loginUser);
+    int uploadPictureByBatch(PictureUploadByBatchDTO pictureUploadByBatchDto, User loginUser);
 
-    String getTempDownloadUrl(Long id, Long spaceId);
+    String getTempDownloadUrl(String id, String spaceId);
 
-    void editPicture(PictureEditDto pictureEditDto, User loginUser);
+    void editPicture(PictureEditDTO pictureEditDto, User loginUser);
 
-    void editPictureByBatch(PictureEditByBatchDto pictureEditByBatchDto, User loginUser);
+    void editPictureByBatch(PictureEditByBatchDTO pictureEditByBatchDto, User loginUser);
 
-    LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDto pictureQueryDto);
+    LambdaQueryWrapper<Picture> getQueryWrapper(PictureQueryDTO pictureQueryDto);
 
     PictureVO getPictureVO(Picture picture, HttpServletRequest request);
 
@@ -39,25 +39,25 @@ public interface PictureService extends IService<Picture> {
 
     void validPicture(Picture picture);
 
-    Page<PictureVO> getPictureVOPageCache(PictureQueryDto pictureQueryDto, HttpServletRequest request);
+    Page<PictureVO> getPictureVOPageCache(PictureQueryDTO pictureQueryDto, HttpServletRequest request);
 
     List<Picture> getPicturePageWithColor(Color targetColor, List<Picture> pictureList);
 
-    void doPictureReview(PictureReviewDto pictureReviewDto, User loginUser);
+    void doPictureReview(PictureReviewDTO pictureReviewDto, User loginUser);
 
-    void fillReviewParams(Picture picture, User loginUser);
+    void fillReviewParams(Picture picture, User loginUser, String spaceId);
 
-    void deletePicture(long pictureId,long spaceId, User loginUser);
+    void deletePicture(String pictureId, String spaceId, User loginUser);
 
     void clearPictureFile(Picture oldPicture);
 
     List<Picture> selectDeletedPictures(Date date);
 
-    int deletePicturesByPictureIdsAndSpaceId(List<Long> pictureIds, Long spaceId);
+    int deletePicturesByPictureIdsAndSpaceId(List<String> pictureIds, String spaceId);
 
-    int deleteDeletedPictures(Date date, List<Long> spaceIds);
+    int deleteDeletedPictures(Date date, List<String> spaceIds);
 
     void checkPicturePermission(User loginUser, Picture picture);
 
-    CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDto createPictureOutPaintingTaskDto, User loginUser);
+    CreateOutPaintingTaskVO createPictureOutPaintingTask(CreatePictureOutPaintingTaskDTO createPictureOutPaintingTaskDto, User loginUser);
 }

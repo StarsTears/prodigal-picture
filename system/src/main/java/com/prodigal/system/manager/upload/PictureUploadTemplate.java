@@ -5,8 +5,8 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
@@ -15,7 +15,7 @@ import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
 import com.qcloud.cos.model.ciModel.persistence.ProcessResults;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -44,15 +44,20 @@ public abstract class PictureUploadTemplate {
         //图片上传地址
         String uuid = RandomUtil.randomString(8);
         String originalFilename = this.getOriginalFilename(inputSource);
-        //拼接上传路径，避免文件名重复;增加安全性
-        String uploadFileName = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, FileUtil.getSuffix(originalFilename));
-        String uploadPath = String.format("%s/%S", uploadFilePrefix, uploadFileName);
         File file = null;
 
         try {
-            //创建临时文件
-            file = File.createTempFile(uploadPath, null);
+            //创建临时文件，先下载再根据实际内容确定扩展名
+            file = File.createTempFile("upload", null);
             this.processFile(inputSource,file);
+
+            //根据文件魔数检测真实格式，避免 URL 无扩展名或扩展名错配
+            String detectedType = FileUtil.getType(file);
+            String extension = (detectedType != null && detectedType.matches("jpg|jpeg|png|webp")) ? detectedType : "jpeg";
+
+            String uploadFileName = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, extension);
+            String uploadPath = String.format("%s/%s", uploadFilePrefix, uploadFileName);
+
             //上传图片 后 获得图片信息对象
             PutObjectResult putPictureObjectResult = cosManager.putPictureObject(uploadPath, file);
             ImageInfo imageInfo = putPictureObjectResult.getCiUploadResult().getOriginalInfo().getImageInfo();
@@ -77,7 +82,7 @@ public abstract class PictureUploadTemplate {
             return uploadPictureResult;
         } catch (IOException e) {
             log.error("file upload COS error", e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "上传失败");
         } finally {
             //删除临时文件
             this.deleteTempFile(file);

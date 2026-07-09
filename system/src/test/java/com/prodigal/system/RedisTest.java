@@ -6,7 +6,7 @@
 //import org.springframework.data.redis.core.StringRedisTemplate;
 //import org.springframework.data.redis.core.ValueOperations;
 //
-//import javax.annotation.Resource;
+//import jakarta.annotation.Resource;
 //
 //import static org.junit.jupiter.api.Assertions.*;
 //

@@ -14,15 +14,15 @@ import java.util.List;
  * @description: 图库空间分析
  **/
 public interface SpaceAnalyzeService extends IService<Space> {
-    SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDto spaceUsageAnalyzeDto, User loginUser);
+    SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDTO spaceUsageAnalyzeDto, User loginUser);
 
-    List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDto spaceCategoryAnalyzeDto, User loginUser);
+    List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDTO spaceCategoryAnalyzeDto, User loginUser);
 
-    List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDto spaceTagAnalyzeDto, User loginUser);
+    List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDTO spaceTagAnalyzeDto, User loginUser);
 
-    List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDto spaceSizeAnalyzeDto, User loginUser);
+    List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDTO spaceSizeAnalyzeDto, User loginUser);
 
-    List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDto spaceUserAnalyzeDto, User loginUser);
+    List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDTO spaceUserAnalyzeDto, User loginUser);
 
-    List<Space> analyzeSpaceRank(SpaceRankAnalyzeDto spaceRankAnalyzeDto, User loginUser);
+    List<Space> analyzeSpaceRank(SpaceRankAnalyzeDTO spaceRankAnalyzeDto, User loginUser);
 }

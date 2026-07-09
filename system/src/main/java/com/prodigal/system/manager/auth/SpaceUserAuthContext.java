@@ -17,22 +17,22 @@ public class SpaceUserAuthContext {
     /**
      * 临时参数，不同请求对应的 id 可能不同
      */
-    private Long id;
+    private String id;
 
     /**
      * 图片 ID
      */
-    private Long pictureId;
+    private String pictureId;
 
     /**
      * 空间 ID
      */
-    private Long spaceId;
+    private String spaceId;
 
     /**
      * 空间用户 ID
      */
-    private Long spaceUserId;
+    private String spaceUserId;
 
     /**
      * 图片信息

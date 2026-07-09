@@ -1,0 +1,35 @@
+dataSources:
+  prodigal-picture:
+    dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/prodigal-picture?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+rules:
+  - !SINGLE
+    tables:
+      - "*.*"
+  - !SHARDING
+    tables:
+      picture:
+        # 实际数据节点：prodigal-picture 库，picture 表
+        actualDataNodes: prodigal-picture.picture
+        # 分表策略
+        tableStrategy:
+          standard:
+            # 分片键
+            shardingColumn: space_id
+            # 分片算法
+            shardingAlgorithmName: picture-sharding-algorithm
+    shardingAlgorithms:
+      # 定义具体的分片算法
+      picture-sharding-algorithm:
+        type: CLASS_BASED
+        props:
+          strategy: standard
+          algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
+
+props:
+  # 开启 SQL 输出，方便查看路由结果
+  sql-show: true

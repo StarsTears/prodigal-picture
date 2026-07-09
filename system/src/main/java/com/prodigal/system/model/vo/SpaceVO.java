@@ -1,6 +1,5 @@
 package com.prodigal.system.model.vo;
 
-import cn.hutool.json.JSONUtil;
 import com.prodigal.system.model.entity.Space;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
@@ -22,7 +21,7 @@ public class SpaceVO implements Serializable {
     /**
      * id
      */
-    private Long id;
+    private String id;
 
     /**
      * 空间类型：0-私有 1-团队
@@ -62,7 +61,7 @@ public class SpaceVO implements Serializable {
     /**
      * 创建用户 id
      */
-    private Long userId;
+    private String userId;
 
     /**
      * 创建时间

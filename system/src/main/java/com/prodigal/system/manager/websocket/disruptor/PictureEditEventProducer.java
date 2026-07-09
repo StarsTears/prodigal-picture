@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
+import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
 
 /**
  * @program: prodigal-picture
@@ -22,7 +22,7 @@ public class PictureEditEventProducer {
     @Resource
     private Disruptor<PictureEditEvent> disruptor;
 
-    public void publishEvent(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, Long pictureId) {
+    public void publishEvent(WebSocketSession session, PictureEditRequestMessage pictureEditRequestMessage, User user, String pictureId) {
         RingBuffer<PictureEditEvent> ringBuffer = disruptor.getRingBuffer();
         //获取可以生成的位置
         long sequence = ringBuffer.next();

@@ -7,7 +7,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 /**
  * @program: prodigal-picture
@@ -21,8 +21,9 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     //注册sa-token 拦截器,打开注解式鉴权功能
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-//        WebMvcConfigurer.super.addInterceptors(registry);
-        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new SaInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns("/actuator/health", "/actuator/prometheus", "/actuator/info");
     }
     @PostConstruct
     public void rewriteSaStrategy() {

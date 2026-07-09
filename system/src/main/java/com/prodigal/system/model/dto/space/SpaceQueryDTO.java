@@ -1,0 +1,45 @@
+package com.prodigal.system.model.dto.space;
+
+import com.prodigal.system.common.PageRequest;
+import com.prodigal.system.model.enums.SpaceLevelEnum;
+import com.prodigal.system.model.enums.SpaceTypeEnum;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+import java.io.Serializable;
+
+/**
+ * @program: prodigal-picture
+ * @author: Lang
+ * @description: 空间查询请求参数
+ **/
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class SpaceQueryDTO extends PageRequest implements Serializable {
+    private static final long serialVersionUID = -6134565777985407409L;
+    /**
+     * id
+     */
+    private String id;
+
+    /**
+     * 空间类型：0-私有 1-团队
+     */
+    private SpaceTypeEnum spaceType;
+
+
+    /**
+     * 空间名称
+     */
+    private String spaceName;
+
+    /**
+     * 空间级别：0-普通版 1-专业版 2-旗舰版
+     */
+    private SpaceLevelEnum spaceLevel;
+
+    /**
+     * 创建用户 id
+     */
+    private String userId;
+}

@@ -5,7 +5,7 @@
       <span v-if="queryAll">全部空间</span>
       <span v-else-if="queryPublic">公共图库</span>
       <span v-else>
-        <a :href="`/space/${spaceId}`">空间ID:{{ spaceId }}</a>
+        <router-link :to="`/space/${spaceId}`">空间ID:{{ spaceId }}</router-link>
       </span>
     </h2>
     <a-row :gutter="[16,16]">
@@ -14,8 +14,8 @@
         <SpaceUsageAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic"/>
       </a-col>
       <!-- 空间使用排行分析 -->
-      <a-col :xs="24" :md="12">
-        <SpaceRankAnalyze v-fi="isAdmin" :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic"/>
+      <a-col v-if="isAdmin" :xs="24" :md="12">
+        <SpaceRankAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic"/>
       </a-col>
       <!-- 用户上传行为分析 -->
       <a-col :xs="24" :md="12">
@@ -68,7 +68,7 @@ const loginUserStore = useLoginUserStore()
 const loginUser = loginUserStore.loginUser
 
 const isAdmin = computed(() => {
-  return loginUser.userRole === 'admin'
+  return loginUser.userRole === 'admin' || loginUser.userRole === 'administrator'
 })
 
 </script>

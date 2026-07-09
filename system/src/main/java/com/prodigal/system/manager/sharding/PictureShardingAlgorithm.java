@@ -5,7 +5,6 @@ import org.apache.shardingsphere.sharding.api.sharding.standard.RangeShardingVal
 import org.apache.shardingsphere.sharding.api.sharding.standard.StandardShardingAlgorithm;
 
 import java.util.Collection;
-import java.util.Properties;
 
 /**
  * @program: prodigal-picture
@@ -13,16 +12,14 @@ import java.util.Properties;
  * @description: 自定义分表算法
  * 我们只对 旗舰版 空间下的图片 进行分表
  **/
-public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Long> {
+public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Comparable<?>> {
     @Override
-    public String doSharding(Collection<String> availableTargetNames, PreciseShardingValue<Long> preciseShardingValue) {
-        Long spaceId = preciseShardingValue.getValue();
+    public String doSharding(Collection<String> availableTargetNames, PreciseShardingValue<Comparable<?>> preciseShardingValue) {
+        String spaceId = String.valueOf(preciseShardingValue.getValue());
         String logicTableName = preciseShardingValue.getLogicTableName();
-        //查所有图片
-        if (spaceId == null) {
+        if (spaceId == null || "null".equals(spaceId)) {
             return logicTableName;
         }
-        //根据 spaceId 生成动态表名
         String realTableName = "picture_" + spaceId;
         if (availableTargetNames.contains(realTableName)){
             return realTableName;
@@ -32,17 +29,7 @@ public class PictureShardingAlgorithm implements StandardShardingAlgorithm<Long>
     }
 
     @Override
-    public Collection<String> doSharding(Collection<String> collection, RangeShardingValue<Long> rangeShardingValue) {
+    public Collection<String> doSharding(Collection<String> collection, RangeShardingValue<Comparable<?>> rangeShardingValue) {
         return null;
-    }
-
-    @Override
-    public Properties getProps() {
-        return null;
-    }
-
-    @Override
-    public void init(Properties properties) {
-
     }
 }

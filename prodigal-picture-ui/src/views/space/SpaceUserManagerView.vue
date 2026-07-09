@@ -76,13 +76,10 @@
           <a-space wrap>
             <a-popconfirm okText="确定"
                           cancelText="取消"
-                          title="Sure to delete?"
+                          title="确定删除？"
                           @confirm="doDelete(record.id)">
-              <a-button danger>
+              <a-button size="small" danger :icon="h(DeleteOutlined)">
                 删除
-                <template #icon>
-                  <DeleteOutlined/>
-                </template>
               </a-button>
             </a-popconfirm>
           </a-space>
@@ -109,13 +106,11 @@ const columns = [
   {
     title: '序号',
     width: 50,
-    fixed: 'left'
   },
   {
     title: 'id',
     dataIndex: 'id',
     width: 80,
-    fixed: 'left'
   },
   {
     title: '用户',
@@ -146,7 +141,7 @@ const props = defineProps<Props>()
 const dataList = ref([])
 const total = ref(0)
 // 搜索条件
-const searchParams = reactive<API.SpaceUserQueryDto>({
+const searchParams = reactive<API.SpaceUserQueryDTO>({
   current: 1,
   pageSize: 10,
   sortField: 'createTime',
@@ -221,7 +216,7 @@ const editSpaceRole = async (value, record) => {
 
 
 //删除
-const doDelete = async (id: number) => {
+const doDelete = async (id: string) => {
   if (!id) {
     return
   }
@@ -236,7 +231,7 @@ const doDelete = async (id: number) => {
 }
 
 // 添加用户
-const formData = reactive<API.SpaceUserAddDto>({})
+const formData = reactive<API.SpaceUserAddDTO>({})
 
 const handleSubmit = async () => {
   const spaceId = props.id
