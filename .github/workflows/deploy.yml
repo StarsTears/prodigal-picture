@@ -42,8 +42,12 @@ jobs:
             echo "Current directory: $(pwd)"
 
             if [ -d ".git" ]; then
-              echo "🔄 Repository exists, pulling latest changes..."
-              git fetch origin main
+              echo "Repository exists, pulling latest changes..."
+              git fetch origin main || {
+                echo "Direct fetch failed, trying mirror..."
+                git remote set-url origin https://ghproxy.com/https://github.com/${{ github.repository }}.git
+                git fetch origin main
+              }
               git reset --hard origin/main
             else
                echo "First deployment, cloning repository..."
@@ -51,9 +55,10 @@ jobs:
                   echo "Directory not empty, cleaning..."
                   find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
                fi
-               echo "=== Debug: Before git clone ==="
-               git clone https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git .
-               # 确保检出 main 分支（避免默认分支不是 main 导致代码不一致）
+               git clone https://github.com/${{ github.repository }}.git . || {
+                 echo "Direct clone failed, trying mirror..."
+                 git clone https://ghproxy.com/https://github.com/${{ github.repository }}.git .
+               }
                git checkout main
             fi
             echo "Current commit: $(git rev-parse --short HEAD)"
