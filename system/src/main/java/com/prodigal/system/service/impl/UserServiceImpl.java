@@ -6,8 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.UserConstant;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.StpKit;
 import com.prodigal.system.mapper.UserMapper;
@@ -54,23 +54,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public String register(RegisterDTO registerDto) {
         if (registerDto == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(BizStatus.PARAMS_ERROR);
         }
         if (registerDto.getUserAccount().length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度过短!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "账户长度过短!");
         }
         String userEmail = registerDto.getUserEmail();
         if (StrUtil.isBlank(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "邮箱不能为空!");
         }
         if (!EmailValidatorUtils.isValidEmail(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "邮箱格式错误!");
         }
         if (registerDto.getUserPassword().length() < 6 || registerDto.getCheckPassword().length() < 6) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "密码长度过短!");
         }
         if (!registerDto.getUserPassword().equals(registerDto.getCheckPassword())) {
-            throw new BusinessException(ErrorCode.PASSWORD_NOT_MATCH);
+            throw new BusinessException(BizStatus.PASSWORD_NOT_MATCH);
         }
         LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<User>();
         wrapper.eq(User::getUserAccount, registerDto.getUserAccount())
@@ -78,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .eq(StrUtil.isNotBlank(userEmail), User::getUserEmail, registerDto.getUserEmail());
         Long count = this.baseMapper.selectCount(wrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.USER_EXIST);
+            throw new BusinessException(BizStatus.USER_EXIST);
         }
         String encryptPassword = getEncryptPassword(registerDto.getUserPassword());
         User user = new User();
@@ -93,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setShareCode(generateShareCode());
         boolean save = this.save(user);
         if (!save) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败!");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "注册失败!");
         }
         return user.getId();
     }
@@ -105,11 +105,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         long failCount = failCountStr != null ? Long.parseLong(failCountStr) : 0;
         if (failCount >= CacheConstant.LOGIN_FAIL_MAX_COUNT) {
             if (StrUtil.isBlank(loginDto.getEmail()) || StrUtil.isBlank(loginDto.getCaptcha())) {
-                throw new BusinessException(ErrorCode.CAPTCHA_ERROR, "请先获取验证码");
+                throw new BusinessException(BizStatus.CAPTCHA_ERROR, "请先获取验证码");
             }
             boolean valid = emailService.verifyCode(loginDto.getEmail(), loginDto.getCaptcha());
             if (!valid) {
-                throw new BusinessException(ErrorCode.CAPTCHA_ERROR);
+                throw new BusinessException(BizStatus.CAPTCHA_ERROR);
             }
         }
 
@@ -122,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (newCount != null && newCount == 1) {
                 stringRedisTemplate.expire(failKey, CacheConstant.LOGIN_FAIL_EXPIRE_MINUTES, TimeUnit.MINUTES);
             }
-            throw new BusinessException(ErrorCode.LOGIN_FAIL);
+            throw new BusinessException(BizStatus.LOGIN_FAIL);
         }
 
         stringRedisTemplate.delete(failKey);
@@ -142,12 +142,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null || currentUser.getId() == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
+            throw new BusinessException(BizStatus.USER_NOT_LOGIN);
         }
         String userId = currentUser.getId();
         currentUser = this.getById(userId);
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
+            throw new BusinessException(BizStatus.USER_NOT_LOGIN);
         }
         return currentUser;
     }
@@ -156,7 +156,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean logout(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         if (userObj == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_LOGIN, "未登录!");
+            throw new BusinessException(BizStatus.USER_NOT_LOGIN, "未登录!");
         }
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         // 移除当前用户的 Sa-Token 登录态
@@ -170,15 +170,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String createUser(UserAddDTO userAddDto) {
-        ThrowUtils.throwIf(userAddDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(userAddDto == null, BizStatus.PARAMS_ERROR);
         User user = new User();
         BeanUtils.copyProperties(userAddDto, user);
         String userEmail = userAddDto.getUserEmail();
         if (StrUtil.isBlank(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不能为空!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "邮箱不能为空!");
         }
         if (StrUtil.isNotBlank(userEmail) && !EmailValidatorUtils.isValidEmail(userEmail)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "邮箱格式错误!");
         }
         //初始密码 123456
         final String DEFAULT_PASSWORD = "123456";
@@ -189,14 +189,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserRole(userRoleStr);
         user.setShareCode(generateShareCode());
         boolean save = this.save(user);
-        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!save, BizStatus.OPERATION_ERROR);
         return user.getId();
     }
 
     @Override
     public LambdaQueryWrapper<User> getQueryWrapper(UserQueryDTO userQueryDto) {
         if (userQueryDto == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空!");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "请求参数为空!");
         }
         String sortOrder = userQueryDto.getSortOrder();
         String sortField = userQueryDto.getSortField() == null ? "" : userQueryDto.getSortField().trim();
@@ -270,19 +270,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String newPassword = dto.getNewPassword();
         String checkPassword = dto.getCheckPassword();
 
-        ThrowUtils.throwIf(!newPassword.equals(checkPassword), ErrorCode.PASSWORD_NOT_MATCH);
+        ThrowUtils.throwIf(!newPassword.equals(checkPassword), BizStatus.PASSWORD_NOT_MATCH);
 
         User user = this.lambdaQuery().eq(User::getUserAccount, userAccount).one();
         if (user == null) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+            throw new BusinessException(BizStatus.USER_NOT_FOUND);
         }
         if (!userEmail.equals(user.getUserEmail())) {
-            throw new BusinessException(ErrorCode.EMAIL_NOT_MATCH);
+            throw new BusinessException(BizStatus.EMAIL_NOT_MATCH);
         }
         user.setUserPassword(getEncryptPassword(newPassword));
         boolean updated = this.updateById(user);
         if (!updated) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码重置失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "密码重置失败");
         }
     }
 
@@ -290,14 +290,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void changePassword(ChangePasswordDTO dto, User loginUser) {
         String newPassword = dto.getNewPassword();
-        ThrowUtils.throwIf(!newPassword.equals(dto.getCheckPassword()), ErrorCode.PASSWORD_NOT_MATCH);
-        ThrowUtils.throwIf(!matchPassword(dto.getOldPassword(), loginUser.getUserPassword()), ErrorCode.LOGIN_FAIL, "原密码错误");
+        ThrowUtils.throwIf(!newPassword.equals(dto.getCheckPassword()), BizStatus.PASSWORD_NOT_MATCH);
+        ThrowUtils.throwIf(!matchPassword(dto.getOldPassword(), loginUser.getUserPassword()), BizStatus.LOGIN_FAIL, "原密码错误");
 
         User user = this.getById(loginUser.getId());
         user.setUserPassword(getEncryptPassword(newPassword));
         boolean updated = this.updateById(user);
         if (!updated) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "密码修改失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "密码修改失败");
         }
     }
 
@@ -334,6 +334,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 return code;
             }
         }
-        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "分享码生成失败，请重试");
+        throw new BusinessException(BizStatus.SYSTEM_ERROR, "分享码生成失败，请重试");
     }
 }

@@ -20,24 +20,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotLoginException.class)
     public BaseResult<?> notLoginExceptionHandler(Exception e) {
-        log.error("NotLoginException:{}", ErrorCode.USER_NOT_LOGIN.getMessage(), e);
-        return ResultUtils.error(ErrorCode.USER_NOT_LOGIN, e.getMessage());
+        log.error("NotLoginException:{}", BizStatus.USER_NOT_LOGIN.getMessage(), e);
+        return ResultUtils.error(BizStatus.USER_NOT_LOGIN, e.getMessage());
     }
 
     @ExceptionHandler(NotPermissionException.class)
     public BaseResult<?> notPermissionExceptionHandler(Exception e) {
-        log.error("NotPermissionException:{}", ErrorCode.USER_NOT_PERMISSION.getMessage(), e);
-        return ResultUtils.error(ErrorCode.USER_NOT_PERMISSION, e.getMessage());
+        log.error("NotPermissionException:{}", BizStatus.USER_NOT_PERMISSION.getMessage(), e);
+        return ResultUtils.error(BizStatus.USER_NOT_PERMISSION, e.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public BaseResult<?> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
-        log.error("MethodArgumentNotValidException:{}", ErrorCode.PARAMS_ERROR.getMessage(), e);
+        log.error("MethodArgumentNotValidException:{}", BizStatus.PARAMS_ERROR.getMessage(), e);
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(f -> f.getDefaultMessage())
                 .findFirst()
                 .orElse("参数校验失败");
-        return ResultUtils.error(ErrorCode.PARAMS_ERROR, message);
+        return ResultUtils.error(BizStatus.PARAMS_ERROR, message);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
             }
             cause = cause.getCause();
         }
-        return ResultUtils.error(ErrorCode.PARAMS_ERROR, message);
+        return ResultUtils.error(BizStatus.PARAMS_ERROR, message);
     }
 
     @ExceptionHandler(BusinessException.class)
@@ -73,6 +73,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public BaseResult<?> RuntimeExceptionHandler(RuntimeException e) {
         log.error("RuntimeException:{}", e.getMessage(), e);
-        return ResultUtils.error(ErrorCode.SYSTEM_ERROR);
+        return ResultUtils.error(BizStatus.SYSTEM_ERROR);
     }
 }

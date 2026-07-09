@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.entity.Picture;
@@ -77,7 +77,7 @@ public class FileController {
     @GetMapping("/test/download")
     @PermissionCheck(mustRole = {"administrator", "admin"})
     public void testDownloadFile(String filepath, HttpServletResponse response) throws IOException {
-        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), BizStatus.PARAMS_ERROR);
         streamFileToResponse(filepath, filepath.substring(filepath.lastIndexOf('/') + 1), response);
     }
 
@@ -89,15 +89,15 @@ public class FileController {
      */
     @GetMapping("/download")
     public void downloadFile(String pictureId, String spaceId, HttpServletResponse response) throws IOException {
-        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), BizStatus.PARAMS_ERROR);
         String sid = spaceId == null ? "0" : spaceId;
         QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("id", pictureId).eq("space_id", sid);
         Picture picture = pictureService.getOne(queryWrapper);
-        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR, "图片不存在");
+        ThrowUtils.throwIf(picture == null, BizStatus.NOT_FOUND_ERROR, "图片不存在");
 
         String urlKey = StrUtil.isNotBlank(picture.getOriginUrl()) ? picture.getOriginUrl() : picture.getUrl();
-        ThrowUtils.throwIf(StrUtil.isBlank(urlKey), ErrorCode.NOT_FOUND_ERROR, "图片路径为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(urlKey), BizStatus.NOT_FOUND_ERROR, "图片路径为空");
 
         String fileName = StrUtil.isNotBlank(picture.getName()) ? picture.getName()
                 : urlKey.substring(urlKey.lastIndexOf('/') + 1);
@@ -130,7 +130,7 @@ public class FileController {
     @GetMapping("/test/get/temp/url")
     @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<String> testGetTempURL(@RequestParam("filepath") String filepath) {
-        ThrowUtils.throwIf(StrUtil.isBlank(filepath), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(filepath), BizStatus.PARAMS_ERROR);
         String tempUrl = cosManager.generateTempUrl(filepath);
         return ResultUtils.success(tempUrl);
     }

@@ -6,7 +6,7 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.annotation.SaSpaceCheckPermission;
 import com.prodigal.system.manager.auth.model.SpaceUserPermissionConstant;
@@ -51,7 +51,7 @@ public class SpaceUserController {
     @PostMapping("/add")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<String> addSpaceUser(@Valid @RequestBody SpaceUserAddDTO spaceUserAddDTO, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserAddDTO == null, BizStatus.PARAMS_ERROR);
         String spaceId = spaceUserService.addSpaceUser(spaceUserAddDTO);
 
         return ResultUtils.success(spaceId);
@@ -66,13 +66,13 @@ public class SpaceUserController {
     @PostMapping("/delete")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<Boolean> deleteSpaceUser(@Valid @RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(deleteRequest == null, BizStatus.PARAMS_ERROR);
         String id = deleteRequest.getId();
         //判断是否存在
         SpaceUser oldSpaceUser = spaceUserService.getById(id);
-        ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldSpaceUser == null, BizStatus.NOT_FOUND_ERROR);
         boolean result = spaceUserService.removeById(id);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
     /**
@@ -84,7 +84,7 @@ public class SpaceUserController {
     @PostMapping("/edit")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<Boolean> editSpaceUser(@Valid @RequestBody SpaceUserEditDTO spaceUserEditDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceUserEditDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserEditDto == null, BizStatus.PARAMS_ERROR);
         //将实体类 和 DTO 进行转换
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceUserEditDto, spaceUser);
@@ -92,9 +92,9 @@ public class SpaceUserController {
         spaceUserService.validSpaceUser(spaceUser, false);
         //判断该数据是否存在
         SpaceUser oldSpaceUser = spaceUserService.getById(spaceUser.getId());
-        ThrowUtils.throwIf(oldSpaceUser == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldSpaceUser == null, BizStatus.NOT_FOUND_ERROR);
         boolean result = spaceUserService.updateById(spaceUser);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -107,13 +107,13 @@ public class SpaceUserController {
     @PostMapping("/get")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResult<SpaceUser> getSpaceUser(@RequestBody SpaceUserQueryDTO spaceUserQueryDTO, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceUserQueryDTO == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserQueryDTO == null, BizStatus.PARAMS_ERROR);
         String spaceId = spaceUserQueryDTO.getSpaceId();
         String userId = spaceUserQueryDTO.getUserId();
-        ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), BizStatus.PARAMS_ERROR);
 
         SpaceUser spaceUser = spaceUserService.getOne(spaceUserService.getQueryWrapper(spaceUserQueryDTO));
-        ThrowUtils.throwIf(spaceUser == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(spaceUser == null, BizStatus.NOT_FOUND_ERROR);
         return ResultUtils.success(spaceUser);
     }
 

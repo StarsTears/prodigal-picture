@@ -10,8 +10,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mongodb.client.result.DeleteResult;
 import com.prodigal.system.config.MailConfig;
 import com.prodigal.system.constant.CacheConstant;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.email.EmailAddDTO;
 import com.prodigal.system.model.dto.email.EmailQueryDTO;
@@ -71,7 +71,7 @@ public class EmailServiceImpl implements EmailService {
         Boolean locked = redisTemplate.opsForValue()
                 .setIfAbsent(sendLockKey, "1", CacheConstant.SEND_LOCK_SECONDS, TimeUnit.SECONDS);
         if (Boolean.FALSE.equals(locked)) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码已发送，请稍后再试");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "验证码已发送，请稍后再试");
         }
 
         String code = generateVerificationCode();
@@ -88,7 +88,7 @@ public class EmailServiceImpl implements EmailService {
             redisTemplate.delete(codeKey);
             redisTemplate.delete(sendLockKey);
             log.error("验证码投递 MQ 失败, email={}", email, e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码发送失败，请稍后重试");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "验证码发送失败，请稍后重试");
         }
     }
 
@@ -105,13 +105,13 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public String addEmail(EmailAddDTO emailDto, User loginUser) {
-        ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailDto == null, BizStatus.PARAMS_ERROR);
         validEmail(emailDto.getTo(), emailDto.getType());
 
         if (emailDto.isSendNow()) {
             // 告警类型必须指定收件人
             if (EmailTypeEnum.ALERT.equals(emailDto.getType()) && StrUtil.isBlank(emailDto.getTo())) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
+                throw new BusinessException(BizStatus.PARAMS_ERROR, "告警类型必须指定收件人");
             }
             // 公告类型：若未指定收件人，则查询全量用户邮箱
             if (EmailTypeEnum.NOTICE.equals(emailDto.getType()) && StrUtil.isBlank(emailDto.getTo())) {
@@ -155,7 +155,7 @@ public class EmailServiceImpl implements EmailService {
         // 告警类型必须指定收件人
         EmailTypeEnum emailTypeEnum = emailDto.getType();
         if (EmailTypeEnum.ALERT.equals(emailTypeEnum) && StrUtil.isBlank(emailDto.getTo())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "告警类型必须指定收件人");
         }
 
         // 公告类型：若未指定收件人，则查询全量用户邮箱
@@ -195,14 +195,14 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendMessageById(String emailId, User loginUser) {
         Email email = mongoTemplate.findById(emailId, Email.class);
-        ThrowUtils.throwIf(email == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
+        ThrowUtils.throwIf(email == null, BizStatus.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
         if (Integer.valueOf(EmailStatusEnum.SENT.getValue()).equals(email.getStatus())) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "邮件已发送，无法重复发送");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "邮件已发送，无法重复发送");
         }
         // 告警类型必须指定收件人
         EmailTypeEnum typeEnum = EmailTypeEnum.getEnumByValue(email.getType());
         if (EmailTypeEnum.ALERT.equals(typeEnum) && StrUtil.isBlank(email.getTo())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "告警类型必须指定收件人");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "告警类型必须指定收件人");
         }
         // 更新状态为发送中
         email.setStatus(EmailStatusEnum.SUBMITTED.getValue());
@@ -306,15 +306,15 @@ public class EmailServiceImpl implements EmailService {
      */
     @Override
     public void updateEmail(EmailUpdateDTO emailDto, User loginUser) {
-        ThrowUtils.throwIf(emailDto == null || emailDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailDto == null || emailDto.getId() == null, BizStatus.PARAMS_ERROR);
         Email oldEmail = mongoTemplate.findById(emailDto.getId(), Email.class);
-        ThrowUtils.throwIf(oldEmail == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailDto.getId());
+        ThrowUtils.throwIf(oldEmail == null, BizStatus.NOT_FOUND_ERROR, "Email not found for ID: " + emailDto.getId());
 
         if (Integer.valueOf(EmailStatusEnum.SENT.getValue()).equals(oldEmail.getStatus())) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "邮件已发送，无法修改!!!");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "邮件已发送，无法修改!!!");
         }
         if (!Integer.valueOf(EmailStatusEnum.DRAFT.getValue()).equals(oldEmail.getStatus())) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "仅草稿状态的邮件可编辑");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "仅草稿状态的邮件可编辑");
         }
 
         validEmail(emailDto.getTo(), emailDto.getType());
@@ -341,7 +341,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void deleteEmail(String emailId, User loginUser) {
         //这里需校验，只有该图片的创建者或者管理员可以删除
-        ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailId == null, BizStatus.PARAMS_ERROR);
         Query query = new Query(Criteria.where("id").is(emailId));
         DeleteResult remove = mongoTemplate.remove(query, Email.class);
         log.info("删除邮件成功，邮件id:{},受影响行数：{}", emailId,remove.getDeletedCount());
@@ -390,7 +390,7 @@ public class EmailServiceImpl implements EmailService {
             for (String email : emails) {
                 String trimmed = email.trim();
                 if (StrUtil.isNotBlank(trimmed) && !EmailValidatorUtils.isValidEmail(trimmed)) {
-                    throw new BusinessException(ErrorCode.PARAMS_ERROR, "以下邮箱格式错误:" + trimmed);
+                    throw new BusinessException(BizStatus.PARAMS_ERROR, "以下邮箱格式错误:" + trimmed);
                 }
             }
         }

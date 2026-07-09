@@ -10,8 +10,8 @@ import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
 import com.prodigal.system.config.CosClientConfig;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
@@ -86,7 +86,7 @@ public class FileManager {
             return uploadPictureResult;
         } catch (IOException e) {
             log.error("file upload COS error", e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "上传失败");
         } finally {
             //删除临时文件
             this.deleteTempFile(file);
@@ -137,7 +137,7 @@ public class FileManager {
             return uploadPictureResult;
         } catch (IOException e) {
             log.error("file upload COS error", e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "上传失败");
         } finally {
             //删除临时文件
             this.deleteTempFile(file);
@@ -150,16 +150,16 @@ public class FileManager {
      * @param multipartFile 文件
      */
     private void verifyPicture(MultipartFile multipartFile) {
-        ThrowUtils.throwIf(multipartFile == null, ErrorCode.PARAMS_ERROR, "文件不能为空");
+        ThrowUtils.throwIf(multipartFile == null, BizStatus.PARAMS_ERROR, "文件不能为空");
         //校验文件大小
         long fileSize = multipartFile.getSize();
         final long ONE_M = 1024 * 1024;
-        ThrowUtils.throwIf(fileSize > 2 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过2M");
+        ThrowUtils.throwIf(fileSize > 2 * ONE_M, BizStatus.PARAMS_ERROR, "文件大小不能超过2M");
         //校验文件后缀
         String fileSuffix = FileUtil.getSuffix(multipartFile.getOriginalFilename());
         //允许上传文件的后缀
         List<String> ALLOW_FORMAT_LIST = Arrays.asList("jpg", "jpeg", "png", "webp");
-        ThrowUtils.throwIf(!ALLOW_FORMAT_LIST.contains(fileSuffix), ErrorCode.PARAMS_ERROR, "文件格式错误");
+        ThrowUtils.throwIf(!ALLOW_FORMAT_LIST.contains(fileSuffix), BizStatus.PARAMS_ERROR, "文件格式错误");
     }
 
     /**
@@ -168,16 +168,16 @@ public class FileManager {
      * @param fileUrl 文件地址
      */
     private void verifyPicture(String fileUrl) {
-        ThrowUtils.throwIf(StrUtil.isBlank(fileUrl), ErrorCode.PARAMS_ERROR, "文件地址不能为空");
+        ThrowUtils.throwIf(StrUtil.isBlank(fileUrl), BizStatus.PARAMS_ERROR, "文件地址不能为空");
         //验证URL格式
         try {
             new URL(fileUrl);
         } catch (MalformedURLException e) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件地址格式错误");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "文件地址格式错误");
         }
         //验证URL协议
         ThrowUtils.throwIf(!fileUrl.startsWith("http://") && !fileUrl.startsWith("https://"),
-                ErrorCode.PARAMS_ERROR, "文件地址协议错误");
+                BizStatus.PARAMS_ERROR, "文件地址协议错误");
 
         //通过Head 请求 验证文件是否存在（只能证明一部分；因为有些不具备HEAD请求）
         HttpResponse response = null;
@@ -192,7 +192,7 @@ public class FileManager {
             String header = response.header("Content-Type");
             if (header != null){
                 final List<String> IMAGE_TYPE =Arrays.asList( "image/jpg","image/jpeg","image/webp","image/png");
-                ThrowUtils.throwIf(!IMAGE_TYPE.contains(header),ErrorCode.PARAMS_ERROR,"文件类型错误");
+                ThrowUtils.throwIf(!IMAGE_TYPE.contains(header), BizStatus.PARAMS_ERROR,"文件类型错误");
             }
             //校验文件类型大小
             String contentLengthStr = response.header("Content-Length");
@@ -200,10 +200,10 @@ public class FileManager {
                 try {
                     long contentLength = Long.parseLong(contentLengthStr);
                     final long ONE_M = 1024 * 1024L;
-                    ThrowUtils.throwIf(contentLength > 2 * ONE_M, ErrorCode.PARAMS_ERROR, "文件大小不能超过2M");
+                    ThrowUtils.throwIf(contentLength > 2 * ONE_M, BizStatus.PARAMS_ERROR, "文件大小不能超过2M");
                 }catch (NumberFormatException e){
                     log.error("file contentLengthStr parse error", e);
-                    throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小格式错误");
+                    throw new BusinessException(BizStatus.PARAMS_ERROR, "文件大小格式错误");
                 }
             }
 

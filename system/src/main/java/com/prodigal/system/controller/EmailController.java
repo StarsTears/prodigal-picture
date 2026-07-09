@@ -6,8 +6,8 @@ import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.PageRequest;
 import com.prodigal.system.common.ResultUtils;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.email.EmailAddDTO;
 import com.prodigal.system.model.dto.email.EmailQueryDTO;
@@ -66,7 +66,7 @@ public class EmailController {
     @PostMapping("/add")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<String> addEmail(@Valid @RequestBody EmailAddDTO emailDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         String messageId = emailService.addEmail(emailDto, loginUser);
         if (emailDto.isSendNow()) {
@@ -85,7 +85,7 @@ public class EmailController {
     @PostMapping("/update")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateEmail(@Valid @RequestBody EmailUpdateDTO emailDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(emailDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.updateEmail(emailDto, loginUser);
         return ResultUtils.success(true);
@@ -93,7 +93,7 @@ public class EmailController {
 
     @PostMapping("/delete/{emailId}")
     public BaseResult<Boolean> deleteEmail(@PathVariable("emailId") String emailId, HttpServletRequest request) {
-        ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailId == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.deleteEmail(emailId, loginUser);
         return ResultUtils.success(true);
@@ -106,9 +106,9 @@ public class EmailController {
     public BaseResult<EmailVO> getEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         Email email = mongoTemplate.findById(emailId, Email.class);
-        ThrowUtils.throwIf(email == null, ErrorCode.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
+        ThrowUtils.throwIf(email == null, BizStatus.NOT_FOUND_ERROR, "Email not found for ID: " + emailId);
         if (!userService.isAdmin(loginUser) && !email.getTo().equals(loginUser.getUserEmail())) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION, "没有权限访问");
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION, "没有权限访问");
         }
         return ResultUtils.success(EmailVO.objToVO(email));
     }
@@ -149,7 +149,7 @@ public class EmailController {
     @PostMapping("/send")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<String> sendEmail(@Valid @RequestBody EmailSendDTO sendEmailDTO, HttpServletRequest request) {
-        ThrowUtils.throwIf(sendEmailDTO == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(sendEmailDTO == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.sendEmailByMimeMessage(sendEmailDTO, loginUser);
         return ResultUtils.success("邮件正在发送中...");
@@ -158,7 +158,7 @@ public class EmailController {
     @PostMapping("/send/{emailId}")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<String> sendEmailById(@PathVariable("emailId") String emailId, HttpServletRequest request) {
-        ThrowUtils.throwIf(emailId == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(emailId == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         emailService.sendMessageById(emailId, loginUser);
 

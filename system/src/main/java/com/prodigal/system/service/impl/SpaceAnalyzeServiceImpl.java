@@ -5,8 +5,8 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.mapper.SpaceMapper;
 import com.prodigal.system.model.dto.space.analyze.*;
@@ -50,7 +50,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public SpaceUsageAnalyzeVO analyzeSpaceUsage(SpaceUsageAnalyzeDTO spaceUsageAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceUsageAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUsageAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //查询公共空间 权限校验：仅管理员可访问
         //查询全控件/公共空间，需从 Picture 表查询
         if (spaceUsageAnalyzeDto.isQueryAll() || spaceUsageAnalyzeDto.isQueryPublic()) {
@@ -78,9 +78,9 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         } else {
             //查询私有空间 权限校验：仅登录用户可访问
             String spaceId = spaceUsageAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), BizStatus.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
             //校验权限:仅空间所有者或管理员可访问
             spaceService.checkSpacePermission(space, loginUser);
             //构造返回结果
@@ -110,7 +110,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public List<SpaceCategoryAnalyzeVO> analyzeSpaceCategory(SpaceCategoryAnalyzeDTO spaceCategoryAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceCategoryAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceCategoryAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceCategoryAnalyzeDto, loginUser);
         //构造查询条件
@@ -140,7 +140,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public List<SpaceTagAnalyzeVO> analyzeSpaceTag(SpaceTagAnalyzeDTO spaceTagAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceTagAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceTagAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceTagAnalyzeDto, loginUser);
         //构造查询条件
@@ -167,7 +167,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public List<SpaceSizeAnalyzeVO> analyzeSpaceSize(SpaceSizeAnalyzeDTO spaceSizeAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceSizeAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceSizeAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //校验权限
         this.checkSpaceAnalyzeAuth(spaceSizeAnalyzeDto, loginUser);
         //构造查询条件
@@ -200,7 +200,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public List<SpaceUserAnalyzeVO> analyzeSpaceUser(SpaceUserAnalyzeDTO spaceUserAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceUserAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //检查权限
         this.checkSpaceAnalyzeAuth(spaceUserAnalyzeDto, loginUser);
         //构造查询条件
@@ -225,7 +225,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
                 wrapper.select("DATE_FORMAT(create_time, '%Y') as timeRange", "count(*) as count");
                 break;
             default:
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的时间维度："+ timeDimension);
+                throw new BusinessException(BizStatus.PARAMS_ERROR, "不支持的时间维度："+ timeDimension);
         }
         //分组排序
         wrapper.groupBy("timeRange").orderByAsc("timeRange");
@@ -245,9 +245,9 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
      */
     @Override
     public List<Space> analyzeSpaceRank(SpaceRankAnalyzeDTO spaceRankAnalyzeDto, User loginUser) {
-        ThrowUtils.throwIf(spaceRankAnalyzeDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceRankAnalyzeDto == null, BizStatus.PARAMS_ERROR);
         //仅管理员可查看空间排行
-        ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问空间排行");
+        ThrowUtils.throwIf(!userService.isAdmin(loginUser), BizStatus.USER_NOT_PERMISSION, "无权访问空间排行");
         //构造查询条件
         QueryWrapper<Space> wrapper = new QueryWrapper<>();
         wrapper.select("id", "space_name", "space_level","total_size", "total_count")
@@ -267,13 +267,13 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
         // 检查权限
         if (spaceAnalyzeDto.isQueryAll() || spaceAnalyzeDto.isQueryPublic()) {
             // 全空间分析或者公共图库权限校验：仅管理员可访问
-            ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.USER_NOT_PERMISSION, "无权访问公共图库");
+            ThrowUtils.throwIf(!userService.isAdmin(loginUser), BizStatus.USER_NOT_PERMISSION, "无权访问公共图库");
         } else {
             // 私有空间权限校验
             String spaceId = spaceAnalyzeDto.getSpaceId();
-            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(spaceId == null || "0".equals(spaceId), BizStatus.PARAMS_ERROR);
             Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
             spaceService.checkSpacePermission(space, loginUser);
         }
     }
@@ -297,7 +297,7 @@ public class SpaceAnalyzeServiceImpl extends ServiceImpl<SpaceMapper, Space> imp
             queryWrapper.eq("space_id", spaceId);
             return;
         }
-        throw new BusinessException(ErrorCode.PARAMS_ERROR, "未指定查询范围");
+        throw new BusinessException(BizStatus.PARAMS_ERROR, "未指定查询范围");
     }
 
 }

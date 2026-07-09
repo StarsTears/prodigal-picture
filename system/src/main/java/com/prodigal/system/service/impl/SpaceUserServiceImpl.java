@@ -6,7 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.spaceuser.SpaceUserAddDTO;
 import com.prodigal.system.model.dto.spaceuser.SpaceUserQueryDTO;
@@ -44,29 +44,29 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
     private SpaceService spaceService;
     @Override
     public void validSpaceUser(SpaceUser spaceUser, boolean add) {
-        ThrowUtils.throwIf(spaceUser == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUser == null, BizStatus.PARAMS_ERROR);
         // 创建时，空间 id 和用户 id 必填
         String spaceId = spaceUser.getSpaceId();
         String userId = spaceUser.getUserId();
         if (add) {
-            ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(ObjectUtil.hasEmpty(spaceId, userId), BizStatus.PARAMS_ERROR);
             User user = userService.getById(userId);
-            ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND, "用户不存在");
+            ThrowUtils.throwIf(user == null, BizStatus.USER_NOT_FOUND, "用户不存在");
             Space space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
         }
         // 校验空间角色
         String spaceRole = spaceUser.getSpaceRole();
         SpaceRoleEnum spaceRoleEnum = SpaceRoleEnum.getEnumByValue(spaceRole);
         if (spaceRole != null && spaceRoleEnum == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间角色不存在");
+            throw new BusinessException(BizStatus.PARAMS_ERROR, "空间角色不存在");
         }
     }
 
     @Override
     public String addSpaceUser(SpaceUserAddDTO spaceUserAddDTO) {
         // 参数校验
-        ThrowUtils.throwIf(spaceUserAddDTO == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUserAddDTO == null, BizStatus.PARAMS_ERROR);
         SpaceUser spaceUser = new SpaceUser();
         BeanUtils.copyProperties(spaceUserAddDTO, spaceUser);
         if (spaceUserAddDTO.getSpaceRole() != null) {
@@ -75,7 +75,7 @@ public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser
         this.validSpaceUser(spaceUser, true);
         // 数据库操作
         boolean result = this.save(spaceUser);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return spaceUser.getId();
     }
 

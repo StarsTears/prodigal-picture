@@ -10,8 +10,8 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import cn.hutool.http.Header;
 import cn.hutool.json.JSONUtil;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.manager.auth.model.SpaceUserPermissionConstant;
 import com.prodigal.system.model.entity.Picture;
 import com.prodigal.system.model.entity.Space;
@@ -26,7 +26,6 @@ import com.prodigal.system.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -76,7 +75,7 @@ public class StpInterfaceImpl implements StpInterface {
         //获取userID
         User loginUser =(User) StpKit.SPACE.getSessionByLoginId(loginId).get(USER_LOGIN_STATE);
         if (loginUser == null){
-            throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
+            throw new BusinessException(BizStatus.USER_NOT_LOGIN);
         }
         String userId = loginUser.getId();
         //从上下文中获取 SpaceUser 信息
@@ -89,7 +88,7 @@ public class StpInterfaceImpl implements StpInterface {
         if (spaceUserId!=null) {
             spaceUser = spaceUserService.getById(spaceUserId);
             if (spaceUser == null){
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"未找到空间成员信息···");
+                throw new BusinessException(BizStatus.NOT_FOUND_ERROR,"未找到空间成员信息···");
             }
             //取出当前登录用户对应的 spaceUser
             SpaceUser loginSpaceUser = spaceUserService.lambdaQuery().eq(SpaceUser::getUserId, userId)
@@ -114,7 +113,7 @@ public class StpInterfaceImpl implements StpInterface {
                     .select(Picture::getId, Picture::getSpaceId, Picture::getUserId)
                     .one();
             if (picture==null){
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"未找到图片信息···");
+                throw new BusinessException(BizStatus.NOT_FOUND_ERROR,"未找到图片信息···");
             }
             spaceId = picture.getSpaceId();
             //公共图库 仅本人或管理员可操作
@@ -130,7 +129,7 @@ public class StpInterfaceImpl implements StpInterface {
         //获取 space 对象
         Space space = spaceService.getById(spaceId);
         if (space == null){
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR,"未找到空间信息···");
+            throw new BusinessException(BizStatus.NOT_FOUND_ERROR,"未找到空间信息···");
         }
         //根据spaceType 判断空间类型
        if (space.getSpaceType() == SpaceTypeEnum.PRIVATE.getValue()){
@@ -192,7 +191,7 @@ public class StpInterfaceImpl implements StpInterface {
             try {
                 body = IoUtil.read(request.getReader());
             } catch (IOException e) {
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR, "读取请求体失败");
+                throw new BusinessException(BizStatus.SYSTEM_ERROR, "读取请求体失败");
             }
             authRequest = JSONUtil.toBean(body, SpaceUserAuthContext.class);
         } else {

@@ -9,8 +9,8 @@ import cn.hutool.json.JSONUtil;
 import com.prodigal.system.api.aliyunai.model.dto.CreateOutPaintingTaskDTO;
 import com.prodigal.system.api.aliyunai.model.vo.CreateOutPaintingTaskVO;
 import com.prodigal.system.api.aliyunai.model.vo.GetOutPaintingTaskVO;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +45,7 @@ public class AliYunAiApi {
      * @return 扩图任务结果
      */
     public CreateOutPaintingTaskVO createOutPaintingTask(CreateOutPaintingTaskDTO createOutPaintingTaskDto) {
-        ThrowUtils.throwIf(createOutPaintingTaskDto == null, ErrorCode.PARAMS_ERROR,"扩图参数为空！");
+        ThrowUtils.throwIf(createOutPaintingTaskDto == null, BizStatus.PARAMS_ERROR,"扩图参数为空！");
         /**
          * curl --location --request POST 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image2image/out-painting' \
          * --header 'X-DashScope-Async: enable' \
@@ -75,14 +75,14 @@ public class AliYunAiApi {
         try(HttpResponse response = request.execute()) {
             if (!response.isOk()){
                 log.error("AI 扩图失败-请求异常：{}", response.body());
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"AI 扩图失败");
+                throw new BusinessException(BizStatus.OPERATION_ERROR,"AI 扩图失败");
             }
             String responseBody = response.body();
             CreateOutPaintingTaskVO createOutPaintingTaskVO = JSONUtil.toBean(responseBody, CreateOutPaintingTaskVO.class);
             String errCode = createOutPaintingTaskVO.getCode();
             if (StrUtil.isNotBlank(errCode)){
                 log.error("AI 扩图失败-响应异常：errCode:{} errMsg:{}",errCode, createOutPaintingTaskVO.getMessage());
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"AI 扩图接口响应异常");
+                throw new BusinessException(BizStatus.OPERATION_ERROR,"AI 扩图接口响应异常");
             }
             return createOutPaintingTaskVO;
         }
@@ -95,7 +95,7 @@ public class AliYunAiApi {
      */
 
     public GetOutPaintingTaskVO getOutPaintingTask(String taskId) {
-        ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR,"任务ID为空！");
+        ThrowUtils.throwIf(StrUtil.isBlank(taskId), BizStatus.PARAMS_ERROR,"任务ID为空！");
         /**
          * curl --location --request GET 'https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}' \
          * --header "Authorization: Bearer $DASHSCOPE_API_KEY"
@@ -107,7 +107,7 @@ public class AliYunAiApi {
         try(HttpResponse response = request.execute()){
             if (!response.isOk()){
                 log.error("AI 扩图-获取任务失败：{}", response.body());
-                throw new BusinessException(ErrorCode.OPERATION_ERROR,"AI 扩图-获取任务失败");
+                throw new BusinessException(BizStatus.OPERATION_ERROR,"AI 扩图-获取任务失败");
             }
             log.info("AI 扩图-获取任务成功：{}", JSONUtil.toJsonStr(response.body()));
             return JSONUtil.toBean(response.body(), GetOutPaintingTaskVO.class);

@@ -2,8 +2,8 @@ package com.prodigal.system.manager;
 
 import cn.hutool.core.io.FileUtil;
 import com.prodigal.system.config.CosClientConfig;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.exception.CosServiceException;
@@ -145,7 +145,7 @@ public class CosManager {
             List<DeleteObjectsResult.DeletedObject> deleteObjects = mde.getDeletedObjects();
             List<MultiObjectDeleteException.DeleteError> deleteErrors = mde.getErrors();
             log.error("删除COS图片失败:{}", deleteErrors.stream().map(MultiObjectDeleteException.DeleteError::getKey).collect(Collectors.toList()));
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除失败");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "删除失败");
         } catch (CosServiceException e) {
             log.error("COS service error", e);
         } catch (CosClientException e) {

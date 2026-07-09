@@ -6,8 +6,8 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.model.dto.user.ChangePasswordDTO;
 import com.prodigal.system.model.dto.user.UserAddDTO;
@@ -51,9 +51,9 @@ public class UserController {
     @GetMapping("/get")
     @PermissionCheck(mustRole = {"administrator"})
     public BaseResult<User> getUserByID(@RequestParam("id") String id) {
-        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(id), BizStatus.PARAMS_ERROR);
         User user = userService.getById(id);
-        ThrowUtils.throwIf(user == null, ErrorCode.USER_NOT_FOUND);
+        ThrowUtils.throwIf(user == null, BizStatus.USER_NOT_FOUND);
         return ResultUtils.success(user);
     }
 
@@ -71,10 +71,10 @@ public class UserController {
     @DeleteMapping("/delete")
     @PermissionCheck(mustRole = "administrator")
     public BaseResult<Boolean> deleteUser(@Valid @RequestBody DeleteRequest deleteRequest) {
-        ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(deleteRequest == null, BizStatus.PARAMS_ERROR);
         User targetUser = userService.getById(deleteRequest.getId());
         if (targetUser != null && UserRoleEnum.ADMINISTRATOR.getRole().equals(targetUser.getUserRole())) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION);
         }
         boolean removeById = userService.removeById(deleteRequest.getId());
         return ResultUtils.success(removeById);
@@ -86,7 +86,7 @@ public class UserController {
     @PostMapping("/update")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateUser(@Valid @RequestBody UserUpdateDTO userUpdateDto) {
-        ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(userUpdateDto == null, BizStatus.PARAMS_ERROR);
         // 不允许修改超级管理员的角色
         User targetUser = userService.getById(userUpdateDto.getId());
         User user = new User();
@@ -98,7 +98,7 @@ public class UserController {
             user.setUserRole(userUpdateDto.getUserRole().getRole());
         }
         boolean update = userService.updateById(user);
-        ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!update, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(update);
     }
 
@@ -107,16 +107,16 @@ public class UserController {
      */
     @PostMapping("/edit")
     public BaseResult<Boolean> editUser(@Valid @RequestBody UserUpdateDTO userUpdateDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(userUpdateDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(userUpdateDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         User targetUser = userService.getById(userUpdateDto.getId());
         boolean isTargetSuperAdmin = targetUser != null && UserRoleEnum.ADMINISTRATOR.getRole().equals(targetUser.getUserRole());
         // 超级管理员：只有本人能修改自己的基础信息
         if (isTargetSuperAdmin && !loginUser.getId().equals(targetUser.getId())) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION);
         }
         if (!loginUser.getId().equals(userUpdateDto.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION);
         }
 
         User user = new User();
@@ -128,7 +128,7 @@ public class UserController {
             user.setUserRole(userUpdateDto.getUserRole().getRole());
         }
         boolean update = userService.updateById(user);
-        ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!update, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(update);
     }
 
@@ -137,7 +137,7 @@ public class UserController {
      */
     @PostMapping("/change-password")
     public BaseResult<Boolean> changePassword(@Valid @RequestBody ChangePasswordDTO dto, HttpServletRequest request) {
-        ThrowUtils.throwIf(dto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(dto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         userService.changePassword(dto, loginUser);
         return ResultUtils.success(true);
@@ -146,7 +146,7 @@ public class UserController {
     @PostMapping("/list/page/vo")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryDTO userQueryDto) {
-        ThrowUtils.throwIf(userQueryDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(userQueryDto == null, BizStatus.PARAMS_ERROR);
         long current = userQueryDto.getCurrent();
         long pageSize = userQueryDto.getPageSize();
         Page<User> page = userService.page(new Page<>(current, pageSize),

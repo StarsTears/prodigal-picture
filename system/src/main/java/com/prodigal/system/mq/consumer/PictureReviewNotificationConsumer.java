@@ -15,6 +15,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,9 @@ public class PictureReviewNotificationConsumer {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
+
+    @Value("${cos.client.host}")
+    private String cosHost;
 
     @RabbitListener(queues = PictureMqConstant.PICTURE_REVIEW_QUEUE,
             containerFactory = "pictureReviewRabbitListenerContainerFactory")
@@ -66,11 +70,31 @@ public class PictureReviewNotificationConsumer {
         String subject = isPass
                 ? "您的图片 \"" + picName + "\" 已审核通过"
                 : "您的图片 \"" + picName + "\" 未通过审核";
+
+        String imgTag = "";
+        if (StrUtil.isNotBlank(message.getUrl())) {
+            String imgUrl = message.getUrl().startsWith("http")
+                    ? message.getUrl()
+                    : cosHost + message.getUrl();
+            imgTag = "<div style=\"text-align:center;margin:16px 0\">"
+                   + "<img src=\"" + imgUrl + "\" alt=\"" + picName + "\" "
+                   + "style=\"max-width:100%;max-height:320px;border-radius:8px;object-fit:contain\" />"
+                   + "</div>";
+        }
+
+        String detailLink = "http://localhost:5173/picture/" + message.getSpaceId() + "/" + message.getPictureId();
         String body = isPass
-                ? "<p>您的图片 <b>" + picName + "</b> 已通过管理员审核，现已公开展示。</p>"
+                ? "<div style=\"font-size:15px;line-height:1.8\">"
+                  + "<p>您的图片 <b>" + picName + "</b> 已通过管理员审核，现已公开展示。</p>"
+                  + imgTag
                   + (StrUtil.isNotBlank(reviewMessage) ? "<p>审核意见：" + reviewMessage + "</p>" : "")
-                : "<p>您的图片 <b>" + picName + "</b> 未通过管理员审核。</p>"
-                  + (StrUtil.isNotBlank(reviewMessage) ? "<p>拒绝理由：" + reviewMessage + "</p>" : "");
+                  + "<p><a href=\"" + detailLink + "\" style=\"color:#1677ff\">查看图片详情 →</a></p>"
+                  + "</div>"
+                : "<div style=\"font-size:15px;line-height:1.8\">"
+                  + "<p>您的图片 <b>" + picName + "</b> 未通过管理员审核。</p>"
+                  + imgTag
+                  + (StrUtil.isNotBlank(reviewMessage) ? "<p>拒绝理由：" + reviewMessage + "</p>" : "")
+                  + "</div>";
 
         EmailSendDTO emailDto = new EmailSendDTO();
         emailDto.setType(EmailTypeEnum.NOTIFY);

@@ -5,8 +5,8 @@ import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.LoginConstant;
 import com.prodigal.system.constant.UserConstant;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.StpKit;
 import com.prodigal.system.model.dto.system.LoginDTO;
@@ -44,7 +44,7 @@ public class SystemController {
     @RateLimit(maxRequests = 5, window = 60)
     @PostMapping("/register")
     public BaseResult<String> register(@Valid @RequestBody RegisterDTO registerDto) {
-        ThrowUtils.throwIf(registerDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(registerDto == null, BizStatus.PARAMS_ERROR);
         String register = userService.register(registerDto);
         return ResultUtils.success(register);
     }
@@ -52,8 +52,8 @@ public class SystemController {
     @RateLimit(maxRequests = 5, window = 60)
     @PostMapping("/login")
     public BaseResult<UserVO> login(@Valid @RequestBody LoginDTO loginDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(loginDto == null, ErrorCode.PARAMS_ERROR);
-        ThrowUtils.throwIf(loginDto.getLoginType() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(loginDto == null, BizStatus.PARAMS_ERROR);
+        ThrowUtils.throwIf(loginDto.getLoginType() == null, BizStatus.PARAMS_ERROR);
         if (loginDto.getLoginType().equals(LoginConstant.USER_LOGIN_TYPE)) {
             UserVO userVO = userService.login(loginDto, request);
             return ResultUtils.success(userVO);
@@ -61,7 +61,7 @@ public class SystemController {
         if (loginDto.getLoginType().equals(LoginConstant.EMAIL_LOGIN_TYPE)) {
             // 校验验证码
             boolean valid = emailService.verifyCode(loginDto.getEmail(), loginDto.getCaptcha());
-            ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);
+            ThrowUtils.throwIf(!valid, BizStatus.CAPTCHA_ERROR);
             // 校验用户是否存在
             User user = userService.lambdaQuery().eq(User::getUserEmail, loginDto.getEmail()).one();
             //用户不存在就创建一个；
@@ -81,7 +81,7 @@ public class SystemController {
             StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, user);
             return ResultUtils.success(userService.getUserVO(user));
         }
-        throw new BusinessException(ErrorCode.PARAMS_ERROR, "不支持的登录类型");
+        throw new BusinessException(BizStatus.PARAMS_ERROR, "不支持的登录类型");
     }
 
     @GetMapping("/getLoginUser")
@@ -96,16 +96,16 @@ public class SystemController {
     @RateLimit(maxRequests = 3, window = 60)
     @PostMapping("/reset-password")
     public BaseResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordDTO dto) {
-        ThrowUtils.throwIf(dto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(dto == null, BizStatus.PARAMS_ERROR);
         boolean valid = emailService.verifyCode(dto.getUserEmail(), dto.getCaptcha());
-        ThrowUtils.throwIf(!valid, ErrorCode.CAPTCHA_ERROR);
+        ThrowUtils.throwIf(!valid, BizStatus.CAPTCHA_ERROR);
         userService.resetPassword(dto);
         return ResultUtils.success(true);
     }
 
     @PostMapping("/logout")
     public BaseResult<Boolean> logout(HttpServletRequest request) {
-        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(request == null, BizStatus.PARAMS_ERROR);
         return ResultUtils.success(userService.logout(request));
     }
 }

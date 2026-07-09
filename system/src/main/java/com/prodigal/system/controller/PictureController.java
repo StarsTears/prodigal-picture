@@ -15,8 +15,8 @@ import com.prodigal.system.api.imagesearch.ImageSearchResult;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.ResultUtils;
 import com.prodigal.system.constant.DictTypeConstant;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.SpaceUserAuthManager;
 import com.prodigal.system.manager.auth.StpKit;
@@ -108,7 +108,7 @@ public class PictureController {
     @PostMapping("/upload/batch")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchDTO pictureUploadByBatchDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureUploadByBatchDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureUploadByBatchDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchDto, loginUser);
         return ResultUtils.success(uploadCount);
@@ -122,7 +122,7 @@ public class PictureController {
     @PostMapping("/get/download/url")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_VIEW)
     public BaseResult<String> getTempDownloadUrl(@RequestBody PictureGetDTO pictureGetDto) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, BizStatus.PARAMS_ERROR);
         String tempDownloadUrl = pictureService.getTempDownloadUrl(pictureGetDto.getId(), pictureGetDto.getSpaceId());
         return ResultUtils.success(tempDownloadUrl);
     }
@@ -135,9 +135,9 @@ public class PictureController {
      */
     @PostMapping("/search/picture")
     public BaseResult<List<ImageSearchResult>> searchImage(@RequestBody ImageSearchDTO imageSearchDto) {
-        ThrowUtils.throwIf(imageSearchDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(imageSearchDto == null, BizStatus.PARAMS_ERROR);
         String pictureId = imageSearchDto.getPictureId();
-        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureId == null || StrUtil.isBlank(pictureId), BizStatus.PARAMS_ERROR);
 
         String spaceId = imageSearchDto.getSpaceId() == null ? "0" : imageSearchDto.getSpaceId();
         // 构造 QueryWrapper
@@ -148,7 +148,7 @@ public class PictureController {
         // 执行查询
         Picture oldPicture = pictureService.getOne(queryWrapper);
 
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldPicture == null, BizStatus.NOT_FOUND_ERROR);
         //若该图有源图url则优先使用！反之则使用 COS 未压缩的图片Url
         String imageURL = StrUtil.isNotBlank(oldPicture.getOriginUrl()) ? oldPicture.getOriginUrl() : oldPicture.getUrl();
         List<ImageSearchResult> imageSearchResults = compositeImageSearchService.searchImage(imageURL);
@@ -165,7 +165,7 @@ public class PictureController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_DELETE)
     public BaseResult<Boolean> deletePicture(@RequestBody PictureDeleteDTO pictureDeleteDto, HttpServletRequest request) {
         if (pictureDeleteDto == null || pictureDeleteDto.getId() == null){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(BizStatus.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
         String spaceId = pictureDeleteDto.getSpaceId() == null ? "0" : pictureDeleteDto.getSpaceId();
@@ -182,7 +182,7 @@ public class PictureController {
     @PostMapping("/review")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> doPictureReview(@Valid @RequestBody PictureReviewDTO pictureReviewDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureReviewDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureReviewDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         pictureService.doPictureReview(pictureReviewDto, loginUser);
         return ResultUtils.success(true);
@@ -197,7 +197,7 @@ public class PictureController {
     @PostMapping("/update")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updatePicture(@Valid @RequestBody PictureUpdateDTO pictureUpdateDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureUpdateDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureUpdateDto == null, BizStatus.PARAMS_ERROR);
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureUpdateDto, picture);
         picture.setTags(JSONUtil.toJsonStr(pictureUpdateDto.getTags()));
@@ -213,7 +213,7 @@ public class PictureController {
 
         // 执行查询
         Picture oldPicture = pictureService.getOne(queryWrapper);
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldPicture == null, BizStatus.NOT_FOUND_ERROR);
         //补充审核参数
         User loginUser = userService.getLoginUser(request);
         pictureService.fillReviewParams(picture, loginUser, spaceId);
@@ -225,7 +225,7 @@ public class PictureController {
 
         // 执行更新
         boolean result = pictureService.update(picture, updateWrapper);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -238,7 +238,7 @@ public class PictureController {
     @PostMapping("/edit")
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResult<Boolean> editPicture(@Valid @RequestBody PictureEditDTO pictureEditDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureEditDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureEditDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         pictureService.editPicture(pictureEditDto, loginUser);
 
@@ -248,7 +248,7 @@ public class PictureController {
     @PostMapping("/edit/batch")
     public BaseResult<Boolean> editPictureByBatch(@Valid @RequestBody PictureEditByBatchDTO pictureEditByBatchDto, HttpServletRequest request) {
         if (pictureEditByBatchDto == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(BizStatus.PARAMS_ERROR);
         }
         User loginUser = userService.getLoginUser(request);
         pictureService.editPictureByBatch(pictureEditByBatchDto, loginUser);
@@ -264,7 +264,7 @@ public class PictureController {
     @PostMapping("/get")
     @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Picture> getPictureByID(@RequestBody PictureGetDTO pictureGetDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, BizStatus.PARAMS_ERROR);
         String id = pictureGetDto.getId();
         String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
         // 构造 QueryWrapper
@@ -273,7 +273,7 @@ public class PictureController {
                 .eq("space_id", spaceId); // 附加 spaceId 条件
         //执行查询
         Picture picture = pictureService.getOne(queryWrapper);
-        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(picture == null, BizStatus.NOT_FOUND_ERROR);
         //空间权限校验
         spaceId = picture.getSpaceId();
         if (!"0".equals(spaceId)) {
@@ -291,7 +291,7 @@ public class PictureController {
      */
     @PostMapping("/get/vo")
     public BaseResult<PictureVO> getPictureVOByID(@RequestBody PictureGetDTO pictureGetDto,@RequestParam("isView") Boolean isView, HttpServletRequest request) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, BizStatus.PARAMS_ERROR);
         isView = isView==null?false:isView;
         String id = pictureGetDto.getId();
         String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
@@ -301,14 +301,14 @@ public class PictureController {
                 .eq("space_id", spaceId); // 附加 spaceId 条件
         //执行查询
         Picture picture = pictureService.getOne(queryWrapper);
-        ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(picture == null, BizStatus.NOT_FOUND_ERROR);
         Space space = null;
         spaceId = picture.getSpaceId();
         if (!"0".equals(spaceId)) {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
-            ThrowUtils.throwIf(!hasPermission, ErrorCode.USER_NOT_PERMISSION);
+            ThrowUtils.throwIf(!hasPermission, BizStatus.USER_NOT_PERMISSION);
             space = spaceService.getById(spaceId);
-            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+            ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR, "空间不存在");
         }
         //变更如下：将必须登录才可查看详情，改为无需登录也可查看；
         PictureVO pictureVO = pictureService.getPictureVO(picture, request);
@@ -326,7 +326,7 @@ public class PictureController {
                 boolean result = pictureService.update(picture, updateWrapper);
             }
         }catch (BusinessException e){
-            if (e.getCode() == ErrorCode.USER_NOT_LOGIN.getCode()){
+            if (e.getCode() == BizStatus.USER_NOT_LOGIN.getCode()){
                 return ResultUtils.success(pictureVO);
             }else {
                 throw e;
@@ -340,14 +340,14 @@ public class PictureController {
      */
     @PostMapping("/share")
     public BaseResult<Boolean> incrementShareQuantity(@RequestBody PictureGetDTO pictureGetDto) {
-        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(pictureGetDto == null || pictureGetDto.getId() == null, BizStatus.PARAMS_ERROR);
         String id = pictureGetDto.getId();
         String spaceId = pictureGetDto.getSpaceId() == null ? "0" : pictureGetDto.getSpaceId();
         UpdateWrapper<Picture> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id", id).eq("space_id", spaceId)
                 .setSql("share_quantity = share_quantity + 1");
         boolean result = pictureService.update(updateWrapper);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -390,14 +390,14 @@ public class PictureController {
         long current = pictureQueryDto.getCurrent();
         long size = pictureQueryDto.getPageSize() == 0 ? 20 : pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
-        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 30, BizStatus.PARAMS_ERROR);
         String spaceId = pictureQueryDto.getSpaceId();
         if (spaceId == null) {
             pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
             pictureQueryDto.setNullSpaceId(true);
         } else {
             boolean hasPermission = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
-            ThrowUtils.throwIf(!hasPermission, ErrorCode.USER_NOT_PERMISSION);
+            ThrowUtils.throwIf(!hasPermission, BizStatus.USER_NOT_PERMISSION);
         }
         String picColor = pictureQueryDto.getPicColor();
         if (StrUtil.isNotBlank(picColor)) {
@@ -430,7 +430,7 @@ public class PictureController {
         long size = pictureQueryDto.getPageSize();
         pictureQueryDto.setReviewStatus(PictureReviewStatusEnum.PASS);
         // 限制爬虫
-        ThrowUtils.throwIf(size > 30, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 30, BizStatus.PARAMS_ERROR);
         String spaceId = pictureQueryDto.getSpaceId();
         if (StrUtil.isBlank(spaceId)) {
             //普通用户查看公共图库(已过审)
@@ -440,9 +440,9 @@ public class PictureController {
             User loginUser = userService.getLoginUser(request);
             Space space = spaceService.getById(spaceId);
             if (space == null) {
-                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "空间不存在");
+                throw new BusinessException(BizStatus.NOT_FOUND_ERROR, "空间不存在");
             }
-            ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), ErrorCode.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
+            ThrowUtils.throwIf(!space.getUserId().equals(loginUser.getId()), BizStatus.USER_NOT_AUTHORIZED, "用户没有权限查看该空间图片");
         }
         Page<PictureVO> pictureVOPageCache = pictureService.getPictureVOPageCache(pictureQueryDto, request);
 
@@ -476,7 +476,7 @@ public class PictureController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.PICTURE_EDIT)
     public BaseResult<CreateOutPaintingTaskVO> createPictureOutPaintingTask
     (@Valid @RequestBody CreatePictureOutPaintingTaskDTO createPictureOutPaintingTaskDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(createPictureOutPaintingTaskDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(createPictureOutPaintingTaskDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         CreateOutPaintingTaskVO pictureOutPaintingTask = pictureService.createPictureOutPaintingTask(createPictureOutPaintingTaskDto, loginUser);
         return ResultUtils.success(pictureOutPaintingTask);
@@ -490,7 +490,7 @@ public class PictureController {
      */
     @GetMapping("/out_painting/get_task")
     public BaseResult<GetOutPaintingTaskVO> getPictureOutPaintingTask(@RequestParam("taskId") String taskId) {
-        ThrowUtils.throwIf(taskId == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(taskId == null, BizStatus.PARAMS_ERROR);
         GetOutPaintingTaskVO outPaintingTask = aliYunAiApi.getOutPaintingTask(taskId);
         return ResultUtils.success(outPaintingTask);
     }

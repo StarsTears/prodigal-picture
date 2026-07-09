@@ -2,14 +2,13 @@ package com.prodigal.system.aop;
 
 import com.prodigal.system.annotation.RateLimit;
 import com.prodigal.system.constant.CacheConstant;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -41,7 +40,7 @@ public class RateLimitInterceptor {
         if (count > rateLimit.maxRequests()) {
             Long ttl = redisTemplate.getExpire(key, TimeUnit.SECONDS);
             String waitTime = formatWaitTime(ttl != null && ttl > 0 ? ttl : 0);
-            throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS, "请求过于频繁，请在 " + waitTime + " 后重试");
+            throw new BusinessException(BizStatus.TOO_MANY_REQUESTS, "请求过于频繁，请在 " + waitTime + " 后重试");
         }
         return joinPoint.proceed();
     }

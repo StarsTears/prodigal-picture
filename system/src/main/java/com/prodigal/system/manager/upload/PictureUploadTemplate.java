@@ -5,8 +5,8 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
 import com.prodigal.system.manager.CosManager;
 import com.prodigal.system.model.dto.file.UploadPictureResult;
 import com.qcloud.cos.model.PutObjectResult;
@@ -82,7 +82,7 @@ public abstract class PictureUploadTemplate {
             return uploadPictureResult;
         } catch (IOException e) {
             log.error("file upload COS error", e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(BizStatus.SYSTEM_ERROR, "上传失败");
         } finally {
             //删除临时文件
             this.deleteTempFile(file);

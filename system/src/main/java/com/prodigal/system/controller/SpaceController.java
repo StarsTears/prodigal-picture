@@ -6,7 +6,7 @@ import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.common.BaseResult;
 import com.prodigal.system.common.DeleteRequest;
 import com.prodigal.system.common.ResultUtils;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.exception.ThrowUtils;
 import com.prodigal.system.manager.auth.SpaceUserAuthManager;
 import com.prodigal.system.model.dto.space.SpaceAddDTO;
@@ -47,7 +47,7 @@ public class SpaceController {
 
     @PostMapping("/add")
     public BaseResult<String> addSpace(@RequestBody SpaceAddDTO spaceAddDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceAddDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceAddDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         String spaceId = spaceService.addSpace(spaceAddDto, loginUser);
 
@@ -56,7 +56,7 @@ public class SpaceController {
     @PostMapping("/update")
     @PermissionCheck(mustRole = {"admin", "administrator"})
     public BaseResult<Boolean> updateSpace(@Valid @RequestBody SpaceUpdateDTO spaceUpdateDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceUpdateDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceUpdateDto == null, BizStatus.PARAMS_ERROR);
         Space space = new Space();
         BeanUtils.copyProperties(spaceUpdateDto, space);
         spaceService.fillSpaceBySpaceLevel(space);
@@ -65,10 +65,10 @@ public class SpaceController {
         //校验空间是否存在
         String id = spaceUpdateDto.getId();
         Space oldSpace = spaceService.getById(id);
-        ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldSpace == null, BizStatus.NOT_FOUND_ERROR);
         //操作数据库
         boolean result = spaceService.updateById(space);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, BizStatus.OPERATION_ERROR);
         return ResultUtils.success(true);
     }
 
@@ -80,14 +80,14 @@ public class SpaceController {
      */
     @PostMapping("/edit")
     public BaseResult<Boolean> editSpace(@Valid @RequestBody SpaceEditDTO spaceEditDto, HttpServletRequest request) {
-        ThrowUtils.throwIf(spaceEditDto == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(spaceEditDto == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         spaceService.editSpace(spaceEditDto, loginUser);
         return ResultUtils.success(true);
     }
     @PostMapping("/delete")
     public BaseResult<Boolean> deleteSpace(@Valid @RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
-        ThrowUtils.throwIf(deleteRequest == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(deleteRequest == null, BizStatus.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         spaceService.deleteSpace(deleteRequest.getId(), loginUser);
         return ResultUtils.success(true);
@@ -96,10 +96,10 @@ public class SpaceController {
     @GetMapping("/get")
     @PermissionCheck(mustRole = {"administrator", "admin"})
     public BaseResult<Space> getSpaceByID(@RequestParam("id") String id, HttpServletRequest request) {
-        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(id), BizStatus.PARAMS_ERROR);
 
         Space space = spaceService.getById(id);
-        ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(space == null, BizStatus.NOT_FOUND_ERROR);
         return ResultUtils.success(space);
     }
     /**
@@ -110,7 +110,7 @@ public class SpaceController {
      */
     @GetMapping("/get/vo")
     public BaseResult<SpaceVO> getSpaceVOByID(@RequestParam("id") String id, HttpServletRequest request) {
-        ThrowUtils.throwIf(StrUtil.isBlank(id), ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(StrUtil.isBlank(id), BizStatus.PARAMS_ERROR);
         Space Space = spaceService.getById(id);
         SpaceVO spaceVO = spaceService.getSpaceVO(Space, request);
         User loginUser = userService.getLoginUser(request);

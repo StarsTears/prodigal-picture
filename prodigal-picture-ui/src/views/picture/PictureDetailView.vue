@@ -211,7 +211,7 @@ const doEdit = () => {
   router.push('/picture/add_picture?id=' + picture.value.id + '&spaceId=' + picture.value.spaceId)
 }
 
-const shareModalRef = ref(true)
+const shareModalRef = ref()
 const shareLink = ref<string>()
 const doShare = (item: API.PictureVO, e: Event) => {
   e.stopPropagation()

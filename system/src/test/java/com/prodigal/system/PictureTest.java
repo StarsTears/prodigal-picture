@@ -3,7 +3,7 @@ package com.prodigal.system;
 import cn.hutool.core.util.StrUtil;
 import com.prodigal.system.config.CosClientConfig;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +35,7 @@ public class PictureTest {
             dUrl = URLDecoder.decode(href, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             log.error("URL解码报错",e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR,"URL解码报错哦");
+            throw new BusinessException(BizStatus.OPERATION_ERROR,"URL解码报错哦");
         }
         String query = dUrl.substring(dUrl.indexOf('?') + 1);
 

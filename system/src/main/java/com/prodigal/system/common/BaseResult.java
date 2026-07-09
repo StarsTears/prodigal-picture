@@ -1,6 +1,6 @@
 package com.prodigal.system.common;
 
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -31,8 +31,8 @@ public class BaseResult<T> implements Serializable {
     public BaseResult(Integer code, Boolean status, T data) {
         this(code, status, "", data);
     }
-    public BaseResult(ErrorCode errorCode) {
-        this(errorCode.getCode(), false, errorCode.getMessage(),null);
+    public BaseResult(BizStatus bizStatus) {
+        this(bizStatus.getCode(), false, bizStatus.getMessage(),null);
     }
     public static <T> BaseResult<T> success() {
         return new BaseResult<T>(0, true, "成功", null);

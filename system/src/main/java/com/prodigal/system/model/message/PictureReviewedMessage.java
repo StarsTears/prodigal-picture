@@ -33,13 +33,21 @@ public class PictureReviewedMessage implements Serializable {
     /** 审核意见 */
     private String reviewMessage;
 
+    /** 缩略图 URL */
+    private String url;
+
+    /** 空间 ID */
+    private String spaceId;
+
     public PictureReviewedMessage(String pictureId, String picName, String uploaderUserId,
-                                   Integer reviewStatus, String reviewMessage) {
+                                   Integer reviewStatus, String reviewMessage, String url, String spaceId) {
         this.messageId = UUID.randomUUID().toString();
         this.pictureId = pictureId;
         this.picName = picName;
         this.uploaderUserId = uploaderUserId;
         this.reviewStatus = reviewStatus;
         this.reviewMessage = reviewMessage;
+        this.url = url;
+        this.spaceId = spaceId;
     }
 }

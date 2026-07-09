@@ -5,7 +5,7 @@ import com.prodigal.system.constant.CacheConstant;
 import com.prodigal.system.constant.EmailMqConstant;
 import com.prodigal.system.constant.GlobalConstant;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.model.message.EmailCaptchaMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -60,7 +60,7 @@ public class EmailCaptchaConsumer {
             log.info("验证码邮件发送成功, email={}", toEmail);
         } catch (MessagingException | UnsupportedEncodingException e) {
             log.error("验证码邮件发送失败, email={}", toEmail, e);
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "验证码邮件发送失败");
+            throw new BusinessException(BizStatus.OPERATION_ERROR, "验证码邮件发送失败");
         }
     }
 

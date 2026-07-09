@@ -2,7 +2,7 @@ package com.prodigal.system.aop;
 
 import com.prodigal.system.annotation.PermissionCheck;
 import com.prodigal.system.exception.BusinessException;
-import com.prodigal.system.exception.ErrorCode;
+import com.prodigal.system.exception.BizStatus;
 import com.prodigal.system.model.entity.User;
 import com.prodigal.system.model.enums.UserRoleEnum;
 import com.prodigal.system.service.UserService;
@@ -57,14 +57,14 @@ public class PermissionInterceptor {
         //获取当前用户的角色（权限）
         Set<UserRoleEnum> userRoleEnums = getRolesConvertSet(user.getUserRole());
         if (CollectionUtils.isEmpty(userRoleEnums)){
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION);
         }
         //使用当前用户的角色只要有一个匹配上，就放行
         // 使用 Stream 判断是否有任何元素相等
         boolean result = mustRoleEnums.stream()
                 .anyMatch(userRoleEnums::contains);
         if (!result){
-            throw new BusinessException(ErrorCode.USER_NOT_PERMISSION);
+            throw new BusinessException(BizStatus.USER_NOT_PERMISSION);
         }
         return joinPoint.proceed();
     }
