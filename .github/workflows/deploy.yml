@@ -5,10 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'system/**'           # 后端代码变更
-      - 'prodigal-picture-ui/**'  # 前端代码变更
-      - 'docker-compose.yml'  # 编排文件变更
-      - 'system/Dockerfile*'         # Dockerfile 变更
+      - 'system/**'
+      - 'prodigal-picture-ui/**'
+      - 'docker-compose.yml'
+      - 'prometheus.yml'
+      - 'grafana/**'
+      - 'system/Dockerfile*'
       - 'prodigal-picture-ui/Dockerfile'
   workflow_dispatch: # 允许手动触发
 
@@ -18,12 +20,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
 
       - name: Start service  # 一个常用的SSH 连接 Action
         uses: appleboy/ssh-action@v1.2.0
@@ -59,7 +55,7 @@ jobs:
                   find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
                fi
                echo "=== Debug: Before git clone ==="
-               git clone https://github.com/${{ github.repository }}.git .
+               git clone https://${{ secrets.GH_TOKEN }}@github.com/${{ github.repository }}.git .
                # 确保检出 main 分支（避免默认分支不是 main 导致代码不一致）
                git checkout main
             fi
@@ -85,7 +81,9 @@ jobs:
             COS_CLIENT_SECRETKEY="${{ secrets.COS_CLIENT_SECRETKEY }}"
             COS_CLIENT_BUCKET="${{ secrets.COS_CLIENT_BUCKET }}"
             COS_CLIENT_REGION="${{ secrets.COS_CLIENT_REGION }}"
-            
+            GRAFANA_PASSWORD="${{ secrets.GRAFANA_PASSWORD }}"
+            CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
+
             # 创建 .env 文件
             cat > .env << EOF
             TZ=Asia/Shanghai
@@ -111,6 +109,8 @@ jobs:
             COS_CLIENT_SECRETKEY=${COS_CLIENT_SECRETKEY}
             COS_CLIENT_BUCKET=${COS_CLIENT_BUCKET}
             COS_CLIENT_REGION=${COS_CLIENT_REGION}
+            CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+            GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
             EOF
 
 
@@ -120,17 +120,31 @@ jobs:
             sed -i "s|{{COS_CLIENT_REGION}}|${COS_CLIENT_REGION}|g" prodigal-picture-ui/nginx.conf
             
             echo "🐳 Building and starting containers..."
-            sudo docker compose down
+            sudo docker compose down --remove-orphans
             sudo docker compose up -d --build
             
             sudo docker image prune -f || true
             
             echo "🏥 Performing health check..."
-            sleep 40
-            if curl -sf http://127.0.0.1:9999/api/health/check | grep -q OK; then
-              echo "✅ Deployment successful!"
+            for i in $(seq 1 15); do
+              if curl -sf http://127.0.0.1:9999/api/health/check | grep -q OK; then
+                echo "✅ Backend healthy!"
+                break
+              fi
+              if [ "$i" -eq 15 ]; then
+                echo "❌ Backend health check failed!"
+                sudo docker compose logs --tail=50
+                exit 1
+              fi
+              echo "⏳ Waiting for backend... ($i/15)"
+              sleep 10
+            done
+
+            if curl -sf http://127.0.0.1:81/ > /dev/null; then
+              echo "✅ Frontend healthy!"
             else
-              echo "❌ Health check failed!"
-              sudo docker compose logs --tail=50
+              echo "❌ Frontend health check failed!"
+              sudo docker compose logs ui --tail=20
               exit 1
             fi
+            echo "✅ Deployment successful!"
