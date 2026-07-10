@@ -134,17 +134,17 @@ jobs:
             sudo docker image prune -f || true
 
             echo "Performing health check..."
-            for i in $(seq 1 15); do
+            for i in $(seq 1 20); do
               if curl -sf http://127.0.0.1:9999/api/health/check | grep -q OK; then
                 echo "Backend healthy!"
                 break
               fi
-              if [ "$i" -eq 15 ]; then
+              if [ "$i" -eq 20 ]; then
                 echo "Backend health check failed!"
-                sudo docker compose logs --tail=50
+                sudo docker compose logs system --tail=200
                 exit 1
               fi
-              echo "Waiting for backend... ($i/15)"
+              echo "Waiting for backend... ($i/20)"
               sleep 10
             done
 
@@ -152,7 +152,7 @@ jobs:
               echo "Frontend healthy!"
             else
               echo "Frontend health check failed!"
-              sudo docker compose logs ui --tail=20
+              sudo docker compose logs ui --tail=50
               exit 1
             fi
             echo "Deployment successful!"
