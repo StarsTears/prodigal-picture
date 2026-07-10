@@ -41,6 +41,10 @@ jobs:
             cd $PROJECT_DIR
             echo "Current directory: $(pwd)"
 
+            # 强制使用 HTTP/1.1，避免 HTTP2 协议被墙干扰
+            git config --global http.version HTTP/1.1
+            git config --global http.postBuffer 524288000
+
             if [ -d ".git" ]; then
               echo "Repository exists, pulling latest changes..."
               git fetch origin main || {
