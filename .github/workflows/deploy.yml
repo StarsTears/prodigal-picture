@@ -42,6 +42,7 @@ jobs:
             echo "Current directory: $(pwd)"
 
             GIT_SSH_URL="git@github.com:${{ github.repository }}.git"
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/github_deploy -o StrictHostKeyChecking=accept-new"
 
             if [ -d ".git" ]; then
               echo "Repository exists, pulling latest changes..."
