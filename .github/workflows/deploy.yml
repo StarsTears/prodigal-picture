@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SERVER_PORT || 22}}
           script_stop: true
-          command_timeout: 30m
+          command_timeout: 40m
           script: |
             echo "=== Testing connection ==="
             whoami
@@ -90,6 +90,7 @@ jobs:
             GRAFANA_PASSWORD="${{ secrets.GRAFANA_PASSWORD }}"
             CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
 
+            # 创建 .env 文件
             cat > .env << EOF
             TZ=Asia/Shanghai
             SPRING_PROFILES_ACTIVE=prod
@@ -117,6 +118,8 @@ jobs:
             CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
             GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
             EOF
+            # 去除 YAML 缩进导致的前导空格
+            sed -i 's/^[[:space:]]*//' .env
 
             cp prodigal-picture-ui/nginx.conf.template prodigal-picture-ui/nginx.conf
             sed -i "s|{{COS_CLIENT_BUCKET}}|${COS_CLIENT_BUCKET}|g" prodigal-picture-ui/nginx.conf
@@ -128,10 +131,20 @@ jobs:
             sudo -E docker compose build --parallel
 
             echo "Switching to new containers..."
-            sudo docker compose down --remove-orphans
-            sudo docker compose up -d
+            sudo docker compose down --remove-orphans || true
+            sudo docker compose up -d || {
+              echo "docker compose up failed!"
+              sudo docker compose logs --tail=50
+              exit 1
+            }
+
+            echo "Current container status:"
+            sudo docker compose ps
 
             sudo docker image prune -f || true
+
+            echo "Waiting 30s for containers to stabilize..."
+            sleep 30
 
             echo "Performing health check..."
             for i in $(seq 1 20); do
