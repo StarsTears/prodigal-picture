@@ -42,7 +42,14 @@ jobs:
             echo "Current directory: $(pwd)"
 
             GIT_SSH_URL="git@github.com:${{ github.repository }}.git"
-            export GIT_SSH_COMMAND="ssh -i ~/.ssh/github_deploy -o StrictHostKeyChecking=accept-new"
+
+            # 检查 SSH key 状态
+            echo "Home: $HOME"
+            ls -la ~/.ssh/github_deploy 2>/dev/null || echo "KEY NOT FOUND: ~/.ssh/github_deploy"
+            chmod 600 ~/.ssh/github_deploy 2>/dev/null
+            ssh -i ~/.ssh/github_deploy -o StrictHostKeyChecking=accept-new -T git@github.com 2>&1 || true
+
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/github_deploy -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes"
 
             if [ -d ".git" ]; then
               echo "Repository exists, pulling latest changes..."
