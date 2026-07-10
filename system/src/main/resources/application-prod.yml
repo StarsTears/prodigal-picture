@@ -26,33 +26,6 @@ spring:
     baseline-on-migrate: true
     baseline-version: 1
     validate-on-migrate: true
-  #空间图片分表
-  shardingsphere:
-    datasource:
-      names: prodigal-picture
-      prodigal-picture:
-        type: com.zaxxer.hikari.HikariDataSource
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
-    rules:
-      sharding:
-        tables:
-          picture:
-            actual-data-nodes: prodigal-picture.picture # 动态分表
-            table-strategy:
-              standard:
-                sharding-column: spaceId
-                sharding-algorithm-name: picture-sharding-algorithm # 分表算法 自定义分片算法
-        sharding-algorithms:
-          picture-sharding-algorithm:
-            type: CLASS_BASED
-            props:
-              strategy: standard
-              algorithmClassName: com.prodigal.system.manager.sharding.PictureShardingAlgorithm
-    props:
-      sql-show: false
 
   data:
     # redis
