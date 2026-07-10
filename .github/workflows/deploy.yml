@@ -118,6 +118,9 @@ jobs:
             CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
             GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
             EOF
+            
+              # ✅ 清理被污染的 .env 文件
+            sed -i '/DRONE_SSH_PREV_COMMAND_EXIT_CODE/d' .env
             # 去除 YAML 缩进导致的前导空格
             sed -i 's/^[[:space:]]*//' .env
 
