@@ -43,8 +43,8 @@ jobs:
             mkdir -p ~/.ssh
             cat > ~/.ssh/config << 'SSH_CONFIG'
             Host github.com
-            IdentityFile ~/.ssh/github_deploy
-            StrictHostKeyChecking accept-new
+              IdentityFile ~/.ssh/github_deploy
+              StrictHostKeyChecking accept-new
             SSH_CONFIG
             chmod 600 ~/.ssh/config
             
@@ -72,18 +72,18 @@ jobs:
           
             # 使用 SSH 拉取代码
             if [ -d ".git" ]; then
-            echo "Repository exists, pulling latest changes..."
-            git remote set-url origin ${GIT_SSH_URL}
-            git fetch origin main
-            git reset --hard origin/main
+              echo "Repository exists, pulling latest changes..."
+              git remote set-url origin ${GIT_SSH_URL}
+              git fetch origin main
+              git reset --hard origin/main
             else
-            echo "First deployment, cloning repository..."
-            if [ "$(ls -A)" ]; then
-            echo "Directory not empty, cleaning..."
-            find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
-            fi
-            git clone ${GIT_SSH_URL} .
-            git checkout main
+              echo "First deployment, cloning repository..."
+              if [ "$(ls -A)" ]; then
+                echo "Directory not empty, cleaning..."
+                find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
+              fi
+              git clone ${GIT_SSH_URL} .
+              git checkout main
             fi
             echo "Current commit: $(git rev-parse --short HEAD)"
 
