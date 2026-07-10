@@ -36,41 +36,18 @@ jobs:
             # ==========================================
             echo "=== Force cleaning SSH config ==="
             
-            # 删除被污染的 SSH config 文件
             rm -f ~/.ssh/config
-            
-            # 重新创建干净的 SSH config
-            mkdir -p ~/.ssh
-            cat > ~/.ssh/config << 'SSH_CONFIG'
-            Host github.com
-              IdentityFile ~/.ssh/github_deploy
-              StrictHostKeyChecking accept-new
-            SSH_CONFIG
-            chmod 600 ~/.ssh/config
-            
-            # 确保 SSH 密钥权限正确
             chmod 600 ~/.ssh/github_deploy 2>/dev/null || true
-            
-            # 测试 SSH 连接
-            echo "=== Testing SSH connection ==="
-            ssh -T git@github.com 2>&1 || echo "SSH test done"
-            
-            # ==========================================
-            # 1. 继续部署
-            # ==========================================
-            echo "=== Testing connection ==="
-            whoami
-            groups
-          
+            export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/github_deploy -o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes"
+
             PROJECT_DIR="/opt/project/prodigal-picture"
             echo "Project directory: $PROJECT_DIR"
             mkdir -p $PROJECT_DIR
             cd $PROJECT_DIR
             echo "Current directory: $(pwd)"
-          
+
             GIT_SSH_URL="git@github.com:${{ github.repository }}.git"
-          
-            # 使用 SSH 拉取代码
+
             if [ -d ".git" ]; then
               echo "Repository exists, pulling latest changes..."
               git remote set-url origin ${GIT_SSH_URL}
