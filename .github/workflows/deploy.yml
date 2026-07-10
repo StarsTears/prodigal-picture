@@ -125,6 +125,12 @@ jobs:
             sed -i "s|{{COS_CLIENT_BUCKET}}|${COS_CLIENT_BUCKET}|g" prodigal-picture-ui/nginx.conf
             sed -i "s|{{COS_CLIENT_REGION}}|${COS_CLIENT_REGION}|g" prodigal-picture-ui/nginx.conf
 
+            # 替换 sharding-prod.yml 中的占位符（ShardingSphere 不解析 ${}）
+            sed -i "s|\${DB_HOST}|${DB_HOST}|g" system/src/main/resources/sharding-prod.yml
+            sed -i "s|\${DB_NAME}|${DB_NAME}|g" system/src/main/resources/sharding-prod.yml
+            sed -i "s|\${DB_USERNAME}|${DB_USERNAME}|g" system/src/main/resources/sharding-prod.yml
+            sed -i "s|\${DB_PASSWORD}|${DB_PASSWORD}|g" system/src/main/resources/sharding-prod.yml
+
             echo "Building new images (old containers keep running)..."
             export DOCKER_BUILDKIT=1
             export COMPOSE_DOCKER_CLI_BUILD=1
