@@ -41,17 +41,24 @@ jobs:
             cd $PROJECT_DIR
             echo "Current directory: $(pwd)"
 
-            # 强制使用 HTTP/1.1，避免 HTTP2 协议被墙干扰
-            git config --global http.version HTTP/1.1
-            git config --global http.postBuffer 524288000
+            # 配置 SSH 免密访问 GitHub
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+            cat > ~/.ssh/config << 'SSHEOF'
+            Host github.com
+                HostName github.com
+                User git
+                IdentityFile ~/.ssh/github_deploy
+                StrictHostKeyChecking yes
+            SSHEOF
+            chmod 600 ~/.ssh/github_deploy ~/.ssh/config
+
+            GIT_SSH_URL="git@github.com:${{ github.repository }}.git"
 
             if [ -d ".git" ]; then
               echo "Repository exists, pulling latest changes..."
-              git fetch origin main || {
-                echo "Direct fetch failed, trying mirror..."
-                git remote set-url origin https://ghproxy.com/https://github.com/${{ github.repository }}.git
-                git fetch origin main
-              }
+              git remote set-url origin ${GIT_SSH_URL}
+              git fetch origin main
               git reset --hard origin/main
             else
                echo "First deployment, cloning repository..."
@@ -59,10 +66,7 @@ jobs:
                   echo "Directory not empty, cleaning..."
                   find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf {} +
                fi
-               git clone https://github.com/${{ github.repository }}.git . || {
-                 echo "Direct clone failed, trying mirror..."
-                 git clone https://ghproxy.com/https://github.com/${{ github.repository }}.git .
-               }
+               git clone ${GIT_SSH_URL} .
                git checkout main
             fi
             echo "Current commit: $(git rev-parse --short HEAD)"
