@@ -1,4 +1,4 @@
-name: Deploy to Lighthouse
+name: Prodigal Picture Deploy
 
 on:
   push:
