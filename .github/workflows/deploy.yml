@@ -1,4 +1,4 @@
-name: "Prodigal Picture Deploy"
+name: Prodigal Picture Deploy
 
 on:
   push:
@@ -21,13 +21,57 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Start service
+      # ==========================================
+      # 第一步：获取当前 Runner 的公网 IP
+      # ==========================================
+      - name: 获取 Runner IP 地址
+        id: ip
+        uses: haythem/public-ip@v1.2
+
+      # ==========================================
+      # 第二步：将 Runner IP 加入防火墙白名单（放行 SSH 22 端口）
+      # ==========================================
+      - name: 添加 Runner IP 到防火墙白名单
+        run: |
+          # 安装腾讯云 CLI
+          pip install tccli
+
+          # 配置临时凭证
+          tccli configure set secretId ${{ secrets.TENCENTCLOUD_SECRET_ID }}
+          tccli configure set secretKey ${{ secrets.TENCENTCLOUD_SECRET_KEY }}
+          # 注意：轻量服务器使用 lighthouse 产品，地域需要指定
+          tccli configure set region ap-guangzhou  # 请替换为你的服务器地域
+
+          # 调用 Lighthouse API 添加入站防火墙规则
+          # 注意：Lighthouse 的防火墙规则 API 是 ModifyFirewallRules
+          tccli lighthouse ModifyFirewallRules \
+            --InstanceId ${{ secrets.LIGHTHOUSE_INSTANCE_ID }} \
+            --FirewallRules '[
+              {
+                "Protocol": "TCP",
+                "CidrBlock": "${{ steps.ip.outputs.ipv4 }}/32",
+                "Port": "22",
+                "Action": "ACCEPT",
+                "FirewallRuleDescription": "Temp allow GitHub Actions runner"
+              }
+            ]'
+        shell: bash
+
+      # 等待几秒让防火墙规则生效
+      - name: 等待规则生效
+        run: sleep 5
+        shell: bash
+
+      # ==========================================
+      # 第三步：执行部署（你的原有 SSH 脚本，无需改动）
+      # ==========================================
+      - name: SSH 部署
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SERVER_PORT || 22}}
+          port: 22  # 固定为 22
           script_stop: true
           command_timeout: 40m
           script: |
@@ -116,7 +160,7 @@ jobs:
             GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
             EOF
             
-              # ✅ 清理被污染的 .env 文件
+            # 清理被污染的 .env 文件
             sed -i '/DRONE_SSH_PREV_COMMAND_EXIT_CODE/d' .env
             # 去除 YAML 缩进导致的前导空格
             sed -i 's/^[[:space:]]*//' .env
@@ -125,7 +169,7 @@ jobs:
             sed -i "s|{{COS_CLIENT_BUCKET}}|${COS_CLIENT_BUCKET}|g" prodigal-picture-ui/nginx.conf
             sed -i "s|{{COS_CLIENT_REGION}}|${COS_CLIENT_REGION}|g" prodigal-picture-ui/nginx.conf
 
-            # 替换 sharding-prod.yml 中的占位符（ShardingSphere 不解析 ${}）
+            # 替换 sharding-prod.yml 中的占位符
             sed -i "s|\${DB_HOST}|${DB_HOST}|g" system/src/main/resources/sharding-prod.yml
             sed -i "s|\${DB_NAME}|${DB_NAME}|g" system/src/main/resources/sharding-prod.yml
             sed -i "s|\${DB_USERNAME}|${DB_USERNAME}|g" system/src/main/resources/sharding-prod.yml
@@ -175,3 +219,22 @@ jobs:
               exit 1
             fi
             echo "Deployment successful!"
+
+      # ==========================================
+      # 第四步：部署完成后，从防火墙移除 Runner IP
+      # ==========================================
+      - name: 从防火墙移除 Runner IP
+        if: always()  # 无论部署成功与否，都会执行清理
+        run: |
+          # 注意：Lighthouse 的删除规则需要精确匹配协议、端口、来源和动作
+          tccli lighthouse DeleteFirewallRules \
+            --InstanceId ${{ secrets.LIGHTHOUSE_INSTANCE_ID }} \
+            --FirewallRules '[
+              {
+                "Protocol": "TCP",
+                "CidrBlock": "${{ steps.ip.outputs.ipv4 }}/32",
+                "Port": "22",
+                "Action": "ACCEPT"
+              }
+            ]'
+        shell: bash
